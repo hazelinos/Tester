@@ -42,24 +42,24 @@
   }
 
   .btn-primary {
-    @apply bg-primary text-bg font-semibold px-4 py-2 rounded-xl 
-           hover:bg-primary-dark transition-colors duration-150 
+    @apply bg-primary text-bg font-semibold px-4 py-2 rounded-xl
+           hover:bg-primary-dark transition-colors duration-150
            disabled:opacity-40 disabled:cursor-not-allowed;
   }
 
   .btn-ghost {
-    @apply bg-elevated text-text-secondary font-medium px-4 py-2 rounded-xl 
+    @apply bg-elevated text-text-secondary font-medium px-4 py-2 rounded-xl
            hover:bg-border transition-colors duration-150;
   }
 
   .btn-danger {
-    @apply bg-danger/20 text-danger font-medium px-4 py-2 rounded-xl 
+    @apply bg-danger/20 text-danger font-medium px-4 py-2 rounded-xl
            hover:bg-danger/30 transition-colors duration-150;
   }
 
   .input {
     @apply bg-input border border-border rounded-xl px-4 py-2.5 text-text-primary
-           placeholder-text-muted focus:outline-none focus:border-primary/50 
+           placeholder-text-muted focus:outline-none focus:border-primary/50
            transition-colors w-full text-sm;
   }
 
@@ -79,6 +79,87 @@
 
   .nav-item-active {
     @apply text-primary bg-primary/10 hover:text-primary hover:bg-primary/15;
+  }
+}
+
+/* MontraApp branding replaces the dashboard greeting area. */
+@media (max-width: 767px) {
+  .px-4.pt-4.pb-3 > .flex.items-center.justify-between.mb-3 > div:first-child {
+    position: relative;
+    width: 130px;
+    height: 32px;
+  }
+
+  .px-4.pt-4.pb-3 > .flex.items-center.justify-between.mb-3 > div:first-child > div {
+    visibility: hidden;
+  }
+
+  .px-4.pt-4.pb-3 > .flex.items-center.justify-between.mb-3 > div:first-child::before {
+    content: '↗';
+    position: absolute;
+    left: 0;
+    top: 1px;
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    background: rgba(168, 230, 207, 0.15);
+    color: #A8E6CF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    font-weight: 800;
+  }
+
+  .px-4.pt-4.pb-3 > .flex.items-center.justify-between.mb-3 > div:first-child::after {
+    content: 'MontraApp';
+    position: absolute;
+    left: 40px;
+    top: 5px;
+    color: #F5F5F5;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 22px;
+  }
+}
+
+@media (min-width: 768px) {
+  .p-6.space-y-6.max-w-6xl.mx-auto > .flex.items-center.justify-between:first-child > div:first-child {
+    position: relative;
+    width: 150px;
+    height: 36px;
+  }
+
+  .p-6.space-y-6.max-w-6xl.mx-auto > .flex.items-center.justify-between:first-child > div:first-child > div {
+    visibility: hidden;
+  }
+
+  .p-6.space-y-6.max-w-6xl.mx-auto > .flex.items-center.justify-between:first-child > div:first-child::before {
+    content: '↗';
+    position: absolute;
+    left: 0;
+    top: 1px;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: rgba(168, 230, 207, 0.15);
+    color: #A8E6CF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 19px;
+    font-weight: 800;
+  }
+
+  .p-6.space-y-6.max-w-6xl.mx-auto > .flex.items-center.justify-between:first-child > div:first-child::after {
+    content: 'MontraApp';
+    position: absolute;
+    left: 46px;
+    top: 5px;
+    color: #F5F5F5;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 26px;
   }
 }
 
