@@ -264,12 +264,8 @@ export default function Dashboard() {
           <div className="flex items-center justify-between mb-3">
             <div>
               <EditableText
-                value={`Halo, ${settings.name} 👋`}
-                onSave={(val) => {
-                  // Ekstrak nama dari "Halo, X 👋"
-                  const extracted = val.replace(/^halo,?\s*/i, '').replace(/\s*👋$/, '').trim();
-                  updateSettings({ name: extracted || settings.name });
-                }}
+                value={settings.name}
+                onSave={(val) => updateSettings({ name: val })}
                 className="text-xs font-semibold text-primary/80"
                 inputClassName="text-xs font-semibold text-primary/80 w-36"
                 placeholder="Nama kamu"
@@ -449,11 +445,8 @@ export default function Dashboard() {
       <div className="flex items-center justify-between">
         <div>
           <EditableText
-            value={`Halo, ${settings.name} 👋`}
-            onSave={(val) => {
-              const extracted = val.replace(/^halo,?\s*/i, '').replace(/\s*👋$/, '').trim();
-              updateSettings({ name: extracted || settings.name });
-            }}
+            value={settings.name}
+            onSave={(val) => updateSettings({ name: val })}
             className="text-2xl font-bold text-text-primary"
             inputClassName="text-2xl font-bold w-56"
             placeholder="Nama kamu"
