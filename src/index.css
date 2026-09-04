@@ -82,7 +82,7 @@
   }
 }
 
-/* MontraApp branding replaces the dashboard greeting area. */
+/* MontraApp branding — mobile */
 @media (max-width: 767px) {
   .px-4.pt-4.pb-3 > .flex.items-center.justify-between.mb-3 > div:first-child {
     position: relative;
@@ -95,69 +95,27 @@
   }
 
   .px-4.pt-4.pb-3 > .flex.items-center.justify-between.mb-3 > div:first-child::before {
-    content: '↗';
+    content: '';
     position: absolute;
     left: 0;
-    top: 1px;
-    width: 30px;
-    height: 30px;
-    border-radius: 9px;
-    background: rgba(168, 230, 207, 0.15);
-    color: #A8E6CF;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 17px;
-    font-weight: 800;
+    top: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background-color: rgba(168, 230, 207, 0.12);
+    background-image: url('/montra-logo.svg');
+    background-size: 22px 22px;
+    background-repeat: no-repeat;
+    background-position: center;
   }
 
   .px-4.pt-4.pb-3 > .flex.items-center.justify-between.mb-3 > div:first-child::after {
     content: 'MontraApp';
     position: absolute;
-    left: 40px;
-    top: 5px;
+    left: 42px;
+    top: 3px;
     color: #F5F5F5;
     font-size: 15px;
-    font-weight: 700;
-    line-height: 22px;
-  }
-}
-
-@media (min-width: 768px) {
-  .p-6.space-y-6.max-w-6xl.mx-auto > .flex.items-center.justify-between:first-child > div:first-child {
-    position: relative;
-    width: 150px;
-    height: 36px;
-  }
-
-  .p-6.space-y-6.max-w-6xl.mx-auto > .flex.items-center.justify-between:first-child > div:first-child > div {
-    visibility: hidden;
-  }
-
-  .p-6.space-y-6.max-w-6xl.mx-auto > .flex.items-center.justify-between:first-child > div:first-child::before {
-    content: '↗';
-    position: absolute;
-    left: 0;
-    top: 1px;
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
-    background: rgba(168, 230, 207, 0.15);
-    color: #A8E6CF;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 19px;
-    font-weight: 800;
-  }
-
-  .p-6.space-y-6.max-w-6xl.mx-auto > .flex.items-center.justify-between:first-child > div:first-child::after {
-    content: 'MontraApp';
-    position: absolute;
-    left: 46px;
-    top: 5px;
-    color: #F5F5F5;
-    font-size: 20px;
     font-weight: 700;
     line-height: 26px;
   }
