@@ -37,8 +37,8 @@ createRoot(document.getElementById('root')).render(
               <Route path="settings"         element={<Settings />}      />
             </Route>
           </Routes>
+          <ReminderCenter />
         </BrowserRouter>
-        <ReminderCenter />
       </FinanceProvider>
     </SettingsProvider>
   </StrictMode>
