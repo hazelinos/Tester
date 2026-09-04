@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 
 const DEFAULTS = {
   name: 'Pengguna',
-  subtitle: 'Semangat kelola keuanganmu! 👋',
+  subtitle: 'Semangat kelola keuanganmu!',
   avatar: null, // base64 string or null
 };
 
