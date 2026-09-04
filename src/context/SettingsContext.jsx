@@ -13,7 +13,7 @@ export const ALL_NAV_OPTIONS = [
 ];
 
 // Default 4 tab: 2 kiri + 2 kanan (tengah = FAB +)
-const DEFAULT_TABS = ['/', '/history', '/report', '/budget'];
+const DEFAULT_TABS = ['/', '/history', '/budget', '/savings'];
 
 const DEFAULTS = {
   name:     'Pengguna',
