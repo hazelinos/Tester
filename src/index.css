@@ -23,17 +23,18 @@
   .nav-item-active { @apply text-primary bg-primary/10 hover:text-primary hover:bg-primary/15; }
 }
 
-/* MontraApp branding — mobile only */
+/* Montra branding — mobile only */
 @media (max-width: 767px) {
   .px-4.pt-4.pb-3 > .flex.items-center.justify-between.mb-3 > div:first-child {
     position: relative;
-    width: 150px;
-    height: 36px;
+    width: 190px;
+    height: 40px;
   }
 
-  /* Hide the old editable name/subtitle visually on mobile. */
+  /* Hide the old editable greeting text while keeping the edit controls inactive visually. */
   .px-4.pt-4.pb-3 > .flex.items-center.justify-between.mb-3 > div:first-child > div {
     visibility: hidden;
+    pointer-events: none;
   }
 
   /* Use the exact same logo asset as desktop. */
@@ -45,19 +46,36 @@
     width: 36px;
     height: 36px;
     border-radius: 11px;
-    background: rgba(11,31,27,.95) url('/montra-logo.svg?v=5') center/29px 29px no-repeat;
+    background: rgba(11,31,27,.95) url('/montra-logo.svg?v=6') center/29px 29px no-repeat;
     box-shadow: inset 0 0 0 1px rgba(52,211,153,.16);
   }
 
+  /* Brand name */
   .px-4.pt-4.pb-3 > .flex.items-center.justify-between.mb-3 > div:first-child::after {
-    content: 'MontraApp';
+    content: 'Montra';
     position: absolute;
     left: 48px;
-    top: 4px;
+    top: 0;
     color: #F5F5F5;
     font-size: 18px;
     font-weight: 700;
-    line-height: 28px;
+    line-height: 24px;
+    animation: montraSlideIn .45s ease-out both;
+  }
+
+  /* Brand tagline */
+  .px-4.pt-4.pb-3 > .flex.items-center.justify-between.mb-3 > div:first-child > div:nth-child(2)::after {
+    content: 'A simple Money Tracker for your finances.';
+    position: absolute;
+    left: 48px;
+    top: 22px;
+    width: 180px;
+    color: #8A8A8A;
+    font-size: 9px;
+    font-weight: 400;
+    line-height: 13px;
+    visibility: visible;
+    animation: montraSlideIn .55s .08s ease-out both;
   }
 }
 
@@ -68,3 +86,4 @@
 .modal-sheet { animation: slideUp .2s ease; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes montraSlideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
