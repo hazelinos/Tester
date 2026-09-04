@@ -2,24 +2,24 @@ import { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, CreditCard, Settings,
-  Plus, Menu, X, TrendingUp, User,
-  BarChart3, Target, PiggyBank, Landmark, Rss,
+  Plus, Menu, X, User, BarChart3, Target, PiggyBank, Landmark, Rss,
 } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
 import TransactionModal from './TransactionModal';
 import { SalaryReminderPopup } from '../pages/Accounts';
+import MontraLogo from './MontraLogo';
 import clsx from 'clsx';
 
 // Desktop sidebar — semua halaman
 const SIDEBAR_ITEMS = [
-  { to: '/',             icon: LayoutDashboard, label: 'Dashboard'  },
-  { to: '/history',      icon: BarChart3,        label: 'Aktivitas'  },
-  { to: '/report',       icon: BarChart3,        label: 'Laporan'    },
-  { to: '/budget',       icon: Target,           label: 'Budget'     },
-  { to: '/savings',      icon: PiggyBank,        label: 'Tabungan'   },
-  { to: '/debt',         icon: Landmark,         label: 'Hutang'     },
-  { to: '/subscriptions',icon: Rss,              label: 'Langganan'  },
-  { to: '/accounts',     icon: CreditCard,       label: 'Akun'       },
+  { to: '/',              icon: LayoutDashboard, label: 'Dashboard'  },
+  { to: '/history',       icon: BarChart3,        label: 'Aktivitas'  },
+  { to: '/report',        icon: BarChart3,        label: 'Laporan'    },
+  { to: '/budget',        icon: Target,           label: 'Budget'     },
+  { to: '/savings',       icon: PiggyBank,        label: 'Tabungan'   },
+  { to: '/debt',          icon: Landmark,         label: 'Hutang'     },
+  { to: '/subscriptions', icon: Rss,              label: 'Langganan'  },
+  { to: '/accounts',      icon: CreditCard,       label: 'Akun'       },
 ];
 
 const LEFT_TABS = [
@@ -151,10 +151,8 @@ export default function Layout() {
         sidebarOpen ? 'w-56' : 'w-16'
       )}>
         <div className="flex items-center gap-3 px-4 h-14 border-b border-border">
-          <div className="w-8 h-8 rounded-xl bg-primary/20 flex items-center justify-center shrink-0">
-            <TrendingUp size={16} className="text-primary" />
-          </div>
-          {sidebarOpen && <span className="font-bold text-text-primary text-sm truncate">MontraApp</span>}
+          <MontraLogo size={32} />
+          {sidebarOpen && <span className="font-bold text-text-primary text-sm truncate">Montra<span className="text-primary">App</span></span>}
         </div>
 
         <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
