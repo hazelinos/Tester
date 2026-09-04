@@ -2,8 +2,7 @@ import { useState, useMemo } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
 import {
   Eye, EyeOff, TrendingUp, TrendingDown, ChevronLeft, ChevronRight,
-  PiggyBank, Target, Pencil, Check, X, Landmark, Rss,
-  BarChart3, CreditCard, Receipt, LayoutDashboard,
+  PiggyBank, Target, Pencil, Check, X,
 } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
 import { useSettings } from '../context/SettingsContext';
@@ -13,6 +12,53 @@ import EmptyState from '../components/EmptyState';
 import { formatCurrency, formatShortCurrency, getMonthName } from '../utils/formatters';
 import { getCategoryById } from '../constants/categories';
 import clsx from 'clsx';
+
+// ── Inline editable text ──────────────────────────────────────────
+function EditableText({ value, onSave, className, inputClassName, placeholder, maxLength = 50 }) {
+  const [editing, setEditing]   = useState(false);
+  const [draft,   setDraft]     = useState(value);
+
+  const commit = () => {
+    onSave(draft.trim() || value);
+    setEditing(false);
+  };
+
+  if (editing) {
+    return (
+      <div className="flex items-center gap-1.5">
+        <input
+          autoFocus
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter')  commit();
+            if (e.key === 'Escape') { setDraft(value); setEditing(false); }
+          }}
+          maxLength={maxLength}
+          placeholder={placeholder}
+          className={clsx(
+            'bg-transparent border-b border-primary/60 focus:outline-none text-text-primary',
+            inputClassName
+          )}
+        />
+        <button onClick={commit} className="p-1 rounded-lg bg-primary/20 text-primary">
+          <Check size={12} />
+        </button>
+        <button onClick={() => { setDraft(value); setEditing(false); }}
+          className="p-1 rounded-lg hover:bg-elevated text-text-muted">
+          <X size={12} />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-1.5 group cursor-pointer" onClick={() => { setDraft(value); setEditing(true); }}>
+      <span className={className}>{value}</span>
+      <Pencil size={11} className="text-text-muted opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+    </div>
+  );
+}
 
 // ── Semua opsi shortcut yang tersedia ────────────────────────────
 const SHORTCUT_OPTIONS = [
@@ -162,7 +208,7 @@ function ShortcutCard({ optId, savingsGoals, budgetUsage, overBudget }) {
 // ── Main Page ─────────────────────────────────────────────────────
 export default function Dashboard() {
   const { openEdit }   = useOutletContext();
-  const { settings }   = useSettings();
+  const { settings, updateSettings }   = useSettings();
   const mobile         = useIsMobile();
 
   const [selectedDate,    setSelectedDate]    = useState(new Date());
@@ -217,8 +263,26 @@ export default function Dashboard() {
           style={{ background: 'linear-gradient(160deg, #1E3A2F 0%, #0F0F0F 100%)' }}>
           <div className="flex items-center justify-between mb-3">
             <div>
-              <p className="text-xs text-primary/80">Halo, {settings.name} 👋</p>
-              <p className="text-xs text-text-muted">{settings.subtitle}</p>
+              <EditableText
+                value={`Halo, ${settings.name} 👋`}
+                onSave={(val) => {
+                  // Ekstrak nama dari "Halo, X 👋"
+                  const extracted = val.replace(/^halo,?\s*/i, '').replace(/\s*👋$/, '').trim();
+                  updateSettings({ name: extracted || settings.name });
+                }}
+                className="text-xs font-semibold text-primary/80"
+                inputClassName="text-xs font-semibold text-primary/80 w-36"
+                placeholder="Nama kamu"
+                maxLength={30}
+              />
+              <EditableText
+                value={settings.subtitle}
+                onSave={(val) => updateSettings({ subtitle: val || settings.subtitle })}
+                className="text-xs text-text-muted"
+                inputClassName="text-xs text-text-muted w-44"
+                placeholder="Subtitle dashboard"
+                maxLength={60}
+              />
             </div>
             <div className="flex items-center gap-1">
               <button onClick={() => changeMonth(-1)} className="p-1 text-text-muted">
@@ -384,8 +448,25 @@ export default function Dashboard() {
     <div className="p-6 space-y-6 max-w-6xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-text-primary">Halo, {settings.name} 👋</h1>
-          <p className="text-text-muted text-sm mt-0.5">{settings.subtitle}</p>
+          <EditableText
+            value={`Halo, ${settings.name} 👋`}
+            onSave={(val) => {
+              const extracted = val.replace(/^halo,?\s*/i, '').replace(/\s*👋$/, '').trim();
+              updateSettings({ name: extracted || settings.name });
+            }}
+            className="text-2xl font-bold text-text-primary"
+            inputClassName="text-2xl font-bold w-56"
+            placeholder="Nama kamu"
+            maxLength={30}
+          />
+          <EditableText
+            value={settings.subtitle}
+            onSave={(val) => updateSettings({ subtitle: val || settings.subtitle })}
+            className="text-text-muted text-sm mt-0.5"
+            inputClassName="text-sm text-text-muted w-64 mt-0.5"
+            placeholder="Subtitle dashboard"
+            maxLength={60}
+          />
         </div>
         <div className="flex items-center gap-2">
           <button onClick={() => changeMonth(-1)} className="p-1.5 rounded-lg hover:bg-elevated text-text-muted"><ChevronLeft size={16} /></button>

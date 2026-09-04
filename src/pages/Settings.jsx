@@ -1,56 +1,49 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { Camera, User, Trash2, Check, RotateCcw, LogOut } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Camera, User, Trash2, Check, RotateCcw, Download, Upload, FileJson } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
 import { useFinance } from '../context/FinanceContext';
 import { useIsMobile } from '../hooks/useIsMobile';
-import { useGoogleAuth } from '../hooks/useGoogleAuth';
 import clsx from 'clsx';
 
-// ─── Google Login Button ─────────────────────────────────────────
-function GoogleLoginButton({ onLogin }) {
-  const btnRef = useRef(null);
-  const { ready, isConfigured, signIn } = useGoogleAuth(onLogin);
-
-  useEffect(() => {
-    if (ready && btnRef.current) signIn(btnRef.current);
-  }, [ready]);
-
-  if (!isConfigured) {
-    return (
-      <div className="bg-elevated border border-border rounded-xl p-3 text-xs text-text-muted space-y-1">
-        <p className="font-semibold text-text-secondary">Google Login belum dikonfigurasi</p>
-        <p>Tambahkan <code className="bg-bg px-1 py-0.5 rounded text-primary">VITE_GOOGLE_CLIENT_ID</code> di Vercel Environment Variables.</p>
-        <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noreferrer"
-          className="text-primary underline underline-offset-2">Buat di Google Console →</a>
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <div ref={btnRef} />
-      {!ready && <p className="text-xs text-text-muted mt-1">Memuat Google Sign-In...</p>}
-    </div>
-  );
+// ─── Export semua data ke file JSON ──────────────────────────────
+function exportData(finance, settingsData) {
+  const data = {
+    version:       '1.0',
+    exportedAt:    new Date().toISOString(),
+    settings:      settingsData,
+    transactions:  finance.transactions,
+    accounts:      finance.accounts,
+    budgets:       finance.budgets,
+    savings:       finance.savings,
+    debts:         finance.debts,
+    subscriptions: finance.subscriptions || [],
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const date = new Date().toLocaleDateString('id-ID', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+  a.href     = url;
+  a.download = `financeapp-backup-${date}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 // ─── Main Page ───────────────────────────────────────────────────
 export default function Settings() {
   const mobile = useIsMobile();
-  const { settings, updateSettings, loginWithGoogle, logoutGoogle } = useSettings();
-  const { transactions, accounts, budgets, savings, debts }         = useFinance();
+  const { settings, updateSettings } = useSettings();
+  const finance = useFinance();
+  const { transactions, accounts, budgets, savings, debts, subscriptions } = finance;
 
-  const [name,     setName]     = useState(settings.name);
-  const [subtitle, setSubtitle] = useState(settings.subtitle);
-  const [avatar,   setAvatar]   = useState(settings.avatar);
-  const [saved,    setSaved]    = useState(false);
+  const [name,       setName]       = useState(settings.name);
+  const [subtitle,   setSubtitle]   = useState(settings.subtitle);
+  const [avatar,     setAvatar]     = useState(settings.avatar);
+  const [saved,      setSaved]      = useState(false);
+  const [importing,  setImporting]  = useState(false);
+  const [importMsg,  setImportMsg]  = useState(null); // { type: 'success'|'error', text }
 
-  const fileInputRef = useRef(null);
-
-  useEffect(() => {
-    setName(settings.name);
-    setAvatar(settings.avatar);
-  }, [settings.googleUser]);
+  const fileInputRef   = useRef(null);
+  const importInputRef = useRef(null);
 
   const handleAvatarChange = (e) => {
     const file = e.target.files?.[0];
@@ -71,11 +64,61 @@ export default function Settings() {
     setTimeout(() => setSaved(false), 2000);
   };
 
-  const handleGoogleLogin = useCallback((user) => {
-    loginWithGoogle(user);
-    setName(user.name);
-    setAvatar(user.picture);
-  }, [loginWithGoogle]);
+  // ── Export ───────────────────────────────────────────────────
+  const handleExport = () => {
+    exportData(finance, settings);
+  };
+
+  // ── Import ───────────────────────────────────────────────────
+  const handleImportFile = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.name.endsWith('.json')) {
+      setImportMsg({ type: 'error', text: 'File harus berformat .json' });
+      return;
+    }
+    setImporting(true);
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (!data.version || !data.transactions || !data.accounts) {
+          throw new Error('Format file tidak valid');
+        }
+        if (!window.confirm(
+          `Restore data dari backup ${data.exportedAt ? new Date(data.exportedAt).toLocaleDateString('id-ID') : ''}?\n\n` +
+          `• ${data.transactions?.length || 0} transaksi\n` +
+          `• ${data.accounts?.length || 0} akun\n` +
+          `• ${data.budgets?.length || 0} budget\n` +
+          `• ${data.savings?.length || 0} tabungan\n` +
+          `• ${data.debts?.length || 0} hutang\n` +
+          `• ${data.subscriptions?.length || 0} langganan\n\n` +
+          `Data yang ada sekarang akan diganti.`
+        )) {
+          setImporting(false);
+          return;
+        }
+        // Restore ke localStorage
+        localStorage.setItem('finance_transactions',  JSON.stringify(data.transactions  || []));
+        localStorage.setItem('finance_accounts',      JSON.stringify(data.accounts      || []));
+        localStorage.setItem('finance_budgets',       JSON.stringify(data.budgets       || []));
+        localStorage.setItem('finance_savings',       JSON.stringify(data.savings       || []));
+        localStorage.setItem('finance_debts',         JSON.stringify(data.debts         || []));
+        localStorage.setItem('finance_subscriptions', JSON.stringify(data.subscriptions || []));
+        if (data.settings) {
+          localStorage.setItem('finance_settings', JSON.stringify(data.settings));
+        }
+        setImportMsg({ type: 'success', text: 'Data berhasil di-restore! Halaman akan dimuat ulang...' });
+        setTimeout(() => window.location.reload(), 1500);
+      } catch (err) {
+        setImportMsg({ type: 'error', text: `Gagal import: ${err.message}` });
+      } finally {
+        setImporting(false);
+        if (importInputRef.current) importInputRef.current.value = '';
+      }
+    };
+    reader.readAsText(file);
+  };
 
   const hasChanges =
     name !== settings.name ||
@@ -94,37 +137,11 @@ export default function Settings() {
       )}
       {mobile && <p className="text-base font-bold text-text-primary">Pengaturan</p>}
 
-      {/* ── Google Login ─────────────────────────── */}
-      <div className="card space-y-3">
-        <h2 className="text-sm font-bold text-text-primary">Akun Google</h2>
-        {settings.googleUser ? (
-          <div className="flex items-center gap-3">
-            <img src={settings.googleUser.picture} alt="google"
-              className="w-10 h-10 rounded-full border border-border" />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-text-primary truncate">{settings.googleUser.name}</p>
-              <p className="text-xs text-text-muted truncate">{settings.googleUser.email}</p>
-            </div>
-            <button onClick={logoutGoogle}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-elevated border border-border text-xs text-text-secondary hover:text-expense transition-colors">
-              <LogOut size={12} /> Keluar
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            <p className="text-xs text-text-muted">
-              Login dengan Google untuk mengisi nama dan foto profil secara otomatis.
-              Data tetap tersimpan lokal di perangkat ini.
-            </p>
-            <GoogleLoginButton onLogin={handleGoogleLogin} />
-          </div>
-        )}
-      </div>
-
       {/* ── Profil ───────────────────────────────── */}
       <div className="card space-y-4">
         <h2 className="text-sm font-bold text-text-primary">Profil</h2>
 
+        {/* Avatar */}
         <div className="flex items-center gap-4">
           <div className="relative shrink-0">
             <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-border bg-elevated flex items-center justify-center">
@@ -146,7 +163,8 @@ export default function Settings() {
                 <Camera size={11} /> Ganti
               </button>
               {avatar && (
-                <button onClick={() => { setAvatar(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
+                <button
+                  onClick={() => { setAvatar(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
                   className="btn-danger text-xs px-2.5 py-1.5 flex items-center gap-1">
                   <Trash2 size={11} /> Hapus
                 </button>
@@ -155,25 +173,28 @@ export default function Settings() {
           </div>
         </div>
 
+        {/* Nama */}
         <div>
           <label className="text-xs text-text-muted block mb-1.5">Nama</label>
           <input type="text" value={name} onChange={(e) => setName(e.target.value)}
             placeholder="Nama kamu" maxLength={30} className="input" />
         </div>
 
+        {/* Subtitle */}
         <div>
           <label className="text-xs text-text-muted block mb-1.5">Subtitle Dashboard</label>
           <input type="text" value={subtitle} onChange={(e) => setSubtitle(e.target.value)}
             placeholder="Semangat kelola keuanganmu! 👋" maxLength={60} className="input" />
         </div>
 
+        {/* Preview */}
         <div className="bg-bg rounded-xl p-3 border border-border">
           <p className="text-[10px] text-text-muted mb-1.5">Preview</p>
           <p className="text-base font-bold text-text-primary">Halo, {name || 'Pengguna'} 👋</p>
           <p className="text-xs text-text-muted">{subtitle || 'Semangat kelola keuanganmu! 👋'}</p>
         </div>
 
-        {/* Save — inline, tidak sticky */}
+        {/* Tombol simpan */}
         <button
           onClick={handleSave}
           disabled={!hasChanges && !saved}
@@ -189,16 +210,88 @@ export default function Settings() {
         </button>
       </div>
 
+      {/* ── Backup & Restore ─────────────────────── */}
+      <div className="card space-y-3">
+        <div>
+          <h2 className="text-sm font-bold text-text-primary">Backup & Restore</h2>
+          <p className="text-xs text-text-muted mt-0.5">
+            Simpan semua data ke file JSON atau pulihkan dari backup sebelumnya
+          </p>
+        </div>
+
+        {/* Info data */}
+        <div className="bg-bg rounded-xl p-3 border border-border">
+          <div className="flex items-center gap-2 mb-2">
+            <FileJson size={14} className="text-primary" />
+            <span className="text-xs font-semibold text-text-primary">Data saat ini</span>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { label: 'Transaksi',  val: transactions.length  },
+              { label: 'Akun',       val: accounts.length      },
+              { label: 'Budget',     val: budgets.length        },
+              { label: 'Tabungan',   val: savings?.length  || 0 },
+              { label: 'Hutang',     val: debts?.length    || 0 },
+              { label: 'Langganan',  val: subscriptions?.length || 0 },
+            ].map((s) => (
+              <div key={s.label} className="text-center">
+                <p className="text-sm font-bold text-text-primary">{s.val}</p>
+                <p className="text-[10px] text-text-muted">{s.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Tombol export & import */}
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            onClick={handleExport}
+            className="flex items-center justify-center gap-2 py-3 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-sm font-semibold border border-primary/20">
+            <Download size={15} /> Simpan File
+          </button>
+          <button
+            onClick={() => importInputRef.current?.click()}
+            disabled={importing}
+            className="flex items-center justify-center gap-2 py-3 rounded-xl bg-elevated hover:bg-border transition-colors text-sm font-semibold border border-border text-text-secondary disabled:opacity-50">
+            <Upload size={15} /> Restore File
+          </button>
+          <input
+            ref={importInputRef}
+            type="file"
+            accept=".json"
+            onChange={handleImportFile}
+            className="hidden"
+          />
+        </div>
+
+        {/* Pesan status import */}
+        {importMsg && (
+          <div className={clsx(
+            'rounded-xl px-3 py-2.5 text-xs font-medium',
+            importMsg.type === 'success'
+              ? 'bg-income/10 text-income border border-income/30'
+              : 'bg-expense/10 text-expense border border-expense/30'
+          )}>
+            {importMsg.type === 'success' ? '✓ ' : '✕ '}{importMsg.text}
+          </div>
+        )}
+
+        <p className="text-[10px] text-text-muted">
+          File backup berformat .json dan berisi semua data termasuk transaksi, akun, budget, tabungan, hutang, dan langganan.
+        </p>
+      </div>
+
       {/* ── Statistik ────────────────────────────── */}
       <div className="card space-y-3">
         <h2 className="text-sm font-bold text-text-primary">Statistik Data</h2>
         <div className="grid grid-cols-3 gap-2">
           {[
-            { label: 'Transaksi', val: transactions.length, icon: '📋' },
-            { label: 'Akun',      val: accounts.length,     icon: '🏦' },
-            { label: 'Budget',    val: budgets.length,       icon: '🎯' },
-            { label: 'Tabungan',  val: savings?.length  || 0, icon: '🐷' },
-            { label: 'Hutang',    val: debts?.length    || 0, icon: '💸' },
+            { label: 'Transaksi', val: transactions.length,    icon: '📋' },
+            { label: 'Akun',      val: accounts.length,        icon: '🏦' },
+            { label: 'Budget',    val: budgets.length,          icon: '🎯' },
+            { label: 'Tabungan',  val: savings?.length    || 0, icon: '🐷' },
+            { label: 'Hutang',    val: debts?.length      || 0, icon: '💸' },
+            { label: 'Langganan', val: subscriptions?.length || 0, icon: '📡' },
           ].map((s) => (
             <div key={s.label} className="bg-bg rounded-xl p-2.5 text-center border border-border">
               <p className="text-xl mb-0.5">{s.icon}</p>
@@ -212,10 +305,12 @@ export default function Settings() {
       {/* ── Danger Zone ──────────────────────────── */}
       <div className="card space-y-3 border-expense/20">
         <h2 className="text-sm font-bold text-expense">Zona Berbahaya</h2>
-        <p className="text-xs text-text-muted">Tidak bisa dibatalkan setelah dikonfirmasi.</p>
+        <p className="text-xs text-text-muted">
+          Sebaiknya backup data dulu sebelum reset.
+        </p>
         <button
           onClick={() => {
-            if (window.confirm('Reset semua data? Semua transaksi, akun, budget, tabungan, dan hutang akan dihapus permanen.')) {
+            if (window.confirm('Reset semua data? Semua transaksi, akun, budget, tabungan, hutang, dan langganan akan dihapus permanen.')) {
               localStorage.clear();
               window.location.reload();
             }
