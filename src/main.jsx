@@ -7,6 +7,7 @@ import { FinanceProvider } from './context/FinanceContext'
 import { SettingsProvider } from './context/SettingsContext'
 import Layout        from './components/Layout'
 import SalaryTransactionBridge from './components/SalaryTransactionBridge'
+import ReminderCenter from './components/ReminderCenter'
 import Dashboard     from './pages/Dashboard'
 import History       from './pages/History'
 import Report        from './pages/Report'
@@ -37,6 +38,7 @@ createRoot(document.getElementById('root')).render(
             </Route>
           </Routes>
         </BrowserRouter>
+        <ReminderCenter />
       </FinanceProvider>
     </SettingsProvider>
   </StrictMode>
