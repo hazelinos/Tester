@@ -202,7 +202,7 @@ export default function History() {
       {/* Header: judul + month selector */}
       <div className="flex items-center justify-between">
         <p className={clsx('font-bold text-text-primary', mobile ? 'text-base' : 'text-2xl')}>
-          Riwayat & Laporan
+          Aktivitas Keuangan
         </p>
         <div className="flex items-center gap-1">
           <button onClick={() => changeMonth(-1)} className="p-1 text-text-muted">
