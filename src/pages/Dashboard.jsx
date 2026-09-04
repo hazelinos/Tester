@@ -21,7 +21,7 @@ export default function Dashboard() {
   const {
     accounts, getMonthlyIncome, getMonthlyExpense,
     getTotalBalance, getMonthlyTransactions, getExpenseByCategory,
-    savings, budgets, getBudgetUsage,
+    savings: savingsGoals, getBudgetUsage,
   } = useFinance();
 
   const income   = useMemo(() => getMonthlyIncome(selectedDate),    [getMonthlyIncome, selectedDate]);
@@ -30,8 +30,8 @@ export default function Dashboard() {
   const recentTx = useMemo(() => getMonthlyTransactions(selectedDate).slice(0, mobile ? 5 : 8), [getMonthlyTransactions, selectedDate, mobile]);
   const expByCat = useMemo(() => getExpenseByCategory(selectedDate), [getExpenseByCategory, selectedDate]);
 
-  const savings     = income - expense;
-  const savingsRate = income > 0 ? Math.round((savings / income) * 100) : 0;
+  const monthlySavings  = income - expense;
+  const savingsRate     = income > 0 ? Math.round((monthlySavings / income) * 100) : 0;
 
   const topCats = useMemo(() =>
     Object.entries(expByCat)
@@ -50,9 +50,8 @@ export default function Dashboard() {
   const monthLabel = `${getMonthName(selectedDate.getMonth())} ${selectedDate.getFullYear()}`;
 
   // Shortcut data
-  const activeSavings   = useMemo(() => (savings || []).filter(s => s.collected < s.target).length, [savings]);
-  const totalSavingGoal = useMemo(() => (savings || []).reduce((s, g) => s + g.target, 0), [savings]);
-  const totalSaved      = useMemo(() => (savings || []).reduce((s, g) => s + g.collected, 0), [savings]);
+  const activeSavings   = useMemo(() => (savingsGoals || []).filter(s => s.collected < s.target).length, [savingsGoals]);
+  const totalSaved      = useMemo(() => (savingsGoals || []).reduce((s, g) => s + g.collected, 0), [savingsGoals]);
   const budgetUsage     = useMemo(() => getBudgetUsage(selectedDate), [getBudgetUsage, selectedDate]);
   const overBudget      = useMemo(() => budgetUsage.filter(b => b.spent > b.amount).length, [budgetUsage]);
 
@@ -133,15 +132,15 @@ export default function Dashboard() {
           <div className="mx-4 bg-card rounded-2xl p-3 border border-border mb-3">
             <div className="flex justify-between items-center mb-1.5">
               <span className="text-xs text-text-muted">
-                {savings >= 0 ? '💰 Tabungan' : '⚠️ Defisit'}
+                {monthlySavings >= 0 ? '💰 Saldo Bulan Ini' : '⚠️ Defisit'}
               </span>
-              <span className="text-xs font-bold" style={{ color: savings >= 0 ? '#A8E6CF' : '#FF6B6B' }}>
-                {savings >= 0 ? '+' : ''}{formatShortCurrency(savings)} ({savingsRate}%)
+              <span className="text-xs font-bold" style={{ color: monthlySavings >= 0 ? '#A8E6CF' : '#FF6B6B' }}>
+                {monthlySavings >= 0 ? '+' : ''}{formatShortCurrency(monthlySavings)} ({savingsRate}%)
               </span>
             </div>
             <div className="h-1.5 bg-elevated rounded-full overflow-hidden">
               <div className="h-full rounded-full transition-all"
-                style={{ width: `${Math.abs(savingsRate)}%`, backgroundColor: savings >= 0 ? '#A8E6CF' : '#FF6B6B' }} />
+                style={{ width: `${Math.abs(savingsRate)}%`, backgroundColor: monthlySavings >= 0 ? '#A8E6CF' : '#FF6B6B' }} />
             </div>
           </div>
         )}
@@ -294,17 +293,17 @@ export default function Dashboard() {
         <div className="card space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-text-primary">
-              {savings >= 0 ? '💰 Tabungan' : '⚠️ Defisit'}
+              {monthlySavings >= 0 ? '💰 Saldo Bulan Ini' : '⚠️ Defisit'}
             </h3>
-            <span className="text-base font-bold" style={{ color: savings >= 0 ? '#A8E6CF' : '#FF6B6B' }}>
-              {formatCurrency(savings)}
+            <span className="text-base font-bold" style={{ color: monthlySavings >= 0 ? '#A8E6CF' : '#FF6B6B' }}>
+              {formatCurrency(monthlySavings)}
             </span>
           </div>
           {income > 0 && (
             <>
               <div className="w-full h-2 bg-elevated rounded-full overflow-hidden">
                 <div className="h-full rounded-full transition-all"
-                  style={{ width: `${Math.abs(savingsRate)}%`, backgroundColor: savings >= 0 ? '#A8E6CF' : '#FF6B6B' }} />
+                  style={{ width: `${Math.abs(savingsRate)}%`, backgroundColor: monthlySavings >= 0 ? '#A8E6CF' : '#FF6B6B' }} />
               </div>
               <p className="text-xs text-text-muted">{savingsRate}% dari pemasukan</p>
             </>
