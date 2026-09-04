@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Bell, X, CalendarClock, PiggyBank, CreditCard, Receipt } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Bell, X, CalendarClock, PiggyBank, CreditCard, Receipt, ArrowRight } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
 import { formatCurrency } from '../utils/formatters';
 
 const STORAGE_KEY = 'finance_reminder_settings';
-const DISMISSED_KEY = 'finance_reminder_dismissed';
+const HIDDEN_KEY = 'finance_reminder_popup_hidden';
 const DEFAULTS = { leadDays: 3, savingsDefault: 'daily' };
 
 const SAVING_PATTERNS = [
@@ -19,6 +20,12 @@ const WEEKDAYS = [
   ['5', 'Jumat'], ['6', 'Sabtu'], ['0', 'Minggu'],
 ];
 
+const ROUTES = {
+  saving: '/savings',
+  debt: '/debt',
+  subscription: '/subscriptions',
+};
+
 const readSettings = () => {
   try {
     return { ...DEFAULTS, ...(JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}) };
@@ -27,15 +34,15 @@ const readSettings = () => {
   }
 };
 
-const readDismissed = () => {
+const readHidden = () => {
   try {
-    return new Set(JSON.parse(localStorage.getItem(DISMISSED_KEY)) || []);
+    return new Set(JSON.parse(localStorage.getItem(HIDDEN_KEY)) || []);
   } catch {
     return new Set();
   }
 };
 
-const persistDismissed = (set) => localStorage.setItem(DISMISSED_KEY, JSON.stringify([...set]));
+const persistHidden = (set) => localStorage.setItem(HIDDEN_KEY, JSON.stringify([...set]));
 const saveSettings = (value) => localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
 
 const daysUntil = (date) => {
@@ -65,10 +72,11 @@ const isSavingDue = (saving, config) => {
 };
 
 export default function ReminderCenter() {
+  const navigate = useNavigate();
   const { debts, subscriptions, savings } = useFinance();
   const [config, setConfig] = useState(readSettings);
   const [visible, setVisible] = useState(true);
-  const [dismissed, setDismissed] = useState(readDismissed);
+  const [hidden, setHidden] = useState(readHidden);
 
   const reminders = useMemo(() => {
     const result = [];
@@ -76,7 +84,13 @@ export default function ReminderCenter() {
     debts.filter(d => d.dueDate && (d.totalPayable || d.total) > (d.paid || 0)).forEach(d => {
       const days = daysUntil(d.dueDate);
       if (days !== null && days >= 0 && days <= Number(config.leadDays)) {
-        result.push({ id: `debt:${d.id}:${d.dueDate}`, type: 'debt', title: d.name, text: days === 0 ? 'Jatuh tempo hari ini' : `Jatuh tempo ${days} hari lagi`, amount: d.installment || Math.max((d.totalPayable || d.total) - (d.paid || 0), 0) });
+        result.push({
+          id: `debt:${d.id}:${d.dueDate}`,
+          type: 'debt',
+          title: d.name,
+          text: days === 0 ? 'Jatuh tempo hari ini' : `Jatuh tempo ${days} hari lagi`,
+          amount: d.installment || Math.max((d.totalPayable || d.total) - (d.paid || 0), 0),
+        });
       }
     });
 
@@ -91,44 +105,63 @@ export default function ReminderCenter() {
       }
       const days = Math.ceil((due - new Date(today.getFullYear(), today.getMonth(), today.getDate())) / 86400000);
       if (days >= 0 && days <= Number(config.leadDays)) {
-        result.push({ id: `subscription:${s.id}:${due.toISOString().slice(0, 10)}`, type: 'subscription', title: s.name, text: days === 0 ? 'Tagihan hari ini' : `Tagihan ${days} hari lagi`, amount: s.amount });
+        result.push({
+          id: `subscription:${s.id}:${due.toISOString().slice(0, 10)}`,
+          type: 'subscription',
+          title: s.name,
+          text: days === 0 ? 'Tagihan hari ini' : `Tagihan ${days} hari lagi`,
+          amount: s.amount,
+        });
       }
     });
 
     savings.filter(s => s.collected < s.target && s.reminderEnabled !== false).forEach(s => {
       if (isSavingDue(s, config)) {
-        result.push({ id: `saving:${s.id}:${new Date().toISOString().slice(0, 10)}`, type: 'saving', title: s.name, text: 'Waktunya setor tabungan', amount: s.installment || 0, saving: s });
+        result.push({
+          id: `saving:${s.id}:${new Date().toISOString().slice(0, 10)}`,
+          type: 'saving',
+          title: s.name,
+          text: 'Waktunya setor tabungan',
+          amount: s.installment || 0,
+          saving: s,
+        });
       }
     });
 
     return result;
   }, [debts, subscriptions, savings, config]);
 
+  // Hidden hanya mengontrol popup ini. Reminder tetap dianggap belum selesai,
+  // sehingga nanti bisa dibaca oleh sistem notifikasi header.
   useEffect(() => {
     const currentIds = new Set(reminders.map(r => r.id));
-    setDismissed(prev => {
+    setHidden(prev => {
       const next = new Set([...prev].filter(id => currentIds.has(id)));
-      if (next.size !== prev.size) persistDismissed(next);
+      if (next.size !== prev.size) persistHidden(next);
       return next;
     });
   }, [reminders]);
 
-  const dismiss = (id) => {
-    setDismissed(prev => {
+  const active = reminders.filter(r => !hidden.has(r.id));
+  if (!visible || active.length === 0) return null;
+
+  const hideReminder = (id) => {
+    setHidden(prev => {
       const next = new Set(prev).add(id);
-      persistDismissed(next);
+      persistHidden(next);
       return next;
     });
   };
 
-  const active = reminders.filter(r => !dismissed.has(r.id));
-  if (!visible || active.length === 0) return null;
-
   const closeAll = () => {
-    const next = new Set([...dismissed, ...active.map(r => r.id)]);
-    setDismissed(next);
-    persistDismissed(next);
+    const next = new Set([...hidden, ...active.map(r => r.id)]);
+    setHidden(next);
+    persistHidden(next);
     setVisible(false);
+  };
+
+  const openReminder = (item) => {
+    navigate(ROUTES[item.type]);
   };
 
   const updateSaving = (saving, patch) => {
@@ -168,8 +201,16 @@ export default function ReminderCenter() {
                   <p className="text-[10px] text-text-muted">{item.text}</p>
                   {item.amount > 0 && <p className="text-xs font-bold text-text-primary mt-0.5">{formatCurrency(item.amount)}</p>}
                 </div>
-                <button onClick={() => dismiss(item.id)} className="p-1 text-text-muted hover:text-text-primary"><X size={12} /></button>
+                <button onClick={() => hideReminder(item.id)} className="p-1 text-text-muted hover:text-text-primary"><X size={12} /></button>
               </div>
+
+              <button
+                onClick={() => openReminder(item)}
+                className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 transition-colors"
+              >
+                Buka {item.type === 'saving' ? 'Tabungan' : item.type === 'debt' ? 'Hutang' : 'Langganan'}
+                <ArrowRight size={12} />
+              </button>
 
               {item.type === 'saving' && item.saving && (
                 <div className="bg-elevated rounded-xl p-2.5 space-y-2">
