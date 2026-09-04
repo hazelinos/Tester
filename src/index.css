@@ -88,6 +88,15 @@
   scrollbar-color: #3A3A3A #1A1A1A;
 }
 
+/* Hide scrollbar utility */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 /* Smooth transitions */
 .modal-overlay {
   animation: fadeIn 0.15s ease;
