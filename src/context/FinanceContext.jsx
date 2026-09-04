@@ -2,11 +2,12 @@ import { createContext, useContext, useReducer, useEffect, useCallback } from 'r
 import { generateId, isSameMonth } from '../utils/formatters';
 
 const KEYS = {
-  TRANSACTIONS: 'finance_transactions',
-  ACCOUNTS:     'finance_accounts',
-  BUDGETS:      'finance_budgets',
-  SAVINGS:      'finance_savings',
-  DEBTS:        'finance_debts',
+  TRANSACTIONS:  'finance_transactions',
+  ACCOUNTS:      'finance_accounts',
+  BUDGETS:       'finance_budgets',
+  SAVINGS:       'finance_savings',
+  DEBTS:         'finance_debts',
+  SUBSCRIPTIONS: 'finance_subscriptions',
 };
 
 const loadFromStorage = (key, fallback) => {
@@ -25,11 +26,12 @@ const DEFAULT_ACCOUNTS = [
 ];
 
 const initialState = {
-  transactions: loadFromStorage(KEYS.TRANSACTIONS, []),
-  accounts:     loadFromStorage(KEYS.ACCOUNTS, DEFAULT_ACCOUNTS),
-  budgets:      loadFromStorage(KEYS.BUDGETS, []),
-  savings:      loadFromStorage(KEYS.SAVINGS, []),
-  debts:        loadFromStorage(KEYS.DEBTS, []),
+  transactions:  loadFromStorage(KEYS.TRANSACTIONS,  []),
+  accounts:      loadFromStorage(KEYS.ACCOUNTS,      DEFAULT_ACCOUNTS),
+  budgets:       loadFromStorage(KEYS.BUDGETS,       []),
+  savings:       loadFromStorage(KEYS.SAVINGS,       []),
+  debts:         loadFromStorage(KEYS.DEBTS,         []),
+  subscriptions: loadFromStorage(KEYS.SUBSCRIPTIONS, []),
 };
 
 // ─── Reducer ─────────────────────────────────────────────────────
@@ -137,8 +139,13 @@ const reducer = (state, action) => {
       return { ...state, savings, accounts };
     }
 
-    // ── Debts ─────────────────────────────────────────────────
-    case 'ADD_DEBT':
+    // ── Subscriptions ──────────────────────────────────────────
+    case 'ADD_SUBSCRIPTION':
+      return { ...state, subscriptions: [action.payload, ...state.subscriptions] };
+    case 'UPDATE_SUBSCRIPTION':
+      return { ...state, subscriptions: state.subscriptions.map(s => s.id === action.payload.id ? action.payload : s) };
+    case 'DELETE_SUBSCRIPTION':
+      return { ...state, subscriptions: state.subscriptions.filter(s => s.id !== action.payload) };
       return { ...state, debts: [action.payload, ...state.debts] };
 
     case 'UPDATE_DEBT':
@@ -208,6 +215,10 @@ export const FinanceProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem(KEYS.DEBTS, JSON.stringify(state.debts));
   }, [state.debts]);
+
+  useEffect(() => {
+    localStorage.setItem(KEYS.SUBSCRIPTIONS, JSON.stringify(state.subscriptions));
+  }, [state.subscriptions]);
 
   // ─── Actions ───────────────────────────────────────────────────
   const addTransaction = useCallback((data) => {
@@ -306,6 +317,21 @@ export const FinanceProvider = ({ children }) => {
     dispatch({ type: 'DELETE_PAYMENT', payload: { debtId, paymentId } });
   }, []);
 
+  // ─── Subscription actions ──────────────────────────────────────
+  const addSubscription = useCallback((data) => {
+    const sub = { id: generateId(), createdAt: new Date().toISOString(), active: true, ...data, amount: Number(data.amount) };
+    dispatch({ type: 'ADD_SUBSCRIPTION', payload: sub });
+    return sub;
+  }, []);
+
+  const updateSubscription = useCallback((data) => {
+    dispatch({ type: 'UPDATE_SUBSCRIPTION', payload: { ...data, amount: Number(data.amount) } });
+  }, []);
+
+  const deleteSubscription = useCallback((id) => {
+    dispatch({ type: 'DELETE_SUBSCRIPTION', payload: id });
+  }, []);
+
   // ─── Selectors ─────────────────────────────────────────────────
   const getMonthlyTransactions = useCallback(
     (date = new Date()) => state.transactions.filter((t) => isSameMonth(t.date, date)),
@@ -380,6 +406,7 @@ export const FinanceProvider = ({ children }) => {
       setBudget, deleteBudget,
       addSaving, updateSaving, deleteSaving, addDeposit, deleteDeposit,
       addDebt, updateDebt, deleteDebt, addPayment, deletePayment,
+      addSubscription, updateSubscription, deleteSubscription,
       getMonthlyTransactions, getMonthlyIncome, getMonthlyExpense,
       getTotalBalance, getExpenseByCategory, getBudgetUsage, getLast6MonthsData,
     }}>

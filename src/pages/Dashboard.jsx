@@ -1,6 +1,10 @@
 import { useState, useMemo } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
-import { Eye, EyeOff, TrendingUp, TrendingDown, ChevronLeft, ChevronRight, PiggyBank, Target } from 'lucide-react';
+import {
+  Eye, EyeOff, TrendingUp, TrendingDown, ChevronLeft, ChevronRight,
+  PiggyBank, Target, Pencil, Check, X, Landmark, Rss,
+  BarChart3, CreditCard, Receipt, LayoutDashboard,
+} from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
 import { useSettings } from '../context/SettingsContext';
 import { useIsMobile } from '../hooks/useIsMobile';
@@ -10,12 +14,161 @@ import { formatCurrency, formatShortCurrency, getMonthName } from '../utils/form
 import { getCategoryById } from '../constants/categories';
 import clsx from 'clsx';
 
+// ── Semua opsi shortcut yang tersedia ────────────────────────────
+const SHORTCUT_OPTIONS = [
+  { id: '/savings',       label: 'Tabungan',  icon: '🐷', color: '#A8E6CF' },
+  { id: '/budget',        label: 'Budget',    icon: '🎯', color: '#FFD369' },
+  { id: '/debt',          label: 'Hutang',    icon: '🏦', color: '#FF6B6B' },
+  { id: '/subscriptions', label: 'Langganan', icon: '📡', color: '#69B4FF' },
+  { id: '/history',       label: 'Aktivitas', icon: '🧾', color: '#C469FF' },
+  { id: '/report',        label: 'Laporan',   icon: '📊', color: '#6BCF9F' },
+  { id: '/accounts',      label: 'Akun',      icon: '💳', color: '#FFB347' },
+];
+
+const DEFAULT_SHORTCUTS = ['/savings', '/budget', '/debt', '/subscriptions'];
+const STORAGE_KEY = 'dashboard_shortcuts';
+
+const loadShortcuts = () => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : DEFAULT_SHORTCUTS;
+  } catch { return DEFAULT_SHORTCUTS; }
+};
+
+// ── Shortcut Edit Modal ───────────────────────────────────────────
+function ShortcutEditModal({ selected, onSave, onClose }) {
+  const [picks, setPicks] = useState(selected);
+
+  const toggle = (id) => {
+    if (picks.includes(id)) {
+      if (picks.length <= 2) return; // min 2
+      setPicks(picks.filter(p => p !== id));
+    } else {
+      if (picks.length >= 4) return; // max 4
+      setPicks([...picks, id]);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 modal-overlay bg-black/60">
+      <div className="modal-sheet bg-card border border-border rounded-2xl w-full max-w-sm">
+        <div className="flex items-center justify-between p-4 border-b border-border">
+          <h2 className="font-bold text-base text-text-primary">Edit Shortcut</h2>
+          <button onClick={onClose} className="p-1.5 rounded-xl hover:bg-elevated text-text-muted">
+            <X size={16} />
+          </button>
+        </div>
+        <div className="p-4 space-y-3">
+          <p className="text-xs text-text-muted">Pilih 2–4 shortcut untuk ditampilkan di dashboard</p>
+          <div className="grid grid-cols-2 gap-2">
+            {SHORTCUT_OPTIONS.map((opt) => {
+              const isSelected = picks.includes(opt.id);
+              const disabled   = !isSelected && picks.length >= 4;
+              return (
+                <button
+                  key={opt.id}
+                  onClick={() => toggle(opt.id)}
+                  disabled={disabled}
+                  className={clsx(
+                    'flex items-center gap-3 p-3 rounded-xl border transition-all text-left',
+                    isSelected
+                      ? 'border-primary/60 bg-primary/10'
+                      : disabled
+                        ? 'border-border bg-input opacity-40 cursor-not-allowed'
+                        : 'border-border bg-input hover:bg-elevated'
+                  )}
+                >
+                  <span className="text-xl">{opt.icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className={clsx('text-xs font-semibold', isSelected ? 'text-primary' : 'text-text-primary')}>
+                      {opt.label}
+                    </p>
+                  </div>
+                  {isSelected && (
+                    <div className="w-4 h-4 rounded-full bg-primary flex items-center justify-center shrink-0">
+                      <Check size={10} className="text-bg" />
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+          <button
+            onClick={() => { onSave(picks); onClose(); }}
+            className="btn-primary w-full py-3 mt-2"
+          >
+            Simpan
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Render satu shortcut card ─────────────────────────────────────
+function ShortcutCard({ optId, savingsGoals, budgetUsage, overBudget }) {
+  const opt = SHORTCUT_OPTIONS.find(o => o.id === optId);
+  if (!opt) return null;
+
+  // Data dinamis per shortcut
+  let value = '';
+  let sub   = '';
+
+  if (optId === '/savings') {
+    const active = (savingsGoals || []).filter(s => s.collected < s.target).length;
+    const saved  = (savingsGoals || []).reduce((s, g) => s + g.collected, 0);
+    value = formatShortCurrency(saved);
+    sub   = `${active} target aktif`;
+  } else if (optId === '/budget') {
+    value = `${budgetUsage.length} kategori`;
+    sub   = overBudget > 0 ? `${overBudget} melebihi limit` : 'Semua aman';
+  } else if (optId === '/debt') {
+    value = 'Kelola';
+    sub   = 'Hutang & cicilan';
+  } else if (optId === '/subscriptions') {
+    value = 'Kelola';
+    sub   = 'Langganan rutin';
+  } else if (optId === '/history') {
+    value = 'Lihat';
+    sub   = 'Semua aktivitas';
+  } else if (optId === '/report') {
+    value = 'Lihat';
+    sub   = 'Laporan keuangan';
+  } else if (optId === '/accounts') {
+    value = 'Kelola';
+    sub   = 'Daftar akun';
+  }
+
+  return (
+    <Link
+      to={optId}
+      className="bg-card rounded-2xl p-3 border border-border active:bg-elevated transition-colors"
+    >
+      <div className="flex items-center gap-2 mb-2">
+        <div
+          className="w-7 h-7 rounded-lg flex items-center justify-center text-base"
+          style={{ backgroundColor: opt.color + '22' }}
+        >
+          {opt.icon}
+        </div>
+        <span className="text-xs font-semibold text-text-primary">{opt.label}</span>
+      </div>
+      <p className="text-sm font-bold" style={{ color: opt.color }}>{value}</p>
+      <p className="text-[10px] text-text-muted mt-0.5">{sub}</p>
+    </Link>
+  );
+}
+
+// ── Main Page ─────────────────────────────────────────────────────
 export default function Dashboard() {
-  const { openEdit }       = useOutletContext();
-  const { settings }       = useSettings();
-  const mobile             = useIsMobile();
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [balanceVisible, setBalanceVisible] = useState(true);
+  const { openEdit }   = useOutletContext();
+  const { settings }   = useSettings();
+  const mobile         = useIsMobile();
+
+  const [selectedDate,    setSelectedDate]    = useState(new Date());
+  const [balanceVisible,  setBalanceVisible]  = useState(true);
+  const [shortcuts,       setShortcuts]       = useState(loadShortcuts);
+  const [editingShortcut, setEditingShortcut] = useState(false);
 
   const {
     accounts, getMonthlyIncome, getMonthlyExpense,
@@ -23,14 +176,16 @@ export default function Dashboard() {
     savings: savingsGoals, getBudgetUsage,
   } = useFinance();
 
-  const income   = useMemo(() => getMonthlyIncome(selectedDate),    [getMonthlyIncome, selectedDate]);
-  const expense  = useMemo(() => getMonthlyExpense(selectedDate),   [getMonthlyExpense, selectedDate]);
-  const balance  = useMemo(() => getTotalBalance(),                  [getTotalBalance]);
-  const recentTx = useMemo(() => getMonthlyTransactions(selectedDate).slice(0, mobile ? 5 : 8), [getMonthlyTransactions, selectedDate, mobile]);
-  const expByCat = useMemo(() => getExpenseByCategory(selectedDate), [getExpenseByCategory, selectedDate]);
+  const income        = useMemo(() => getMonthlyIncome(selectedDate),    [getMonthlyIncome, selectedDate]);
+  const expense       = useMemo(() => getMonthlyExpense(selectedDate),   [getMonthlyExpense, selectedDate]);
+  const balance       = useMemo(() => getTotalBalance(),                  [getTotalBalance]);
+  const recentTx      = useMemo(() => getMonthlyTransactions(selectedDate).slice(0, mobile ? 5 : 8), [getMonthlyTransactions, selectedDate, mobile]);
+  const expByCat      = useMemo(() => getExpenseByCategory(selectedDate), [getExpenseByCategory, selectedDate]);
+  const budgetUsage   = useMemo(() => getBudgetUsage(selectedDate),       [getBudgetUsage, selectedDate]);
+  const overBudget    = useMemo(() => budgetUsage.filter(b => b.spent > b.amount).length, [budgetUsage]);
 
-  const monthlySavings  = income - expense;
-  const savingsRate     = income > 0 ? Math.round((monthlySavings / income) * 100) : 0;
+  const monthlySavings = income - expense;
+  const savingsRate    = income > 0 ? Math.round((monthlySavings / income) * 100) : 0;
 
   const topCats = useMemo(() =>
     Object.entries(expByCat)
@@ -46,13 +201,12 @@ export default function Dashboard() {
     setSelectedDate(d);
   };
 
-  const monthLabel = `${getMonthName(selectedDate.getMonth())} ${selectedDate.getFullYear()}`;
+  const saveShortcuts = (picks) => {
+    setShortcuts(picks);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(picks));
+  };
 
-  // Shortcut data
-  const activeSavings   = useMemo(() => (savingsGoals || []).filter(s => s.collected < s.target).length, [savingsGoals]);
-  const totalSaved      = useMemo(() => (savingsGoals || []).reduce((s, g) => s + g.collected, 0), [savingsGoals]);
-  const budgetUsage     = useMemo(() => getBudgetUsage(selectedDate), [getBudgetUsage, selectedDate]);
-  const overBudget      = useMemo(() => budgetUsage.filter(b => b.spent > b.amount).length, [budgetUsage]);
+  const monthLabel = `${getMonthName(selectedDate.getMonth())} ${selectedDate.getFullYear()}`;
 
   // ── MOBILE ──────────────────────────────────────────────────
   if (mobile) {
@@ -61,7 +215,6 @@ export default function Dashboard() {
         {/* Balance hero */}
         <div className="px-4 pt-4 pb-3"
           style={{ background: 'linear-gradient(160deg, #1E3A2F 0%, #0F0F0F 100%)' }}>
-          {/* Greeting + month */}
           <div className="flex items-center justify-between mb-3">
             <div>
               <p className="text-xs text-primary/80">Halo, {settings.name} 👋</p>
@@ -78,7 +231,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Total uang */}
           <div className="flex items-center justify-between mb-1">
             <p className="text-xs text-primary/70 font-medium">Total Uang</p>
             <button onClick={() => setBalanceVisible(!balanceVisible)} className="text-primary/60">
@@ -89,10 +241,10 @@ export default function Dashboard() {
             {balanceVisible ? formatCurrency(balance) : 'Rp ••••••'}
           </p>
 
-          {/* Account chips horizontal */}
           <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
             {accounts.map((acc) => (
-              <div key={acc.id} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border shrink-0"
+              <div key={acc.id}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border shrink-0"
                 style={{ borderColor: acc.color + '44', backgroundColor: acc.color + '15' }}>
                 <div className="w-4 h-4 rounded overflow-hidden flex items-center justify-center"
                   style={{ backgroundColor: acc.color + '33' }}>
@@ -108,7 +260,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Income / Expense row */}
+        {/* Income / Expense */}
         <div className="grid grid-cols-2 gap-2 px-4 py-3">
           <div className="bg-card rounded-2xl p-3 border border-income/20">
             <div className="flex items-center gap-1.5 mb-1">
@@ -131,9 +283,10 @@ export default function Dashboard() {
           <div className="mx-4 bg-card rounded-2xl p-3 border border-border mb-3">
             <div className="flex justify-between items-center mb-1.5">
               <span className="text-xs text-text-muted">
-                {monthlySavings >= 0 ? '💰 Saldo Bulan Ini' : '⚠️ Defisit'}
+                {monthlySavings >= 0 ? 'Saldo Bulan Ini' : 'Defisit'}
               </span>
-              <span className="text-xs font-bold" style={{ color: monthlySavings >= 0 ? '#A8E6CF' : '#FF6B6B' }}>
+              <span className="text-xs font-bold"
+                style={{ color: monthlySavings >= 0 ? '#A8E6CF' : '#FF6B6B' }}>
                 {monthlySavings >= 0 ? '+' : ''}{formatShortCurrency(monthlySavings)} ({savingsRate}%)
               </span>
             </div>
@@ -144,34 +297,31 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Shortcut — Tabungan & Budget */}
-        <div className="grid grid-cols-2 gap-2 px-4 mb-3">
-          <Link to="/savings" className="bg-card rounded-2xl p-3 border border-border active:bg-elevated transition-colors">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-7 h-7 rounded-lg bg-primary/15 flex items-center justify-center">
-                <PiggyBank size={14} className="text-primary" />
-              </div>
-              <span className="text-xs font-semibold text-text-primary">Tabungan</span>
-            </div>
-            <p className="text-sm font-bold text-primary">{formatShortCurrency(totalSaved)}</p>
-            <p className="text-[10px] text-text-muted mt-0.5">
-              {activeSavings} target aktif
-            </p>
-          </Link>
-          <Link to="/budget" className="bg-card rounded-2xl p-3 border border-border active:bg-elevated transition-colors">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-7 h-7 rounded-lg bg-expense/10 flex items-center justify-center">
-                <Target size={14} className={overBudget > 0 ? 'text-expense' : 'text-text-secondary'} />
-              </div>
-              <span className="text-xs font-semibold text-text-primary">Budget</span>
-            </div>
-            <p className={clsx('text-sm font-bold', overBudget > 0 ? 'text-expense' : 'text-text-secondary')}>
-              {budgetUsage.length} kategori
-            </p>
-            <p className="text-[10px] text-text-muted mt-0.5">
-              {overBudget > 0 ? `${overBudget} melebihi limit` : 'Semua aman'}
-            </p>
-          </Link>
+        {/* ── Shortcut Grid ──────────────────────── */}
+        <div className="px-4 mb-3">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-semibold text-text-primary">Shortcut</p>
+            <button
+              onClick={() => setEditingShortcut(true)}
+              className="flex items-center gap-1 text-xs text-primary hover:text-primary-dark transition-colors"
+            >
+              <Pencil size={11} /> Edit
+            </button>
+          </div>
+          <div className={clsx(
+            'grid gap-2',
+            shortcuts.length <= 2 ? 'grid-cols-2' : shortcuts.length === 3 ? 'grid-cols-3' : 'grid-cols-2'
+          )}>
+            {shortcuts.map((id) => (
+              <ShortcutCard
+                key={id}
+                optId={id}
+                savingsGoals={savingsGoals}
+                budgetUsage={budgetUsage}
+                overBudget={overBudget}
+              />
+            ))}
+          </div>
         </div>
 
         {/* Top spending */}
@@ -190,7 +340,8 @@ export default function Dashboard() {
                         <span className="text-xs font-semibold text-text-primary">{formatShortCurrency(cat.amount)}</span>
                       </div>
                       <div className="h-1 bg-elevated rounded-full overflow-hidden">
-                        <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: cat.color }} />
+                        <div className="h-full rounded-full"
+                          style={{ width: `${pct}%`, backgroundColor: cat.color }} />
                       </div>
                     </div>
                   </div>
@@ -215,6 +366,15 @@ export default function Dashboard() {
               </div>
           }
         </div>
+
+        {/* Edit shortcut modal */}
+        {editingShortcut && (
+          <ShortcutEditModal
+            selected={shortcuts}
+            onSave={saveShortcuts}
+            onClose={() => setEditingShortcut(false)}
+          />
+        )}
       </div>
     );
   }
@@ -235,7 +395,6 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Balance */}
         <div className="lg:col-span-1 rounded-2xl p-5 border border-primary/20"
           style={{ background: 'linear-gradient(135deg, #1E3A2F, #0F2A1E)' }}>
           <div className="flex items-center justify-between mb-1">
@@ -288,11 +447,27 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Shortcut desktop */}
+      <div className="card space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-text-primary">Shortcut</h3>
+          <button onClick={() => setEditingShortcut(true)}
+            className="flex items-center gap-1 text-xs text-primary hover:text-primary-dark transition-colors">
+            <Pencil size={11} /> Edit
+          </button>
+        </div>
+        <div className="grid grid-cols-4 gap-3">
+          {shortcuts.map((id) => (
+            <ShortcutCard key={id} optId={id} savingsGoals={savingsGoals} budgetUsage={budgetUsage} overBudget={overBudget} />
+          ))}
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="card space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-text-primary">
-              {monthlySavings >= 0 ? '💰 Saldo Bulan Ini' : '⚠️ Defisit'}
+              {monthlySavings >= 0 ? 'Saldo Bulan Ini' : 'Defisit'}
             </h3>
             <span className="text-base font-bold" style={{ color: monthlySavings >= 0 ? '#A8E6CF' : '#FF6B6B' }}>
               {formatCurrency(monthlySavings)}
@@ -346,6 +521,14 @@ export default function Dashboard() {
             </div>
         }
       </div>
+
+      {editingShortcut && (
+        <ShortcutEditModal
+          selected={shortcuts}
+          onSave={saveShortcuts}
+          onClose={() => setEditingShortcut(false)}
+        />
+      )}
     </div>
   );
 }

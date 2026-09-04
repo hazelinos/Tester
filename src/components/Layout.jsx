@@ -3,31 +3,33 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Receipt, CreditCard, Settings,
   Plus, Menu, X, TrendingUp, User,
-  BarChart3, Target, PiggyBank, Landmark,
+  BarChart3, Target, PiggyBank, Landmark, Rss,
 } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
 import TransactionModal from './TransactionModal';
+import { SalaryReminderPopup } from '../pages/Accounts';
 import clsx from 'clsx';
 
 // Desktop sidebar — semua halaman
 const SIDEBAR_ITEMS = [
-  { to: '/',         icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/history',  icon: Receipt,         label: 'Riwayat'   },
-  { to: '/report',   icon: BarChart3,        label: 'Laporan'   },
-  { to: '/budget',   icon: Target,           label: 'Budget'    },
-  { to: '/savings',  icon: PiggyBank,        label: 'Tabungan'  },
-  { to: '/debt',     icon: Landmark,         label: 'Hutang'    },
-  { to: '/accounts', icon: CreditCard,       label: 'Akun'      },
+  { to: '/',             icon: LayoutDashboard, label: 'Dashboard'  },
+  { to: '/history',      icon: Receipt,         label: 'Aktivitas'  },
+  { to: '/report',       icon: BarChart3,        label: 'Laporan'    },
+  { to: '/budget',       icon: Target,           label: 'Budget'     },
+  { to: '/savings',      icon: PiggyBank,        label: 'Tabungan'   },
+  { to: '/debt',         icon: Landmark,         label: 'Hutang'     },
+  { to: '/subscriptions',icon: Rss,           label: 'Langganan'  },
+  { to: '/accounts',     icon: CreditCard,    label: 'Akun'       },
 ];
 
 // Mobile bottom nav — 4 tab permanen: 2 kiri + FAB + 2 kanan
 const LEFT_TABS  = [
-  { to: '/',        icon: LayoutDashboard, label: 'Beranda' },
-  { to: '/history', icon: Receipt,         label: 'Riwayat' },
+  { to: '/',        icon: LayoutDashboard, label: 'Beranda'   },
+  { to: '/history', icon: Receipt,         label: 'Aktivitas' },
 ];
 const RIGHT_TABS = [
-  { to: '/accounts', icon: CreditCard, label: 'Akun'     },
-  { to: '/settings', icon: Settings,   label: 'Setting'  },
+  { to: '/accounts', icon: CreditCard, label: 'Akun'    },
+  { to: '/settings', icon: Settings,   label: 'Setting' },
 ];
 
 const isMobile = () => window.innerWidth < 768;
@@ -162,6 +164,7 @@ export default function Layout() {
             navigateToDebt={goToDebt}
           />
         )}
+        <SalaryReminderPopup />
       </div>
     );
   }
@@ -249,6 +252,7 @@ export default function Layout() {
           navigateToDebt={goToDebt}
         />
       )}
+      <SalaryReminderPopup />
     </div>
   );
 }
