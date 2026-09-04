@@ -1,5 +1,4 @@
 import { useState, useMemo } from 'react';
-import { useState, useMemo } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
 import { Eye, EyeOff, TrendingUp, TrendingDown, ChevronLeft, ChevronRight, PiggyBank, Target } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
