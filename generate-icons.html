@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head><title>Generate Icons</title></head>
+<body>
+<p>Klik tombol untuk generate dan download ikon PWA.</p>
+<canvas id="c" style="display:none"></canvas>
+<br><br>
+<button onclick="generate(192)">Download icon-192.png</button>
+<button onclick="generate(512)">Download icon-512.png</button>
+
+<script>
+function generate(size) {
+  const canvas = document.getElementById('c');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+
+  // Background
+  const r = size * 0.22;
+  ctx.fillStyle = '#1A1A1A';
+  roundRect(ctx, 0, 0, size, size, r);
+  ctx.fill();
+
+  // Inner card
+  ctx.fillStyle = '#1E3A2F';
+  roundRect(ctx, size*0.12, size*0.12, size*0.76, size*0.76, size*0.14);
+  ctx.fill();
+
+  // Emoji
+  ctx.font = `${size * 0.48}px serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('💰', size / 2, size / 2 + size * 0.04);
+
+  // Download
+  const a = document.createElement('a');
+  a.download = `icon-${size}.png`;
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+</script>
+</body>
+</html>
