@@ -146,6 +146,9 @@ const reducer = (state, action) => {
       return { ...state, subscriptions: state.subscriptions.map(s => s.id === action.payload.id ? action.payload : s) };
     case 'DELETE_SUBSCRIPTION':
       return { ...state, subscriptions: state.subscriptions.filter(s => s.id !== action.payload) };
+
+    // ── Debts ────────────────────────────────────────────────────
+    case 'ADD_DEBT':
       return { ...state, debts: [action.payload, ...state.debts] };
 
     case 'UPDATE_DEBT':
