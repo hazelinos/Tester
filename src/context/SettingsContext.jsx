@@ -4,7 +4,7 @@ const DEFAULT_TABS = ['/', '/history', '/budget', '/savings'];
 
 const DEFAULTS = {
   name:       'Pengguna',
-  subtitle:   'Semangat kelola keuanganmu! 👋',
+  subtitle:   'Semangat kelola keuanganmu!',
   avatar:     null,
   bottomTabs: DEFAULT_TABS,
 };
