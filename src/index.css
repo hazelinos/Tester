@@ -31,10 +31,32 @@
     height: 40px;
   }
 
-  /* Hide the old editable greeting text while keeping the edit controls inactive visually. */
-  .px-4.pt-4.pb-3 > .flex.items-center.justify-between.mb-3 > div:first-child > div {
-    visibility: hidden;
-    pointer-events: none;
+  /* Hide the old editable greeting name. */
+  .px-4.pt-4.pb-3 > .flex.items-center.justify-between.mb-3 > div:first-child > div:first-child {
+    display: none;
+  }
+
+  /* Keep the tagline itself editable. */
+  .px-4.pt-4.pb-3 > .flex.items-center.justify-between.mb-3 > div:first-child > div:nth-child(2) {
+    visibility: visible;
+    pointer-events: auto;
+    position: absolute;
+    left: 48px;
+    top: 22px;
+    width: 180px;
+  }
+
+  .px-4.pt-4.pb-3 > .flex.items-center.justify-between.mb-3 > div:first-child > div:nth-child(2) > span {
+    color: #8A8A8A;
+    font-size: 9px;
+    line-height: 13px;
+  }
+
+  .px-4.pt-4.pb-3 > .flex.items-center.justify-between.mb-3 > div:first-child > div:nth-child(2) > input {
+    color: #8A8A8A;
+    font-size: 9px;
+    line-height: 13px;
+    width: 180px;
   }
 
   /* Use the exact same logo asset as desktop. */
@@ -63,19 +85,9 @@
     animation: montraSlideIn .45s ease-out both;
   }
 
-  /* Brand tagline */
+  /* Disable the old static tagline pseudo-element. */
   .px-4.pt-4.pb-3 > .flex.items-center.justify-between.mb-3 > div:first-child > div:nth-child(2)::after {
-    content: 'A simple Money Tracker for your finances.';
-    position: absolute;
-    left: 48px;
-    top: 22px;
-    width: 180px;
-    color: #8A8A8A;
-    font-size: 9px;
-    font-weight: 400;
-    line-height: 13px;
-    visibility: visible;
-    animation: montraSlideIn .55s .08s ease-out both;
+    content: none;
   }
 }
 
