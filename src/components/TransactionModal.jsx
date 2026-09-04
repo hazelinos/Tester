@@ -6,7 +6,7 @@ import { toDateInputValue, formatCurrency } from '../utils/formatters';
 import clsx from 'clsx';
 
 export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
-  const { addTransaction, updateTransaction, deleteTransaction, accounts } = useFinance();
+  const { addTransaction, updateTransaction, deleteTransaction, updateAccount, accounts } = useFinance();
 
   const [type,       setType]       = useState(editTx?.type       || 'expense');
   const [amount,     setAmount]     = useState(editTx?.amount      ? String(editTx.amount) : '');
@@ -16,6 +16,7 @@ export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
   const [date,       setDate]       = useState(editTx?.date        ? toDateInputValue(editTx.date) : toDateInputValue(new Date()));
 
   const isEdit = !!editTx;
+  const isSalarySetup = !isEdit && type === 'income' && categoryId === 'salary';
 
   useEffect(() => {
     if (!isEdit) {
@@ -29,7 +30,6 @@ export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
   const numAmount   = parseFloat(amount) || 0;
   const accentColor = type === 'income' ? '#A8E6CF' : '#FF6B6B';
 
-  // ── Validasi saldo ──────────────────────────────────────────
   const balanceError = useMemo(() => {
     if (type !== 'expense' || !numAmount || !selectedAcc) return null;
     const oldAmount = (isEdit && editTx?.type === 'expense' && editTx?.accountId === accountId)
@@ -43,6 +43,22 @@ export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
 
   const handleSave = () => {
     if (!isValid) return;
+
+    // Gaji baru adalah jadwal recurring, bukan transaksi hari ini.
+    // Transaksi aktual dibuat oleh SalaryReminderPopup saat tanggal gajian tiba.
+    if (isSalarySetup) {
+      if (!selectedAcc) return;
+      const salaryDate = new Date(`${date}T12:00:00`).getDate();
+      updateAccount({
+        ...selectedAcc,
+        salaryEnabled: true,
+        salaryAmount: numAmount,
+        salaryDate,
+      });
+      onClose();
+      return;
+    }
+
     const data = { type, amount: numAmount, categoryId, accountId, note: note.trim(), date: new Date(date).toISOString() };
     if (isEdit) updateTransaction({ ...editTx, ...data });
     else addTransaction(data);
@@ -59,7 +75,6 @@ export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay bg-black/60">
       <div className="modal-sheet bg-card border border-border rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-        {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-border">
           <h2 className="font-bold text-lg text-text-primary">
             {isEdit ? 'Edit Transaksi' : 'Tambah Transaksi'}
@@ -77,7 +92,6 @@ export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
         </div>
 
         <div className="p-5 space-y-5">
-          {/* Type Toggle */}
           <div className="grid grid-cols-2 gap-2 bg-bg rounded-xl p-1">
             {['expense', 'income'].map((t) => (
               <button
@@ -95,7 +109,6 @@ export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
             ))}
           </div>
 
-          {/* Amount */}
           <div>
             <label className="text-xs text-text-muted mb-1.5 block">Jumlah</label>
             <div className={clsx(
@@ -115,7 +128,6 @@ export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
             </div>
           </div>
 
-          {/* ── Error saldo tidak cukup ───────────── */}
           {balanceError && (
             <div className="bg-expense/10 border border-expense/30 rounded-xl p-3 space-y-2">
               <div className="flex items-start gap-2">
@@ -141,7 +153,6 @@ export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
             </div>
           )}
 
-          {/* Category */}
           <div>
             <label className="text-xs text-text-muted mb-2 block">Kategori</label>
             <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto pr-1">
@@ -164,7 +175,6 @@ export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
             </div>
           </div>
 
-          {/* Account */}
           <div>
             <label className="text-xs text-text-muted mb-2 block">Akun</label>
             <div className="flex gap-2 flex-wrap">
@@ -191,28 +201,28 @@ export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
             </div>
           </div>
 
-          {/* Note */}
           <div>
             <label className="text-xs text-text-muted mb-1.5 block">Catatan (opsional)</label>
             <input type="text" value={note} onChange={(e) => setNote(e.target.value)}
               placeholder="Tambah catatan..." maxLength={100} className="input" />
           </div>
 
-          {/* Date */}
           <div>
-            <label className="text-xs text-text-muted mb-1.5 block">Tanggal</label>
+            <label className="text-xs text-text-muted mb-1.5 block">{isSalarySetup ? 'Tanggal Gajian' : 'Tanggal'}</label>
             <input type="date" value={date} onChange={(e) => setDate(e.target.value)}
               className="input [color-scheme:dark]" />
+            {isSalarySetup && (
+              <p className="text-xs text-text-muted mt-1.5">Gaji akan dicatat otomatis setiap bulan pada tanggal ini.</p>
+            )}
           </div>
 
-          {/* Save button */}
           <button
             onClick={handleSave}
             disabled={!isValid}
             className="btn-primary w-full py-3 text-sm"
             style={isValid ? { backgroundColor: accentColor } : {}}
           >
-            {isEdit ? 'Simpan Perubahan' : 'Simpan Transaksi'}
+            {isSalarySetup ? 'Simpan Jadwal Gaji' : isEdit ? 'Simpan Perubahan' : 'Simpan Transaksi'}
           </button>
         </div>
       </div>
