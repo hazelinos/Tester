@@ -4,6 +4,7 @@ import { useFinance } from '../context/FinanceContext';
 import { formatCurrency } from '../utils/formatters';
 
 const STORAGE_KEY = 'finance_reminder_settings';
+const DISMISSED_KEY = 'finance_reminder_dismissed';
 const DEFAULTS = { leadDays: 3, savingsDefault: 'daily' };
 
 const SAVING_PATTERNS = [
@@ -26,6 +27,15 @@ const readSettings = () => {
   }
 };
 
+const readDismissed = () => {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(DISMISSED_KEY)) || []);
+  } catch {
+    return new Set();
+  }
+};
+
+const persistDismissed = (set) => localStorage.setItem(DISMISSED_KEY, JSON.stringify([...set]));
 const saveSettings = (value) => localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
 
 const daysUntil = (date) => {
@@ -58,7 +68,7 @@ export default function ReminderCenter() {
   const { debts, subscriptions, savings } = useFinance();
   const [config, setConfig] = useState(readSettings);
   const [visible, setVisible] = useState(true);
-  const [dismissed, setDismissed] = useState(() => new Set());
+  const [dismissed, setDismissed] = useState(readDismissed);
 
   const reminders = useMemo(() => {
     const result = [];
@@ -96,13 +106,30 @@ export default function ReminderCenter() {
 
   useEffect(() => {
     const currentIds = new Set(reminders.map(r => r.id));
-    setDismissed(prev => new Set([...prev].filter(id => currentIds.has(id))));
+    setDismissed(prev => {
+      const next = new Set([...prev].filter(id => currentIds.has(id)));
+      if (next.size !== prev.size) persistDismissed(next);
+      return next;
+    });
   }, [reminders]);
+
+  const dismiss = (id) => {
+    setDismissed(prev => {
+      const next = new Set(prev).add(id);
+      persistDismissed(next);
+      return next;
+    });
+  };
 
   const active = reminders.filter(r => !dismissed.has(r.id));
   if (!visible || active.length === 0) return null;
 
-  const closeAll = () => setVisible(false);
+  const closeAll = () => {
+    const next = new Set([...dismissed, ...active.map(r => r.id)]);
+    setDismissed(next);
+    persistDismissed(next);
+    setVisible(false);
+  };
 
   const updateSaving = (saving, patch) => {
     const next = { ...saving, ...patch };
@@ -141,7 +168,7 @@ export default function ReminderCenter() {
                   <p className="text-[10px] text-text-muted">{item.text}</p>
                   {item.amount > 0 && <p className="text-xs font-bold text-text-primary mt-0.5">{formatCurrency(item.amount)}</p>}
                 </div>
-                <button onClick={() => setDismissed(prev => new Set(prev).add(item.id))} className="p-1 text-text-muted hover:text-text-primary"><X size={12} /></button>
+                <button onClick={() => dismiss(item.id)} className="p-1 text-text-muted hover:text-text-primary"><X size={12} /></button>
               </div>
 
               {item.type === 'saving' && item.saving && (
