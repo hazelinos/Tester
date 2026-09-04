@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import {
-  LayoutDashboard, Receipt, CreditCard, Settings,
+  LayoutDashboard, CreditCard, Settings,
   Plus, Menu, X, TrendingUp, User,
   BarChart3, Target, PiggyBank, Landmark, Rss,
 } from 'lucide-react';
@@ -13,7 +13,7 @@ import clsx from 'clsx';
 // Desktop sidebar — semua halaman
 const SIDEBAR_ITEMS = [
   { to: '/',             icon: LayoutDashboard, label: 'Dashboard'  },
-  { to: '/history',      icon: Receipt,         label: 'Aktivitas'  },
+  { to: '/history',      icon: BarChart3,        label: 'Aktivitas'  },
   { to: '/report',       icon: BarChart3,        label: 'Laporan'    },
   { to: '/budget',       icon: Target,           label: 'Budget'     },
   { to: '/savings',      icon: PiggyBank,        label: 'Tabungan'   },
@@ -25,7 +25,7 @@ const SIDEBAR_ITEMS = [
 // Mobile bottom nav — 4 tab permanen: 2 kiri + FAB + 2 kanan
 const LEFT_TABS  = [
   { to: '/',        icon: LayoutDashboard, label: 'Beranda'   },
-  { to: '/history', icon: Receipt,         label: 'Aktivitas' },
+  { to: '/history', icon: BarChart3,        label: 'Aktivitas' },
 ];
 const RIGHT_TABS = [
   { to: '/accounts', icon: CreditCard, label: 'Akun'    },
