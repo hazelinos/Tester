@@ -6,6 +6,7 @@ import './index.css'
 import { FinanceProvider } from './context/FinanceContext'
 import { SettingsProvider } from './context/SettingsContext'
 import Layout        from './components/Layout'
+import SalaryTransactionBridge from './components/SalaryTransactionBridge'
 import Dashboard     from './pages/Dashboard'
 import History       from './pages/History'
 import Report        from './pages/Report'
@@ -20,6 +21,7 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <SettingsProvider>
       <FinanceProvider>
+        <SalaryTransactionBridge />
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Layout />}>
