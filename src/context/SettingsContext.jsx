@@ -14,7 +14,14 @@ const STORAGE_KEY = 'finance_settings';
 const load = () => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? { ...DEFAULTS, ...JSON.parse(raw) } : DEFAULTS;
+    if (!raw) return DEFAULTS;
+    const saved = JSON.parse(raw);
+    // Migrate the previous default subtitle so the emoji is removed automatically.
+    if (saved.subtitle === 'Semangat kelola keuanganmu! 👋') {
+      saved.subtitle = DEFAULTS.subtitle;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+    }
+    return { ...DEFAULTS, ...saved };
   } catch {
     return DEFAULTS;
   }
