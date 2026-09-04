@@ -1,29 +1,34 @@
 import { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import {
-  LayoutDashboard, Receipt, BarChart3, Target, CreditCard,
-  Plus, Menu, X, TrendingUp, Settings, User, PiggyBank, Landmark,
+  LayoutDashboard, Receipt, CreditCard, Settings,
+  Plus, Menu, X, TrendingUp, User,
+  BarChart3, Target, PiggyBank, Landmark,
 } from 'lucide-react';
-import { useSettings, ALL_NAV_OPTIONS } from '../context/SettingsContext';
+import { useSettings } from '../context/SettingsContext';
 import TransactionModal from './TransactionModal';
 import clsx from 'clsx';
 
-// Map route id → lucide icon
-const ICON_MAP = {
-  '/':         LayoutDashboard,
-  '/history':  Receipt,
-  '/report':   BarChart3,
-  '/budget':   Target,
-  '/savings':  PiggyBank,
-  '/debt':     Landmark,
-  '/accounts': CreditCard,
-  '/settings': Settings,
-};
+// Desktop sidebar — semua halaman
+const SIDEBAR_ITEMS = [
+  { to: '/',         icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/history',  icon: Receipt,         label: 'Riwayat'   },
+  { to: '/report',   icon: BarChart3,        label: 'Laporan'   },
+  { to: '/budget',   icon: Target,           label: 'Budget'    },
+  { to: '/savings',  icon: PiggyBank,        label: 'Tabungan'  },
+  { to: '/debt',     icon: Landmark,         label: 'Hutang'    },
+  { to: '/accounts', icon: CreditCard,       label: 'Akun'      },
+];
 
-const ALL_NAV_ITEMS = ALL_NAV_OPTIONS.map((o) => ({
-  ...o,
-  icon: ICON_MAP[o.id] || LayoutDashboard,
-}));
+// Mobile bottom nav — 4 tab permanen: 2 kiri + FAB + 2 kanan
+const LEFT_TABS  = [
+  { to: '/',        icon: LayoutDashboard, label: 'Beranda' },
+  { to: '/history', icon: Receipt,         label: 'Riwayat' },
+];
+const RIGHT_TABS = [
+  { to: '/accounts', icon: CreditCard, label: 'Akun'     },
+  { to: '/settings', icon: Settings,   label: 'Setting'  },
+];
 
 const isMobile = () => window.innerWidth < 768;
 
@@ -39,8 +44,7 @@ export default function Layout() {
     const handle = () => {
       const m = isMobile();
       setMobile(m);
-      if (!m) setSidebarOpen(true);
-      else setSidebarOpen(false);
+      setSidebarOpen(!m);
     };
     window.addEventListener('resize', handle);
     return () => window.removeEventListener('resize', handle);
@@ -50,16 +54,11 @@ export default function Layout() {
   const openEdit = (tx) => { setEditTx(tx); setShowModal(true); };
   const goToDebt = () => navigate('/debt');
 
-  // Resolve tabs dari settings (default 4)
-  const tabIds   = settings.bottomTabs || ['/', '/history', '/report', '/budget'];
-  const leftTabs  = tabIds.slice(0, 2).map((id) => ALL_NAV_ITEMS.find((n) => n.id === id)).filter(Boolean);
-  const rightTabs = tabIds.slice(2, 4).map((id) => ALL_NAV_ITEMS.find((n) => n.id === id)).filter(Boolean);
-
   // ── MOBILE ──────────────────────────────────────────────────
   if (mobile) {
     return (
       <div className="flex flex-col h-screen bg-bg overflow-hidden">
-        {/* Top header */}
+        {/* Top header — hanya logo + avatar */}
         <header className="flex items-center justify-between px-4 h-12 bg-card border-b border-border shrink-0 z-10">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-lg bg-primary/20 flex items-center justify-center">
@@ -67,20 +66,14 @@ export default function Layout() {
             </div>
             <span className="font-bold text-text-primary text-sm">FinanceApp</span>
           </div>
-          <div className="flex items-center gap-1">
-            <NavLink to="/settings"
-              className={({ isActive }) => clsx(
-                'p-1.5 rounded-xl transition-colors',
-                isActive ? 'text-primary' : 'text-text-muted'
-              )}>
-              <Settings size={17} />
-            </NavLink>
-            <div className="w-7 h-7 rounded-full overflow-hidden border border-border bg-elevated flex items-center justify-center ml-1">
+          {/* Avatar saja — tanpa icon setting */}
+          <NavLink to="/settings">
+            <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-border bg-elevated flex items-center justify-center">
               {settings.avatar
                 ? <img src={settings.avatar} alt="avatar" className="w-full h-full object-cover" />
-                : <User size={13} className="text-text-muted" />}
+                : <User size={14} className="text-text-muted" />}
             </div>
-          </div>
+          </NavLink>
         </header>
 
         {/* Content */}
@@ -88,16 +81,18 @@ export default function Layout() {
           <Outlet context={{ openEdit }} />
         </main>
 
-        {/* ── Bottom Navigation ────────────────────── */}
-        <nav className="shrink-0 bg-card border-t border-border z-20 relative"
-          style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        {/* ── Bottom Navigation ─────────────────── */}
+        <nav
+          className="shrink-0 bg-card border-t border-border z-20"
+          style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+        >
           <div className="flex items-end justify-around px-2 h-16">
 
             {/* Left 2 tabs */}
-            {leftTabs.map(({ id, icon: Icon, label }) => (
-              <NavLink key={id} to={id} end={id === '/'}
+            {LEFT_TABS.map(({ to, icon: Icon, label }) => (
+              <NavLink key={to} to={to} end={to === '/'}
                 className={({ isActive }) => clsx(
-                  'flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all flex-1',
+                  'flex flex-col items-center gap-0.5 py-2 px-3 transition-all flex-1',
                   isActive ? 'text-primary' : 'text-text-muted'
                 )}
               >
@@ -116,20 +111,20 @@ export default function Layout() {
             ))}
 
             {/* ── FAB Tengah ─────────────────────── */}
-            <div className="flex flex-col items-center flex-1 relative" style={{ marginBottom: 4 }}>
-              <button
-                onClick={openAdd}
-                className="flex flex-col items-center gap-0.5 group"
-              >
-                {/* Elevated circle dengan shadow + gradient */}
+            <div className="flex flex-col items-center flex-1">
+              <button onClick={openAdd} className="flex flex-col items-center gap-0.5">
                 <div className="relative -mt-5">
-                  {/* Glow effect */}
-                  <div className="absolute inset-0 rounded-full blur-md opacity-60"
-                    style={{ background: 'radial-gradient(circle, #A8E6CF, #6BCF9F)', transform: 'scale(1.3)' }} />
-                  {/* Button */}
-                  <div className="relative w-14 h-14 rounded-full flex items-center justify-center shadow-xl"
-                    style={{ background: 'linear-gradient(135deg, #A8E6CF, #6BCF9F)' }}>
-                    <Plus size={26} className="text-bg font-black" strokeWidth={3} />
+                  {/* Glow */}
+                  <div
+                    className="absolute inset-0 rounded-full blur-md opacity-50"
+                    style={{ background: 'radial-gradient(circle, #A8E6CF, #6BCF9F)', transform: 'scale(1.4)' }}
+                  />
+                  {/* Circle */}
+                  <div
+                    className="relative w-14 h-14 rounded-full flex items-center justify-center shadow-xl"
+                    style={{ background: 'linear-gradient(135deg, #A8E6CF, #6BCF9F)' }}
+                  >
+                    <Plus size={28} className="text-bg" strokeWidth={2.5} />
                   </div>
                 </div>
                 <span className="text-[10px] font-semibold text-primary mt-1 leading-none">Tambah</span>
@@ -137,10 +132,10 @@ export default function Layout() {
             </div>
 
             {/* Right 2 tabs */}
-            {rightTabs.map(({ id, icon: Icon, label }) => (
-              <NavLink key={id} to={id} end={id === '/'}
+            {RIGHT_TABS.map(({ to, icon: Icon, label }) => (
+              <NavLink key={to} to={to} end={to === '/'}
                 className={({ isActive }) => clsx(
-                  'flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all flex-1',
+                  'flex flex-col items-center gap-0.5 py-2 px-3 transition-all flex-1',
                   isActive ? 'text-primary' : 'text-text-muted'
                 )}
               >
@@ -186,8 +181,8 @@ export default function Layout() {
         </div>
 
         <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
-          {ALL_NAV_ITEMS.filter(n => n.id !== '/settings').map(({ id, icon: Icon, label }) => (
-            <NavLink key={id} to={id} end={id === '/'}
+          {SIDEBAR_ITEMS.map(({ to, icon: Icon, label }) => (
+            <NavLink key={to} to={to} end={to === '/'}
               className={({ isActive }) => clsx('nav-item', isActive && 'nav-item-active')}
               title={!sidebarOpen ? label : undefined}>
               <Icon size={18} className="shrink-0" />
@@ -217,7 +212,10 @@ export default function Layout() {
               {sidebarOpen && <span>Pengaturan</span>}
             </NavLink>
           </div>
-          <div className={clsx('flex items-center gap-3 px-3 py-3 border-t border-border', !sidebarOpen && 'justify-center')}>
+          <div className={clsx(
+            'flex items-center gap-3 px-3 py-3 border-t border-border',
+            !sidebarOpen && 'justify-center'
+          )}>
             <div className="w-8 h-8 rounded-full overflow-hidden border border-border bg-elevated flex items-center justify-center shrink-0">
               {settings.avatar
                 ? <img src={settings.avatar} alt="avatar" className="w-full h-full object-cover" />

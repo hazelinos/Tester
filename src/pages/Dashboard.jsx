@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
-import { Eye, EyeOff, TrendingUp, TrendingDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Eye, EyeOff, TrendingUp, TrendingDown, ChevronLeft, ChevronRight, PiggyBank, Target } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
 import { useSettings } from '../context/SettingsContext';
 import { useIsMobile } from '../hooks/useIsMobile';
@@ -8,6 +9,7 @@ import TransactionItem from '../components/TransactionItem';
 import EmptyState from '../components/EmptyState';
 import { formatCurrency, formatShortCurrency, getMonthName } from '../utils/formatters';
 import { getCategoryById } from '../constants/categories';
+import clsx from 'clsx';
 
 export default function Dashboard() {
   const { openEdit }       = useOutletContext();
@@ -19,6 +21,7 @@ export default function Dashboard() {
   const {
     accounts, getMonthlyIncome, getMonthlyExpense,
     getTotalBalance, getMonthlyTransactions, getExpenseByCategory,
+    savings, budgets, getBudgetUsage,
   } = useFinance();
 
   const income   = useMemo(() => getMonthlyIncome(selectedDate),    [getMonthlyIncome, selectedDate]);
@@ -45,6 +48,13 @@ export default function Dashboard() {
   };
 
   const monthLabel = `${getMonthName(selectedDate.getMonth())} ${selectedDate.getFullYear()}`;
+
+  // Shortcut data
+  const activeSavings   = useMemo(() => (savings || []).filter(s => s.collected < s.target).length, [savings]);
+  const totalSavingGoal = useMemo(() => (savings || []).reduce((s, g) => s + g.target, 0), [savings]);
+  const totalSaved      = useMemo(() => (savings || []).reduce((s, g) => s + g.collected, 0), [savings]);
+  const budgetUsage     = useMemo(() => getBudgetUsage(selectedDate), [getBudgetUsage, selectedDate]);
+  const overBudget      = useMemo(() => budgetUsage.filter(b => b.spent > b.amount).length, [budgetUsage]);
 
   // ── MOBILE ──────────────────────────────────────────────────
   if (mobile) {
@@ -135,6 +145,36 @@ export default function Dashboard() {
             </div>
           </div>
         )}
+
+        {/* Shortcut — Tabungan & Budget */}
+        <div className="grid grid-cols-2 gap-2 px-4 mb-3">
+          <Link to="/savings" className="bg-card rounded-2xl p-3 border border-border active:bg-elevated transition-colors">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-7 h-7 rounded-lg bg-primary/15 flex items-center justify-center">
+                <PiggyBank size={14} className="text-primary" />
+              </div>
+              <span className="text-xs font-semibold text-text-primary">Tabungan</span>
+            </div>
+            <p className="text-sm font-bold text-primary">{formatShortCurrency(totalSaved)}</p>
+            <p className="text-[10px] text-text-muted mt-0.5">
+              {activeSavings} target aktif
+            </p>
+          </Link>
+          <Link to="/budget" className="bg-card rounded-2xl p-3 border border-border active:bg-elevated transition-colors">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-7 h-7 rounded-lg bg-expense/10 flex items-center justify-center">
+                <Target size={14} className={overBudget > 0 ? 'text-expense' : 'text-text-secondary'} />
+              </div>
+              <span className="text-xs font-semibold text-text-primary">Budget</span>
+            </div>
+            <p className={clsx('text-sm font-bold', overBudget > 0 ? 'text-expense' : 'text-text-secondary')}>
+              {budgetUsage.length} kategori
+            </p>
+            <p className="text-[10px] text-text-muted mt-0.5">
+              {overBudget > 0 ? `${overBudget} melebihi limit` : 'Semua aman'}
+            </p>
+          </Link>
+        </div>
 
         {/* Top spending */}
         {topCats.length > 0 && (
