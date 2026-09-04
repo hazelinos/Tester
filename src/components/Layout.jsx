@@ -4,27 +4,26 @@ import {
   LayoutDashboard, Receipt, BarChart3, Target, CreditCard,
   Plus, Menu, X, TrendingUp, Settings, User, PiggyBank, Landmark,
 } from 'lucide-react';
-import { useSettings } from '../context/SettingsContext';
+import { useSettings, ALL_NAV_OPTIONS } from '../context/SettingsContext';
 import TransactionModal from './TransactionModal';
 import clsx from 'clsx';
 
-const NAV_ITEMS = [
-  { to: '/',         icon: LayoutDashboard, label: 'Beranda'  },
-  { to: '/history',  icon: Receipt,         label: 'Riwayat'  },
-  { to: '/report',   icon: BarChart3,        label: 'Laporan'  },
-  { to: '/budget',   icon: Target,           label: 'Budget'   },
-  { to: '/savings',  icon: PiggyBank,        label: 'Tabungan' },
-  { to: '/debt',     icon: Landmark,         label: 'Hutang'   },
-  { to: '/accounts', icon: CreditCard,       label: 'Akun'     },
-];
+// Map route id → lucide icon
+const ICON_MAP = {
+  '/':         LayoutDashboard,
+  '/history':  Receipt,
+  '/report':   BarChart3,
+  '/budget':   Target,
+  '/savings':  PiggyBank,
+  '/debt':     Landmark,
+  '/accounts': CreditCard,
+  '/settings': Settings,
+};
 
-// Tab yang tampil di bottom nav mobile (max 4 + FAB tengah)
-const BOTTOM_TABS = [
-  { to: '/',        icon: LayoutDashboard, label: 'Beranda'  },
-  { to: '/history', icon: Receipt,         label: 'Riwayat'  },
-  { to: '/report',  icon: BarChart3,        label: 'Laporan'  },
-  { to: '/budget',  icon: Target,           label: 'Budget'   },
-];
+const ALL_NAV_ITEMS = ALL_NAV_OPTIONS.map((o) => ({
+  ...o,
+  icon: ICON_MAP[o.id] || LayoutDashboard,
+}));
 
 const isMobile = () => window.innerWidth < 768;
 
@@ -32,7 +31,6 @@ export default function Layout() {
   const [mobile,      setMobile]      = useState(isMobile);
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile());
   const [showModal,   setShowModal]   = useState(false);
-  const [showMore,    setShowMore]    = useState(false);
   const [editTx,      setEditTx]      = useState(null);
   const { settings }                  = useSettings();
   const navigate                      = useNavigate();
@@ -41,7 +39,7 @@ export default function Layout() {
     const handle = () => {
       const m = isMobile();
       setMobile(m);
-      if (!m) { setSidebarOpen(true); setShowMore(false); }
+      if (!m) setSidebarOpen(true);
       else setSidebarOpen(false);
     };
     window.addEventListener('resize', handle);
@@ -52,7 +50,12 @@ export default function Layout() {
   const openEdit = (tx) => { setEditTx(tx); setShowModal(true); };
   const goToDebt = () => navigate('/debt');
 
-  // ── MOBILE LAYOUT ──────────────────────────────────────────
+  // Resolve tabs dari settings (default 4)
+  const tabIds   = settings.bottomTabs || ['/', '/history', '/report', '/budget'];
+  const leftTabs  = tabIds.slice(0, 2).map((id) => ALL_NAV_ITEMS.find((n) => n.id === id)).filter(Boolean);
+  const rightTabs = tabIds.slice(2, 4).map((id) => ALL_NAV_ITEMS.find((n) => n.id === id)).filter(Boolean);
+
+  // ── MOBILE ──────────────────────────────────────────────────
   if (mobile) {
     return (
       <div className="flex flex-col h-screen bg-bg overflow-hidden">
@@ -67,17 +70,15 @@ export default function Layout() {
           <div className="flex items-center gap-1">
             <NavLink to="/settings"
               className={({ isActive }) => clsx(
-                'p-2 rounded-xl transition-colors',
-                isActive ? 'text-primary' : 'text-text-muted hover:text-text-secondary'
+                'p-1.5 rounded-xl transition-colors',
+                isActive ? 'text-primary' : 'text-text-muted'
               )}>
-              <Settings size={18} />
+              <Settings size={17} />
             </NavLink>
-            {/* Avatar */}
-            <div className="w-7 h-7 rounded-full overflow-hidden border border-border bg-elevated flex items-center justify-center">
+            <div className="w-7 h-7 rounded-full overflow-hidden border border-border bg-elevated flex items-center justify-center ml-1">
               {settings.avatar
                 ? <img src={settings.avatar} alt="avatar" className="w-full h-full object-cover" />
-                : <User size={13} className="text-text-muted" />
-              }
+                : <User size={13} className="text-text-muted" />}
             </div>
           </div>
         </header>
@@ -88,13 +89,15 @@ export default function Layout() {
         </main>
 
         {/* ── Bottom Navigation ────────────────────── */}
-        <nav className="shrink-0 bg-card border-t border-border z-20"
+        <nav className="shrink-0 bg-card border-t border-border z-20 relative"
           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-          <div className="flex items-center justify-around px-1 h-14 relative">
-            {BOTTOM_TABS.map(({ to, icon: Icon, label }) => (
-              <NavLink key={to} to={to} end={to === '/'}
+          <div className="flex items-end justify-around px-2 h-16">
+
+            {/* Left 2 tabs */}
+            {leftTabs.map(({ id, icon: Icon, label }) => (
+              <NavLink key={id} to={id} end={id === '/'}
                 className={({ isActive }) => clsx(
-                  'flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl transition-all flex-1',
+                  'flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all flex-1',
                   isActive ? 'text-primary' : 'text-text-muted'
                 )}
               >
@@ -106,62 +109,55 @@ export default function Layout() {
                     )}>
                       <Icon size={19} />
                     </div>
-                    <span className="text-[10px] font-medium">{label}</span>
+                    <span className="text-[10px] font-medium leading-none">{label}</span>
                   </>
                 )}
               </NavLink>
             ))}
 
-            {/* FAB tengah — Tambah */}
-            <button
-              onClick={openAdd}
-              className="flex flex-col items-center gap-0.5 px-3 py-1 flex-1"
-            >
-              <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center shadow-lg -mt-4">
-                <Plus size={22} className="text-bg font-bold" />
-              </div>
-              <span className="text-[10px] font-medium text-primary mt-0.5">Tambah</span>
-            </button>
-
-            {/* More menu */}
-            <button
-              onClick={() => setShowMore(!showMore)}
-              className={clsx(
-                'flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl transition-all flex-1',
-                showMore ? 'text-primary' : 'text-text-muted'
-              )}
-            >
-              <div className={clsx('w-8 h-8 rounded-xl flex items-center justify-center transition-all', showMore && 'bg-primary/15')}>
-                <Menu size={19} />
-              </div>
-              <span className="text-[10px] font-medium">Lainnya</span>
-            </button>
-          </div>
-
-          {/* More drawer */}
-          {showMore && (
-            <div className="border-t border-border bg-card px-4 py-3 grid grid-cols-3 gap-2"
-              style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}>
-              {[
-                { to: '/savings',  icon: PiggyBank, label: 'Tabungan' },
-                { to: '/debt',     icon: Landmark,  label: 'Hutang'   },
-                { to: '/accounts', icon: CreditCard, label: 'Akun'    },
-              ].map(({ to, icon: Icon, label }) => (
-                <NavLink key={to} to={to}
-                  onClick={() => setShowMore(false)}
-                  className={({ isActive }) => clsx(
-                    'flex flex-col items-center gap-1 py-2 rounded-xl border transition-all',
-                    isActive
-                      ? 'border-primary/40 bg-primary/10 text-primary'
-                      : 'border-border bg-elevated text-text-secondary hover:text-text-primary'
-                  )}
-                >
-                  <Icon size={18} />
-                  <span className="text-xs font-medium">{label}</span>
-                </NavLink>
-              ))}
+            {/* ── FAB Tengah ─────────────────────── */}
+            <div className="flex flex-col items-center flex-1 relative" style={{ marginBottom: 4 }}>
+              <button
+                onClick={openAdd}
+                className="flex flex-col items-center gap-0.5 group"
+              >
+                {/* Elevated circle dengan shadow + gradient */}
+                <div className="relative -mt-5">
+                  {/* Glow effect */}
+                  <div className="absolute inset-0 rounded-full blur-md opacity-60"
+                    style={{ background: 'radial-gradient(circle, #A8E6CF, #6BCF9F)', transform: 'scale(1.3)' }} />
+                  {/* Button */}
+                  <div className="relative w-14 h-14 rounded-full flex items-center justify-center shadow-xl"
+                    style={{ background: 'linear-gradient(135deg, #A8E6CF, #6BCF9F)' }}>
+                    <Plus size={26} className="text-bg font-black" strokeWidth={3} />
+                  </div>
+                </div>
+                <span className="text-[10px] font-semibold text-primary mt-1 leading-none">Tambah</span>
+              </button>
             </div>
-          )}
+
+            {/* Right 2 tabs */}
+            {rightTabs.map(({ id, icon: Icon, label }) => (
+              <NavLink key={id} to={id} end={id === '/'}
+                className={({ isActive }) => clsx(
+                  'flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all flex-1',
+                  isActive ? 'text-primary' : 'text-text-muted'
+                )}
+              >
+                {({ isActive }) => (
+                  <>
+                    <div className={clsx(
+                      'w-8 h-8 rounded-xl flex items-center justify-center transition-all',
+                      isActive && 'bg-primary/15'
+                    )}>
+                      <Icon size={19} />
+                    </div>
+                    <span className="text-[10px] font-medium leading-none">{label}</span>
+                  </>
+                )}
+              </NavLink>
+            ))}
+          </div>
         </nav>
 
         {showModal && (
@@ -175,7 +171,7 @@ export default function Layout() {
     );
   }
 
-  // ── DESKTOP LAYOUT ─────────────────────────────────────────
+  // ── DESKTOP ──────────────────────────────────────────────────
   return (
     <div className="flex h-screen bg-bg overflow-hidden">
       <aside className={clsx(
@@ -190,11 +186,10 @@ export default function Layout() {
         </div>
 
         <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
-          {NAV_ITEMS.map(({ to, icon: Icon, label }) => (
-            <NavLink key={to} to={to} end={to === '/'}
+          {ALL_NAV_ITEMS.filter(n => n.id !== '/settings').map(({ id, icon: Icon, label }) => (
+            <NavLink key={id} to={id} end={id === '/'}
               className={({ isActive }) => clsx('nav-item', isActive && 'nav-item-active')}
-              title={!sidebarOpen ? label : undefined}
-            >
+              title={!sidebarOpen ? label : undefined}>
               <Icon size={18} className="shrink-0" />
               {sidebarOpen && <span>{label}</span>}
             </NavLink>
@@ -231,7 +226,9 @@ export default function Layout() {
             {sidebarOpen && (
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold text-text-primary truncate">{settings.name}</p>
-                <p className="text-xs text-text-muted">Pengguna</p>
+                <p className="text-xs text-text-muted truncate">
+                  {settings.googleUser ? settings.googleUser.email : 'Pengguna'}
+                </p>
               </div>
             )}
           </div>
