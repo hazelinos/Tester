@@ -47,6 +47,7 @@ export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
   const [accountId, setAccountId] = useState(editTx?.accountId || accounts[0]?.id || '');
   const [note, setNote] = useState(editTx?.note || '');
   const [date, setDate] = useState(editTx?.date ? toDateInputValue(editTx.date) : toDateInputValue(new Date()));
+  const [dateManuallyChanged, setDateManuallyChanged] = useState(!!editTx?.date);
   const [expenseType, setExpenseType] = useState(editTx?.expenseType || 'need');
   const [justCalculated, setJustCalculated] = useState(false);
   const [categorySearch, setCategorySearch] = useState('');
@@ -108,6 +109,16 @@ export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
     setJustCalculated(false);
   }, [type, isEdit, transactions]);
 
+  useEffect(() => {
+    if (isEdit) return;
+    const syncToday = () => {
+      if (!dateManuallyChanged) setDate(toDateInputValue(new Date()));
+    };
+    syncToday();
+    const intervalId = setInterval(syncToday, 60000);
+    return () => clearInterval(intervalId);
+  }, [isEdit, dateManuallyChanged]);
+
   const appendDigit = (digit) => {
     setExpression((current) => {
       if (!current || justCalculated) return digit === '000' ? '0' : digit;
@@ -163,7 +174,10 @@ export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
       onClose();
       return;
     }
-    const data = { type, amount: numAmount, categoryId, accountId, note: note.trim(), date: new Date(date).toISOString(), ...(type === 'expense' ? { expenseType } : {}) };
+    const saveDate = new Date(`${date}T00:00:00`);
+    const now = new Date();
+    saveDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
+    const data = { type, amount: numAmount, categoryId, accountId, note: note.trim(), date: saveDate.toISOString(), ...(type === 'expense' ? { expenseType } : {}) };
     if (isEdit) updateTransaction({ ...editTx, ...data });
     else addTransaction(data);
     onClose();
@@ -196,7 +210,7 @@ export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
             </div>
 
             <div className="grid grid-cols-2 gap-2">
-              <label className="flex items-center gap-2 rounded-xl border border-border bg-input px-2.5 py-2 cursor-pointer"><CalendarDays size={20} className="text-text-secondary shrink-0" /><span className="min-w-0"><span className="block text-[10px] text-text-muted">Tanggal</span><input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full bg-transparent text-xs text-text-primary focus:outline-none [color-scheme:dark]" /></span></label>
+              <label className="flex items-center gap-2 rounded-xl border border-border bg-input px-2.5 py-2 cursor-pointer"><CalendarDays size={20} className="text-text-secondary shrink-0" /><span className="min-w-0"><span className="block text-[10px] text-text-muted">Tanggal</span><input type="date" value={date} onChange={(e) => { setDate(e.target.value); setDateManuallyChanged(true); }} className="w-full bg-transparent text-xs text-text-primary focus:outline-none [color-scheme:dark]" /></span></label>
               <div className="flex items-center gap-2 rounded-xl border border-border bg-input px-2.5 py-2"><WalletCards size={20} className="text-text-secondary shrink-0" /><div className="min-w-0 flex-1"><span className="block text-[10px] text-text-muted">Akun</span><select value={accountId} onChange={(e) => setAccountId(e.target.value)} className="w-full bg-transparent text-xs text-text-primary focus:outline-none"><option value="" disabled>Pilih akun</option>{accounts.map((acc) => <option key={acc.id} value={acc.id}>{acc.name}</option>)}</select></div></div>
             </div>
 
