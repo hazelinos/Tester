@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { X, Trash2, CalendarDays, WalletCards, Delete } from 'lucide-react';
+import { X, Trash2, Search, CalendarDays, WalletCards, Delete } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '../constants/categories';
 import { toDateInputValue, formatCurrency } from '../utils/formatters';
@@ -40,7 +40,7 @@ const calculateExpression = (expression) => {
 };
 
 export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
-  const { addTransaction, updateTransaction, deleteTransaction, updateAccount, accounts } = useFinance();
+  const { addTransaction, updateTransaction, deleteTransaction, updateAccount, accounts, transactions } = useFinance();
   const [type, setType] = useState(editTx?.type || 'expense');
   const [expression, setExpression] = useState(editTx?.amount ? String(editTx.amount) : '');
   const [categoryId, setCategoryId] = useState(editTx?.categoryId || '');
@@ -49,6 +49,8 @@ export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
   const [date, setDate] = useState(editTx?.date ? toDateInputValue(editTx.date) : toDateInputValue(new Date()));
   const [expenseType, setExpenseType] = useState(editTx?.expenseType || 'need');
   const [justCalculated, setJustCalculated] = useState(false);
+  const [categorySearch, setCategorySearch] = useState('');
+  const [categoryRows, setCategoryRows] = useState(1);
 
   const isEdit = !!editTx;
   const isSalarySetup = !isEdit && type === 'income' && categoryId === 'salary';
@@ -57,6 +59,30 @@ export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
   const calculatedAmount = calculateExpression(expression);
   const numAmount = calculatedAmount !== null ? calculatedAmount : (Number(expression) || 0);
   const accentColor = type === 'income' ? '#A8E6CF' : '#FF6B6B';
+
+  const categoryUsage = useMemo(() => {
+    const counts = {};
+    transactions.forEach((tx) => {
+      if (tx.type === type && tx.categoryId) counts[tx.categoryId] = (counts[tx.categoryId] || 0) + 1;
+    });
+    return counts;
+  }, [transactions, type]);
+
+  const sortedCategories = useMemo(() => [...categories].sort((a, b) => {
+    const diff = (categoryUsage[b.id] || 0) - (categoryUsage[a.id] || 0);
+    return diff || categories.indexOf(a) - categories.indexOf(b);
+  }), [categories, categoryUsage]);
+
+  const filteredCategories = useMemo(() => {
+    const query = categorySearch.trim().toLowerCase();
+    return query ? sortedCategories.filter((cat) => cat.label.toLowerCase().includes(query)) : sortedCategories;
+  }, [sortedCategories, categorySearch]);
+
+  const categoryColumns = useMemo(() => {
+    const columns = [];
+    for (let i = 0; i < filteredCategories.length; i += categoryRows) columns.push(filteredCategories.slice(i, i + categoryRows));
+    return columns;
+  }, [filteredCategories, categoryRows]);
 
   const balanceError = useMemo(() => {
     if (type !== 'expense' || !numAmount || !selectedAcc) return null;
@@ -70,11 +96,17 @@ export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
   useEffect(() => {
     if (!isEdit) {
       const cats = type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
-      setCategoryId(cats[0].id);
+      const counts = {};
+      transactions.forEach((tx) => {
+        if (tx.type === type && tx.categoryId) counts[tx.categoryId] = (counts[tx.categoryId] || 0) + 1;
+      });
+      const mostUsed = [...cats].sort((a, b) => (counts[b.id] || 0) - (counts[a.id] || 0) || cats.indexOf(a) - cats.indexOf(b))[0];
+      setCategoryId(mostUsed?.id || cats[0]?.id || '');
       if (type === 'income') setExpenseType('need');
     }
+    setCategorySearch('');
     setJustCalculated(false);
-  }, [type, isEdit]);
+  }, [type, isEdit, transactions]);
 
   const appendDigit = (digit) => {
     setExpression((current) => {
@@ -145,55 +177,64 @@ export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 p-0 sm:p-4 modal-overlay">
-      <div className="modal-sheet bg-card border border-border rounded-t-[28px] sm:rounded-2xl w-full max-w-md h-[100dvh] sm:h-[92vh] max-h-[92vh] flex flex-col overflow-hidden">
-        <div className="flex justify-center pt-3 sm:hidden shrink-0"><span className="w-16 h-1.5 rounded-full bg-white/15" /></div>
-        <div className="flex items-center justify-between px-5 pt-3 pb-2 sm:p-5 sm:border-b sm:border-border shrink-0">
-          <div><h2 className="font-bold text-xl text-text-primary">Transaksi</h2><p className="text-xs text-text-muted">{isEdit ? 'Edit transaksi' : 'Tambah transaksi'}</p></div>
-          <div className="flex items-center gap-1.5">
-            {isEdit && <button onClick={handleDelete} className="btn-danger px-3 py-1.5 text-sm flex items-center gap-1.5"><Trash2 size={14} /> Hapus</button>}
-            <button onClick={onClose} className="p-2 rounded-xl hover:bg-elevated transition-colors text-text-muted"><X size={19} /></button>
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 p-0 sm:p-3 modal-overlay">
+      <div className="modal-sheet bg-card border border-border rounded-t-[24px] sm:rounded-2xl w-full max-w-md h-[100dvh] sm:h-[90vh] max-h-[90vh] flex flex-col overflow-hidden">
+        <div className="flex justify-center pt-2 sm:hidden shrink-0"><span className="w-12 h-1 rounded-full bg-white/15" /></div>
+        <div className="flex items-center justify-between px-4 pt-2 pb-1.5 sm:p-4 sm:border-b sm:border-border shrink-0">
+          <div><h2 className="font-bold text-lg text-text-primary">Transaksi</h2><p className="text-[10px] text-text-muted">{isEdit ? 'Edit transaksi' : 'Tambah transaksi'}</p></div>
+          <div className="flex items-center gap-1">
+            {isEdit && <button onClick={handleDelete} className="btn-danger px-2.5 py-1 text-xs flex items-center gap-1"><Trash2 size={13} /> Hapus</button>}
+            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-elevated transition-colors text-text-muted"><X size={17} /></button>
           </div>
         </div>
 
-        <div className="flex-1 min-h-0 overflow-y-auto px-5 pt-2 pb-5">
-          <div className="space-y-4">
+        <div className="flex-1 min-h-0 overflow-y-auto px-4 pt-1.5 pb-4">
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-1.5">
+              <button type="button" onClick={() => setType('expense')} className={clsx('py-2 border-b-2 text-sm font-bold transition-colors', type === 'expense' ? 'text-expense border-expense' : 'text-text-muted border-transparent')}>PENGELUARAN</button>
+              <button type="button" onClick={() => setType('income')} className={clsx('py-2 border-b-2 text-sm font-bold transition-colors', type === 'income' ? 'text-income border-income' : 'text-text-muted border-transparent')}>PEMASUKAN</button>
+            </div>
+
             <div className="grid grid-cols-2 gap-2">
-              <button type="button" onClick={() => setType('expense')} className={clsx('py-3 border-b-2 text-base font-bold transition-colors', type === 'expense' ? 'text-expense border-expense' : 'text-text-muted border-transparent')}>PENGELUARAN</button>
-              <button type="button" onClick={() => setType('income')} className={clsx('py-3 border-b-2 text-base font-bold transition-colors', type === 'income' ? 'text-income border-income' : 'text-text-muted border-transparent')}>PEMASUKAN</button>
+              <label className="flex items-center gap-2 rounded-xl border border-border bg-input px-2.5 py-2 cursor-pointer"><CalendarDays size={20} className="text-text-secondary shrink-0" /><span className="min-w-0"><span className="block text-[10px] text-text-muted">Tanggal</span><input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full bg-transparent text-xs text-text-primary focus:outline-none [color-scheme:dark]" /></span></label>
+              <div className="flex items-center gap-2 rounded-xl border border-border bg-input px-2.5 py-2"><WalletCards size={20} className="text-text-secondary shrink-0" /><div className="min-w-0 flex-1"><span className="block text-[10px] text-text-muted">Akun</span><select value={accountId} onChange={(e) => setAccountId(e.target.value)} className="w-full bg-transparent text-xs text-text-primary focus:outline-none"><option value="" disabled>Pilih akun</option>{accounts.map((acc) => <option key={acc.id} value={acc.id}>{acc.name}</option>)}</select></div></div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <label className="flex items-center gap-3 rounded-2xl border border-border bg-input px-3 py-3 cursor-pointer"><CalendarDays size={25} className="text-text-secondary shrink-0" /><span className="min-w-0"><span className="block text-xs text-text-muted">Tanggal</span><input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full bg-transparent text-sm text-text-primary focus:outline-none [color-scheme:dark]" /></span></label>
-              <div className="flex items-center gap-3 rounded-2xl border border-border bg-input px-3 py-3"><WalletCards size={25} className="text-text-secondary shrink-0" /><div className="min-w-0 flex-1"><span className="block text-xs text-text-muted">Akun</span><select value={accountId} onChange={(e) => setAccountId(e.target.value)} className="w-full bg-transparent text-sm text-text-primary focus:outline-none"><option value="" disabled>Pilih akun</option>{accounts.map((acc) => <option key={acc.id} value={acc.id}>{acc.name}</option>)}</select></div></div>
-            </div>
+            <div className="text-center py-0.5"><p className="text-[10px] text-text-muted mb-0.5">Jumlah</p><div className="flex items-center justify-center gap-1.5 min-h-[52px]"><span className="text-base font-semibold" style={{ color: accentColor }}>Rp</span><span className="text-[36px] leading-none font-bold tracking-tight tabular-nums" style={{ color: accentColor }}>{formatExpression(expression) || '0'}</span></div>{balanceError && <p className="text-[10px] text-expense mt-1.5">Saldo {balanceError.name} tidak cukup · kurang {formatCurrency(numAmount - balanceError.balance)}</p>}</div>
 
-            <div className="text-center py-1"><p className="text-xs text-text-muted mb-1">Jumlah</p><div className="flex items-center justify-center gap-2 min-h-[62px]"><span className="text-lg font-semibold" style={{ color: accentColor }}>Rp</span><span className="text-[42px] leading-none font-bold tracking-tight tabular-nums" style={{ color: accentColor }}>{formatExpression(expression) || '0'}</span></div>{balanceError && <p className="text-xs text-expense mt-2">Saldo {balanceError.name} tidak cukup · kurang {formatCurrency(numAmount - balanceError.balance)}</p>}</div>
-
-            <div className="flex items-center justify-between text-right px-1"><span className="text-xs text-text-muted">{expression && /[+\-*/]/.test(expression) ? 'Hasil perhitungan' : ''}</span><span className="text-base font-semibold text-text-secondary">= {formatAmount(numAmount)}</span></div>
+            <div className="flex items-center justify-between text-right px-1"><span className="text-[10px] text-text-muted">{expression && /[+\-*/]/.test(expression) ? 'Hasil perhitungan' : ''}</span><span className="text-sm font-semibold text-text-secondary">= {formatAmount(numAmount)}</span></div>
 
             <div>
-              <p className="text-sm font-bold tracking-widest text-text-muted mb-2">KATEGORI</p>
-              <div className="grid grid-cols-4 gap-2">
-                {categories.map((cat) => <button key={cat.id} type="button" onClick={() => setCategoryId(cat.id)} className={clsx('min-w-0 rounded-xl border bg-input flex flex-col items-center justify-center gap-1 px-1 py-2 transition-all', categoryId === cat.id ? 'border-current bg-white/[.06]' : 'border-border')} style={categoryId === cat.id ? { color: cat.color } : {}}><span className="text-[22px] leading-none">{cat.icon}</span><span className={clsx('text-[10px] leading-tight text-center line-clamp-2', categoryId === cat.id ? '' : 'text-text-secondary')}>{cat.label}</span></button>)}
+              <div className="flex items-center justify-between gap-2 mb-1.5">
+                <p className="text-xs font-bold tracking-widest text-text-muted">KATEGORI</p>
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3].map((rows) => <button key={rows} type="button" onClick={() => setCategoryRows(rows)} className={clsx('min-w-6 h-6 px-1.5 rounded-md text-[10px] font-bold border transition-colors', categoryRows === rows ? 'bg-primary/15 text-primary border-primary/30' : 'bg-input text-text-muted border-border')}>{rows}</button>)}
+                </div>
               </div>
+              <div className="relative mb-1.5"><Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted" /><input value={categorySearch} onChange={(e) => setCategorySearch(e.target.value)} placeholder="Cari kategori..." className="w-full h-8 bg-input border border-border rounded-lg pl-8 pr-2 text-xs text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary/50" /></div>
+              <div className="flex gap-1.5 overflow-x-auto scrollbar-none pb-1 snap-x">
+                {categoryColumns.map((column, index) => <div key={index} className="grid gap-1.5 shrink-0" style={{ gridTemplateRows: `repeat(${categoryRows}, minmax(0, 1fr))` }}>
+                  {column.map((cat) => <button key={cat.id} type="button" onClick={() => setCategoryId(cat.id)} className={clsx('w-[64px] h-[56px] rounded-lg border bg-input flex flex-col items-center justify-center gap-0.5 px-0.5 transition-all', categoryId === cat.id ? 'border-current bg-white/[.06]' : 'border-border')} style={categoryId === cat.id ? { color: cat.color } : {}}><span className="text-[20px] leading-none">{cat.icon}</span><span className={clsx('text-[9px] leading-tight text-center line-clamp-2', categoryId === cat.id ? '' : 'text-text-secondary')}>{cat.label}</span></button>)}
+                </div>)}
+              </div>
+              {!filteredCategories.length && <p className="text-[10px] text-text-muted text-center py-2">Kategori tidak ditemukan.</p>}
             </div>
 
-            {type === 'expense' && <div><p className="text-sm font-bold tracking-widest text-text-muted mb-2">TIPE</p><div className="grid grid-cols-2 gap-2"><button type="button" onClick={() => setExpenseType('need')} className={clsx('rounded-2xl border px-4 py-3 text-center transition-all', expenseType === 'need' ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-input text-text-secondary')}><span className="text-sm font-semibold">Kebutuhan</span></button><button type="button" onClick={() => setExpenseType('want')} className={clsx('rounded-2xl border px-4 py-3 text-center transition-all', expenseType === 'want' ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-input text-text-secondary')}><span className="text-sm font-semibold">Keinginan</span></button></div></div>}
+            {type === 'expense' && <div><p className="text-xs font-bold tracking-widest text-text-muted mb-1.5">TIPE</p><div className="grid grid-cols-2 gap-1.5"><button type="button" onClick={() => setExpenseType('need')} className={clsx('rounded-xl border px-3 py-2 text-center transition-all', expenseType === 'need' ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-input text-text-secondary')}><span className="text-xs font-semibold">Kebutuhan</span></button><button type="button" onClick={() => setExpenseType('want')} className={clsx('rounded-xl border px-3 py-2 text-center transition-all', expenseType === 'want' ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-input text-text-secondary')}><span className="text-xs font-semibold">Keinginan</span></button></div></div>}
 
-            <div><input type="text" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Deskripsi (Opsional)" maxLength={100} className="w-full bg-input border border-border rounded-2xl px-4 py-4 text-base text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary/50" /></div>
+            <div><input type="text" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Deskripsi (Opsional)" maxLength={100} className="w-full bg-input border border-border rounded-xl px-3 py-3 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary/50" /></div>
           </div>
         </div>
 
-        <div className="shrink-0 border-t border-border bg-card px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-          <div className="grid grid-cols-4 gap-2 select-none">
-            <button type="button" onClick={() => appendDigit('1')} className="keypad-key">1</button><button type="button" onClick={() => appendDigit('2')} className="keypad-key">2</button><button type="button" onClick={() => appendDigit('3')} className="keypad-key">3</button><button type="button" onClick={handleBackspace} className="keypad-key keypad-danger"><Delete size={26} /></button>
+        <div className="shrink-0 border-t border-border bg-card px-4 pt-2.5 pb-[max(0.65rem,env(safe-area-inset-bottom))]">
+          <div className="grid grid-cols-4 gap-1.5 select-none">
+            <button type="button" onClick={() => appendDigit('1')} className="keypad-key">1</button><button type="button" onClick={() => appendDigit('2')} className="keypad-key">2</button><button type="button" onClick={() => appendDigit('3')} className="keypad-key">3</button><button type="button" onClick={handleBackspace} className="keypad-key keypad-danger"><Delete size={22} /></button>
             <button type="button" onClick={() => appendDigit('4')} className="keypad-key">4</button><button type="button" onClick={() => appendDigit('5')} className="keypad-key">5</button><button type="button" onClick={() => appendDigit('6')} className="keypad-key">6</button><button type="button" onClick={() => appendOperator('+')} className="keypad-key keypad-purple">+</button>
             <button type="button" onClick={() => appendDigit('7')} className="keypad-key">7</button><button type="button" onClick={() => appendDigit('8')} className="keypad-key">8</button><button type="button" onClick={() => appendDigit('9')} className="keypad-key">9</button><button type="button" onClick={() => appendOperator('-')} className="keypad-key keypad-purple">−</button>
             <button type="button" onClick={appendDecimal} className="keypad-key">.</button><button type="button" onClick={() => appendDigit('0')} className="keypad-key">0</button><button type="button" onClick={() => appendDigit('000')} className="keypad-key">000</button><button type="button" onClick={() => appendOperator('*')} className="keypad-key keypad-purple">×</button>
             <button type="button" onClick={handleClear} className="keypad-key text-sm">C</button><button type="button" onClick={() => appendOperator('/')} className="keypad-key keypad-purple">÷</button><button type="button" onClick={handleEquals} className="keypad-key keypad-blue">=</button><button type="button" onClick={handleSave} disabled={!isValid} className="keypad-key keypad-save" aria-label="Simpan transaksi">✓</button>
           </div>
-          {isSalarySetup && <p className="text-xs text-text-muted text-center pt-2">Gaji akan dicatat otomatis setiap bulan pada tanggal ini.</p>}
+          {isSalarySetup && <p className="text-[10px] text-text-muted text-center pt-1.5">Gaji akan dicatat otomatis setiap bulan pada tanggal ini.</p>}
         </div>
       </div>
     </div>
