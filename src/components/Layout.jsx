@@ -14,7 +14,6 @@ import clsx from 'clsx';
 const SIDEBAR_ITEMS = [
   { to: '/',              icon: LayoutDashboard, label: 'Dashboard'  },
   { to: '/history',       icon: BarChart3,        label: 'Aktivitas'  },
-  { to: '/report',        icon: BarChart3,        label: 'Laporan'    },
   { to: '/budget',        icon: Target,           label: 'Budget'     },
   { to: '/savings',       icon: PiggyBank,        label: 'Tabungan'   },
   { to: '/debt',          icon: Landmark,         label: 'Hutang'     },
