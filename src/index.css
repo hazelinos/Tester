@@ -51,13 +51,13 @@
 .dashboard-edit-button { display:inline-flex;align-items:center;gap:5px;color:rgba(168,230,207,.8);font-size:11px;font-weight:700;padding:7px 9px;border-radius:11px;background:rgba(168,230,207,.06);border:1px solid rgba(168,230,207,.09); }
 .dashboard-edit-button:hover { background:rgba(168,230,207,.1);color:#A8E6CF; }
 
-.keypad-key { min-height:46px; border-radius:12px; background:#202321; border:1px solid rgba(255,255,255,.025); color:#f5f5f5; display:flex; align-items:center; justify-content:center; font-size:21px; font-weight:500; box-shadow:inset 0 1px 0 rgba(255,255,255,.02); transition:transform .08s ease,background .12s ease; touch-action:manipulation; }
+.keypad-key { min-height:42px; border-radius:10px; background:#202321; border:1px solid rgba(255,255,255,.025); color:#f5f5f5; display:flex; align-items:center; justify-content:center; font-size:19px; font-weight:500; box-shadow:inset 0 1px 0 rgba(255,255,255,.02); transition:transform .08s ease,background .12s ease; touch-action:manipulation; }
 .keypad-key:active { transform:scale(.97); background:#292d2b; }
 .keypad-key:disabled { opacity:.35; }
 .keypad-danger { background:rgba(255,107,107,.24); color:#ff8c8c; }
 .keypad-purple { background:rgba(131,72,145,.42); color:#e4b9ef; }
 .keypad-blue { background:rgba(69,123,166,.62); color:#bfe3ff; }
-.keypad-save { background:#63c86a; color:#102015; font-size:27px; }
+.keypad-save { background:#63c86a; color:#102015; font-size:24px; }
 .keypad-save:not(:disabled):active { background:#59b960; }
 
 @media (max-width:767px) {
@@ -73,7 +73,7 @@
   .dashboard-logo { width:40px;height:40px;border-radius:13px; }
   .dashboard-logo img { width:28px;height:28px; }
   .dashboard-marquee { width:min(215px,53vw); }
-  .keypad-key { min-height:44px; border-radius:12px; font-size:21px; }
+  .keypad-key { min-height:40px; border-radius:10px; font-size:19px; }
 }
 
 .bg-elevated:has(button.w-11.h-6) { display:none; }
