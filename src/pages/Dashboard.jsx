@@ -105,11 +105,11 @@ function ShortcutCard({ option, savingsGoals, budgetUsage, overBudget }) {
   else if (id === '/report') { value = 'Lihat'; sub = 'Laporan keuangan'; }
   else if (id === '/accounts') sub = 'Daftar akun';
 
-  return <Link to={id} className="dashboard-shortcut shrink-0 w-[132px] sm:w-[150px] rounded-2xl p-3.5">
-    <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3"><Icon size={18} /></div>
-    <p className="text-xs font-semibold text-white/85 truncate">{label}</p>
-    <p className="text-sm font-bold text-primary mt-1 truncate">{value}</p>
-    <p className="text-[10px] text-white/35 mt-0.5 truncate">{sub}</p>
+  return <Link to={id} className="dashboard-shortcut shrink-0 w-[105px] sm:w-[120px] rounded-2xl p-3">
+    <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-2"><Icon size={16} /></div>
+    <p className="text-[11px] font-semibold text-white/85 truncate">{label}</p>
+    <p className="text-xs font-bold text-primary mt-1 truncate">{value}</p>
+    <p className="text-[9px] text-white/35 mt-0.5 truncate">{sub}</p>
   </Link>;
 }
 
