@@ -62,12 +62,13 @@ export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
   const categoryColumns = useMemo(() => { const columns = []; for (let i = 0; i < filteredCategories.length; i += categoryRows) columns.push(filteredCategories.slice(i, i + categoryRows)); return columns; }, [filteredCategories, categoryRows]);
   const balanceError = useMemo(() => {
     if (type !== 'expense' || !numAmount || !selectedAcc) return null;
-    const balance = Number(selectedAcc.balance) || 0;
+    const balance = Number(selectedAcc.balance);
+    if (!Number.isFinite(balance)) return null;
     const oldAmount = isEdit && editTx?.type === 'expense' && editTx?.accountId === accountId ? Number(editTx.amount) || 0 : 0;
-    const effectiveBalance = balance + oldAmount;
+    const effectiveBalance = Math.max(0, balance) + oldAmount;
     return numAmount > effectiveBalance ? selectedAcc : null;
   }, [type, numAmount, selectedAcc, isEdit, editTx, accountId]);
-  const isValid = numAmount > 0 && !/[+\-*/]$/.test(expression) && !!categoryId && !!accountId && !!date && !balanceError && (type === 'income' || !!expenseType);
+  const isValid = Boolean(numAmount > 0 && !/[+\-*/]$/.test(expression) && categoryId && accountId && date && !balanceError && (type === 'income' || expenseType));
 
   useEffect(() => {
     if (!isEdit) {
