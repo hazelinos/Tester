@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { X, Trash2, Search, ChevronDown, CalendarDays, WalletCards, Delete } from 'lucide-react';
+import { X, Trash2, CalendarDays, WalletCards, Delete } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '../constants/categories';
 import { toDateInputValue, formatCurrency } from '../utils/formatters';
@@ -48,17 +48,11 @@ export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
   const [note, setNote] = useState(editTx?.note || '');
   const [date, setDate] = useState(editTx?.date ? toDateInputValue(editTx.date) : toDateInputValue(new Date()));
   const [expenseType, setExpenseType] = useState(editTx?.expenseType || 'need');
-  const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
-  const [categorySearch, setCategorySearch] = useState('');
   const [justCalculated, setJustCalculated] = useState(false);
 
   const isEdit = !!editTx;
   const isSalarySetup = !isEdit && type === 'income' && categoryId === 'salary';
   const categories = type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
-  const filteredCategories = useMemo(() => {
-    const query = categorySearch.trim().toLowerCase();
-    return query ? categories.filter((cat) => cat.label.toLowerCase().includes(query)) : categories;
-  }, [categories, categorySearch]);
   const selectedAcc = accounts.find((a) => a.id === accountId);
   const calculatedAmount = calculateExpression(expression);
   const numAmount = calculatedAmount !== null ? calculatedAmount : (Number(expression) || 0);
@@ -79,8 +73,6 @@ export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
       setCategoryId(cats[0].id);
       if (type === 'income') setExpenseType('need');
     }
-    setCategoryPickerOpen(false);
-    setCategorySearch('');
     setJustCalculated(false);
   }, [type, isEdit]);
 
@@ -178,17 +170,16 @@ export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
 
             <div className="text-center py-1"><p className="text-xs text-text-muted mb-1">Jumlah</p><div className="flex items-center justify-center gap-2 min-h-[62px]"><span className="text-lg font-semibold" style={{ color: accentColor }}>Rp</span><span className="text-[42px] leading-none font-bold tracking-tight tabular-nums" style={{ color: accentColor }}>{formatExpression(expression) || '0'}</span></div>{balanceError && <p className="text-xs text-expense mt-2">Saldo {balanceError.name} tidak cukup · kurang {formatCurrency(numAmount - balanceError.balance)}</p>}</div>
 
+            <div className="flex items-center justify-between text-right px-1"><span className="text-xs text-text-muted">{expression && /[+\-*/]/.test(expression) ? 'Hasil perhitungan' : ''}</span><span className="text-base font-semibold text-text-secondary">= {formatAmount(numAmount)}</span></div>
+
             <div>
-              <div className="flex items-center justify-between mb-2"><p className="text-sm font-bold tracking-widest text-text-muted">KATEGORI</p><button type="button" onClick={() => { setCategoryPickerOpen(true); setCategorySearch(''); }} className="flex items-center gap-1 text-xs text-text-muted">{categories.length} kategori <ChevronDown size={14} /></button></div>
-              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none snap-x">
-                <button type="button" onClick={() => { setCategoryPickerOpen(true); setCategorySearch(''); }} className="shrink-0 w-[84px] h-[84px] rounded-2xl border border-border bg-input flex flex-col items-center justify-center gap-1.5 text-text-muted"><Search size={28} /><span className="text-xs">Cari</span></button>
-                {categories.map((cat) => <button key={cat.id} type="button" onClick={() => setCategoryId(cat.id)} className={clsx('shrink-0 w-[84px] h-[84px] rounded-2xl border bg-input flex flex-col items-center justify-center gap-1 px-1 transition-all snap-start', categoryId === cat.id ? 'border-current bg-white/[.06]' : 'border-border')} style={categoryId === cat.id ? { color: cat.color } : {}}><span className="text-[30px] leading-none">{cat.icon}</span><span className={clsx('text-[11px] leading-tight text-center line-clamp-2', categoryId === cat.id ? '' : 'text-text-secondary')}>{cat.label}</span></button>)}
+              <p className="text-sm font-bold tracking-widest text-text-muted mb-2">KATEGORI</p>
+              <div className="grid grid-cols-4 gap-2">
+                {categories.map((cat) => <button key={cat.id} type="button" onClick={() => setCategoryId(cat.id)} className={clsx('min-w-0 rounded-xl border bg-input flex flex-col items-center justify-center gap-1 px-1 py-2 transition-all', categoryId === cat.id ? 'border-current bg-white/[.06]' : 'border-border')} style={categoryId === cat.id ? { color: cat.color } : {}}><span className="text-[22px] leading-none">{cat.icon}</span><span className={clsx('text-[10px] leading-tight text-center line-clamp-2', categoryId === cat.id ? '' : 'text-text-secondary')}>{cat.label}</span></button>)}
               </div>
             </div>
 
             {type === 'expense' && <div><p className="text-sm font-bold tracking-widest text-text-muted mb-2">TIPE</p><div className="grid grid-cols-2 gap-2"><button type="button" onClick={() => setExpenseType('need')} className={clsx('rounded-2xl border px-4 py-3 text-center transition-all', expenseType === 'need' ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-input text-text-secondary')}><span className="text-sm font-semibold">Kebutuhan</span></button><button type="button" onClick={() => setExpenseType('want')} className={clsx('rounded-2xl border px-4 py-3 text-center transition-all', expenseType === 'want' ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-input text-text-secondary')}><span className="text-sm font-semibold">Keinginan</span></button></div></div>}
-
-            <div className="flex items-center justify-between text-right px-1"><span className="text-xs text-text-muted">{expression && /[+\-*/]/.test(expression) ? 'Hasil perhitungan' : ''}</span><span className="text-base font-semibold text-text-secondary">= {formatAmount(numAmount)}</span></div>
 
             <div><input type="text" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Deskripsi (Opsional)" maxLength={100} className="w-full bg-input border border-border rounded-2xl px-4 py-4 text-base text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary/50" /></div>
           </div>
@@ -205,8 +196,6 @@ export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
           {isSalarySetup && <p className="text-xs text-text-muted text-center pt-2">Gaji akan dicatat otomatis setiap bulan pada tanggal ini.</p>}
         </div>
       </div>
-
-      {categoryPickerOpen && <div className="fixed inset-0 z-[60] bg-black/60 flex items-end sm:items-center justify-center" onClick={() => setCategoryPickerOpen(false)}><div className="w-full sm:max-w-md bg-[#2b2b2b] border border-white/10 rounded-t-[28px] sm:rounded-[28px] shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}><div className="flex justify-center pt-3"><span className="w-16 h-1.5 rounded-full bg-white/20" /></div><div className="px-5 pt-4 pb-4"><h3 className="text-xl font-bold text-white text-center">Kategori</h3></div><div className="px-5 pb-4"><div className="flex items-center gap-3 rounded-2xl border border-white/15 bg-white/[.02] px-4 py-3"><Search size={22} className="text-white/70 shrink-0" /><input autoFocus value={categorySearch} onChange={(e) => setCategorySearch(e.target.value)} placeholder="Cari kategori..." className="w-full bg-transparent text-lg text-white placeholder:text-white/50 focus:outline-none" /></div></div><div className="max-h-[58vh] overflow-y-auto border-t border-white/10">{filteredCategories.length ? filteredCategories.map((cat) => <button key={cat.id} type="button" onClick={() => { setCategoryId(cat.id); setCategoryPickerOpen(false); setCategorySearch(''); }} className="w-full flex items-center gap-5 px-6 py-4 border-b border-white/10 text-left hover:bg-white/[.04]"><span className="w-12 h-12 flex items-center justify-center text-3xl shrink-0">{cat.icon}</span><span className="text-[17px] text-white/90 font-medium">{cat.label}</span></button>) : <p className="py-12 text-center text-sm text-white/40">Kategori tidak ditemukan</p>}</div></div></div>}
     </div>
   );
 }
