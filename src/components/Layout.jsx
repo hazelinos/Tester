@@ -56,7 +56,7 @@ export default function Layout() {
     return (
       <div className="flex flex-col h-screen bg-bg overflow-hidden">
         <nav
-          className="shrink-0 sticky top-0 bg-card/95 backdrop-blur-xl border-b border-border z-30"
+          className="fixed inset-x-0 top-0 bg-card/95 backdrop-blur-xl border-b border-border z-30"
           style={{ paddingTop: 'env(safe-area-inset-top)' }}
         >
           <div className="grid grid-cols-3 items-center px-3 h-14">
@@ -77,7 +77,7 @@ export default function Layout() {
           </div>
         </nav>
 
-        <main className="flex-1 overflow-y-auto min-h-0">
+        <main className="flex-1 overflow-y-auto min-h-0 pt-14">
           <Outlet context={{ openEdit }} />
         </main>
 
