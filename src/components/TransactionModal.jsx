@@ -175,8 +175,8 @@ export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
       return;
     }
     const saveDate = new Date(`${date}T00:00:00`);
-    const now = new Date();
-    saveDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
+    const timeSource = isEdit && editTx?.date ? new Date(editTx.date) : new Date();
+    saveDate.setHours(timeSource.getHours(), timeSource.getMinutes(), timeSource.getSeconds(), timeSource.getMilliseconds());
     const data = { type, amount: numAmount, categoryId, accountId, note: note.trim(), date: saveDate.toISOString(), ...(type === 'expense' ? { expenseType } : {}) };
     if (isEdit) updateTransaction({ ...editTx, ...data });
     else addTransaction(data);
