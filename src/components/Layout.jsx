@@ -21,13 +21,10 @@ const SIDEBAR_ITEMS = [
   { to: '/accounts',      icon: CreditCard,       label: 'Akun'       },
 ];
 
-const LEFT_TABS = [
-  { to: '/',        icon: LayoutDashboard, label: 'Beranda'   },
-  { to: '/history', icon: BarChart3,        label: 'Aktivitas' },
-];
-const RIGHT_TABS = [
-  { to: '/accounts', icon: CreditCard, label: 'Akun'    },
-  { to: '/settings', icon: Settings,   label: 'Setting' },
+const TOP_TABS = [
+  { to: '/history', icon: BarChart3, label: 'Aktivitas' },
+  { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/settings', icon: Settings, label: 'Setting' },
 ];
 
 const isMobile = () => window.innerWidth < 768;
@@ -58,77 +55,40 @@ export default function Layout() {
   if (mobile) {
     return (
       <div className="flex flex-col h-screen bg-bg overflow-hidden">
-        {/* Content — header removed; app identity is shown on Dashboard */}
-        <main className="flex-1 overflow-y-auto min-h-0">
-          <Outlet context={{ openEdit }} />
-        </main>
-
         <nav
-          className="shrink-0 bg-card border-t border-border z-20"
-          style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+          className="shrink-0 sticky top-0 bg-card/95 backdrop-blur-xl border-b border-border z-30"
+          style={{ paddingTop: 'env(safe-area-inset-top)' }}
         >
-          <div className="flex items-end justify-around px-2 h-16">
-            {LEFT_TABS.map(({ to, icon: Icon, label }) => (
-              <NavLink key={to} to={to} end={to === '/'}
+          <div className="grid grid-cols-3 items-center px-3 h-14">
+            {TOP_TABS.map(({ to, icon: Icon, label }) => (
+              <NavLink
+                key={to}
+                to={to}
+                end={to === '/'}
                 className={({ isActive }) => clsx(
-                  'flex flex-col items-center gap-0.5 py-2 px-3 transition-all flex-1',
-                  isActive ? 'text-primary' : 'text-text-muted'
+                  'flex items-center justify-center gap-2 h-10 rounded-xl transition-all text-xs font-semibold',
+                  isActive ? 'text-primary bg-primary/10' : 'text-text-muted hover:text-text-secondary'
                 )}
               >
-                {({ isActive }) => (
-                  <>
-                    <div className={clsx(
-                      'w-8 h-8 rounded-xl flex items-center justify-center transition-all',
-                      isActive && 'bg-primary/15'
-                    )}>
-                      <Icon size={19} />
-                    </div>
-                    <span className="text-[10px] font-medium leading-none">{label}</span>
-                  </>
-                )}
-              </NavLink>
-            ))}
-
-            <div className="flex flex-col items-center flex-1">
-              <button onClick={openAdd} className="flex flex-col items-center gap-0.5">
-                <div className="relative -mt-5">
-                  <div
-                    className="absolute inset-0 rounded-full blur-md opacity-50"
-                    style={{ background: 'radial-gradient(circle, #A8E6CF, #6BCF9F)', transform: 'scale(1.4)' }}
-                  />
-                  <div
-                    className="relative w-14 h-14 rounded-full flex items-center justify-center shadow-xl"
-                    style={{ background: 'linear-gradient(135deg, #A8E6CF, #6BCF9F)' }}
-                  >
-                    <Plus size={28} className="text-bg" strokeWidth={2.5} />
-                  </div>
-                </div>
-                <span className="text-[10px] font-semibold text-primary mt-1 leading-none">Tambah</span>
-              </button>
-            </div>
-
-            {RIGHT_TABS.map(({ to, icon: Icon, label }) => (
-              <NavLink key={to} to={to} end={to === '/'}
-                className={({ isActive }) => clsx(
-                  'flex flex-col items-center gap-0.5 py-2 px-3 transition-all flex-1',
-                  isActive ? 'text-primary' : 'text-text-muted'
-                )}
-              >
-                {({ isActive }) => (
-                  <>
-                    <div className={clsx(
-                      'w-8 h-8 rounded-xl flex items-center justify-center transition-all',
-                      isActive && 'bg-primary/15'
-                    )}>
-                      <Icon size={19} />
-                    </div>
-                    <span className="text-[10px] font-medium leading-none">{label}</span>
-                  </>
-                )}
+                <Icon size={17} />
+                <span>{label}</span>
               </NavLink>
             ))}
           </div>
         </nav>
+
+        <main className="flex-1 overflow-y-auto min-h-0">
+          <Outlet context={{ openEdit }} />
+        </main>
+
+        <button
+          onClick={openAdd}
+          aria-label="Tambah transaksi"
+          className="fixed right-5 bottom-5 z-40 w-14 h-14 rounded-full flex items-center justify-center shadow-xl"
+          style={{ background: 'linear-gradient(135deg, #A8E6CF, #6BCF9F)' }}
+        >
+          <Plus size={28} className="text-bg" strokeWidth={2.5} />
+        </button>
 
         {showModal && (
           <TransactionModal
