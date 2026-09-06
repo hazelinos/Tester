@@ -51,9 +51,6 @@
 .dashboard-edit-button { display:inline-flex;align-items:center;gap:5px;color:rgba(168,230,207,.8);font-size:11px;font-weight:700;padding:7px 9px;border-radius:11px;background:rgba(168,230,207,.06);border:1px solid rgba(168,230,207,.09); }
 .dashboard-edit-button:hover { background:rgba(168,230,207,.1);color:#A8E6CF; }
 
-/* Hide only the Dashboard's third summary section: "Sisa bulan ini". */
-.dashboard-page > main > section:nth-child(3) { display:none; }
-
 @media (max-width:767px) {
   nav.shrink-0.bg-card.border-t.border-border.z-20 { background:rgba(11,17,14,.9) !important;border-top-color:rgba(255,255,255,.08) !important;backdrop-filter:blur(22px);box-shadow:0 -12px 34px rgba(0,0,0,.24); }
   nav.shrink-0.bg-card.border-t.border-border.z-20 a { color:rgba(255,255,255,.42); }
