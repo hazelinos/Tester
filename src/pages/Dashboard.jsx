@@ -3,7 +3,6 @@ import { Link, useOutletContext } from 'react-router-dom';
 import {
   ArrowDownLeft,
   ArrowUpRight,
-  BarChart3,
   Eye,
   EyeOff,
   GripVertical,
@@ -26,7 +25,6 @@ const SHORTCUT_OPTIONS = [
   { id: '/budget', label: 'Budget', Icon: Target },
   { id: '/debt', label: 'Hutang', Icon: Landmark },
   { id: '/subscriptions', label: 'Langganan', Icon: Radio },
-  { id: '/report', label: 'Laporan', Icon: BarChart3 },
 ];
 
 const DEFAULT_SHORTCUTS = ['/savings', '/budget', '/debt', '/subscriptions'];
@@ -91,17 +89,7 @@ function ShortcutEditModal({ selected, onSave, onClose }) {
               <p className="text-[10px] font-bold uppercase tracking-[.14em] text-white/35 mb-2">Urutan Shortcut</p>
               <div className="space-y-2">
                 {selectedOptions.map(({ id, label, Icon }, index) => (
-                  <div
-                    key={id}
-                    draggable
-                    onDragStart={() => setDraggedId(id)}
-                    onDragEnd={() => setDraggedId(null)}
-                    onDragOver={(event) => { event.preventDefault(); moveShortcut(id); }}
-                    className={clsx(
-                      'flex items-center gap-3 rounded-2xl border px-3 py-3 bg-white/[.025] transition-all select-none',
-                      draggedId === id ? 'border-primary/40 opacity-50' : 'border-white/8'
-                    )}
-                  >
+                  <div key={id} draggable onDragStart={() => setDraggedId(id)} onDragEnd={() => setDraggedId(null)} onDragOver={(event) => { event.preventDefault(); moveShortcut(id); }} className={clsx('flex items-center gap-3 rounded-2xl border px-3 py-3 bg-white/[.025] transition-all select-none', draggedId === id ? 'border-primary/40 opacity-50' : 'border-white/8')}>
                     <span className="text-[10px] font-bold text-white/25 w-4 text-center">{index + 1}</span>
                     <span className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0"><Icon size={17} /></span>
                     <span className="flex-1 text-xs font-semibold text-white/85">{label}</span>
@@ -117,11 +105,7 @@ function ShortcutEditModal({ selected, onSave, onClose }) {
               <p className="text-[10px] font-bold uppercase tracking-[.14em] text-white/35 mb-2">Tambah Menu</p>
               <div className="grid grid-cols-2 gap-2">
                 {availableOptions.map(({ id, label, Icon }) => (
-                  <button
-                    key={id}
-                    onClick={() => toggle(id)}
-                    className="flex items-center gap-2.5 p-3 rounded-2xl border border-white/8 bg-white/[.025] text-left text-white/70 hover:border-primary/30 hover:bg-primary/5 transition-all"
-                  >
+                  <button key={id} onClick={() => toggle(id)} className="flex items-center gap-2.5 p-3 rounded-2xl border border-white/8 bg-white/[.025] text-left text-white/70 hover:border-primary/30 hover:bg-primary/5 transition-all">
                     <span className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center shrink-0"><Icon size={16} /></span>
                     <span className="text-xs font-semibold truncate">{label}</span>
                   </button>
@@ -151,7 +135,6 @@ function ShortcutCard({ option, savingsGoals, budgetUsage, overBudget }) {
     sub = overBudget ? `${overBudget} melebihi limit` : 'Semua aman';
   } else if (id === '/debt') sub = 'Hutang & cicilan';
   else if (id === '/subscriptions') sub = 'Langganan rutin';
-  else if (id === '/report') { value = 'Lihat'; sub = 'Laporan keuangan'; }
 
   return <Link to={id} className="dashboard-shortcut shrink-0 w-[88px] sm:w-[100px] rounded-2xl p-2.5">
     <div className="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-1.5"><Icon size={14} /></div>
