@@ -10,7 +10,6 @@ import SalaryTransactionBridge from './components/SalaryTransactionBridge'
 import ReminderCenter from './components/ReminderCenter'
 import Dashboard     from './pages/Dashboard'
 import History       from './pages/History'
-import Report        from './pages/Report'
 import Budget        from './pages/Budget'
 import Accounts      from './pages/Accounts'
 import Settings      from './pages/Settings'
@@ -28,7 +27,6 @@ createRoot(document.getElementById('root')).render(
             <Route path="/" element={<Layout />}>
               <Route index                   element={<Dashboard />}     />
               <Route path="history"          element={<History />}       />
-              <Route path="report"           element={<Report />}        />
               <Route path="budget"           element={<Budget />}        />
               <Route path="savings"          element={<Savings />}       />
               <Route path="debt"             element={<Debt />}          />
