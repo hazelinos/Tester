@@ -16,8 +16,7 @@ import {
   X,
 } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
-import { useIsMobile } from '../hooks/useIsMobile';
-import { formatCurrency, formatDate, formatShortCurrency, getMonthName } from '../utils/formatters';
+import { formatCurrency, formatDate, formatShortCurrency } from '../utils/formatters';
 import { getCategoryById } from '../constants/categories';
 import clsx from 'clsx';
 
@@ -185,11 +184,10 @@ function getTodayBounds() {
 
 export default function Dashboard() {
   const { openEdit } = useOutletContext();
-  const mobile = useIsMobile();
   const [balanceVisible, setBalanceVisible] = useState(true);
   const [shortcuts, setShortcuts] = useState(loadShortcuts);
   const [editingShortcut, setEditingShortcut] = useState(false);
-  const { accounts, transactions, getMonthlyIncome, getMonthlyExpense, getTotalBalance, getExpenseByCategory, savings: savingsGoals, getBudgetUsage } = useFinance();
+  const { accounts, transactions, getMonthlyIncome, getMonthlyExpense, getTotalBalance, getBudgetUsage, savings: savingsGoals } = useFinance();
   const currentMonth = useMemo(() => new Date(), []);
   const income = useMemo(() => getMonthlyIncome(currentMonth), [getMonthlyIncome, currentMonth]);
   const expense = useMemo(() => getMonthlyExpense(currentMonth), [getMonthlyExpense, currentMonth]);
@@ -203,17 +201,15 @@ export default function Dashboard() {
   }, [transactions]);
   const budgetUsage = useMemo(() => getBudgetUsage(currentMonth), [getBudgetUsage, currentMonth]);
   const overBudget = useMemo(() => budgetUsage.filter((b) => b.spent > b.amount).length, [budgetUsage]);
-  const expByCat = useMemo(() => getExpenseByCategory(currentMonth), [getExpenseByCategory, currentMonth]);
-  const topCats = useMemo(() => Object.entries(expByCat).map(([id, amount]) => ({ ...getCategoryById(id), amount })).sort((a, b) => b.amount - a.amount).slice(0, 3), [expByCat]);
   const saveShortcuts = (picks) => { setShortcuts(picks); localStorage.setItem(STORAGE_KEY, JSON.stringify(picks)); };
+  const todayLabel = useMemo(() => new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date()), []);
 
   return <div className="dashboard-page min-h-full pb-8">
     <main className="max-w-6xl mx-auto px-4 sm:px-7 pt-4 sm:pt-6 space-y-5">
       <section className="dashboard-balance relative overflow-hidden rounded-[26px] p-5 sm:p-7"><div className="absolute -right-16 -top-20 w-56 h-56 rounded-full bg-primary/10 blur-3xl pointer-events-none" /><div className="relative"><div className="flex items-center justify-between"><p className="text-xs font-semibold uppercase tracking-[.16em] text-primary/70">Total Uang</p><button onClick={() => setBalanceVisible((v) => !v)} className="dashboard-icon-button" aria-label="Tampilkan atau sembunyikan nominal">{balanceVisible ? <Eye size={17} /> : <EyeOff size={17} />}</button></div><div className="flex items-end justify-between gap-4 mt-2"><p className="text-[30px] sm:text-[40px] leading-none font-extrabold tracking-tight text-white">{balanceVisible ? formatCurrency(balance) : 'Rp ••••••'}</p><span className="hidden sm:flex items-center gap-1.5 text-xs text-white/45"><WalletCards size={14} /> {accounts.length} akun</span></div><div className="flex gap-2.5 overflow-x-auto scrollbar-none mt-5">{accounts.map((account) => <div key={account.id} className="dashboard-account-chip shrink-0" style={{ borderColor: `${account.color}35` }}><span className="w-7 h-7 rounded-lg flex items-center justify-center overflow-hidden" style={{ background: `${account.color}18` }}>{account.iconType === 'photo' && account.iconPhoto ? <img src={account.iconPhoto} alt="" className="w-full h-full object-cover" /> : <span>{account.icon}</span>}</span><span className="text-xs font-semibold" style={{ color: account.color }}>{balanceVisible ? formatShortCurrency(account.balance) : '••••'}</span></div>)}</div></div></section>
       <section className="grid grid-cols-2 gap-3"><div className="dashboard-stat-card"><span className="dashboard-stat-icon income"><ArrowDownLeft size={17} /></span><span className="text-xs text-white/45">Pemasukan</span><strong className="text-lg sm:text-xl text-[#A8E6CF]">{formatShortCurrency(income)}</strong></div><div className="dashboard-stat-card"><span className="dashboard-stat-icon expense"><ArrowUpRight size={17} /></span><span className="text-xs text-white/45">Pengeluaran</span><strong className="text-lg sm:text-xl text-[#FF8C8C]">{formatShortCurrency(expense)}</strong></div></section>
       <section><div className="flex gap-2 overflow-x-auto scrollbar-none snap-x pb-1 items-stretch">{shortcuts.map((id) => { const option = SHORTCUT_OPTIONS.find((item) => item.id === id); return option ? <ShortcutCard key={id} option={option} savingsGoals={savingsGoals} budgetUsage={budgetUsage} overBudget={overBudget} /> : null; })}<AddShortcutCard onClick={() => setEditingShortcut(true)} /></div></section>
-      <section className="dashboard-glass-card p-4 sm:p-5"><div className="mb-3"><h2 className="text-base font-bold text-white">Transaksi</h2></div>{todayTransactions.length ? todayTransactions.slice(0, mobile ? 5 : 8).map((tx) => <TransactionRow key={tx.id} transaction={tx} onEdit={openEdit} />) : <p className="py-8 text-center text-sm text-white/30">Belum ada transaksi hari ini</p>}{todayTransactions.length > (mobile ? 5 : 8) && <Link to="/history" className="block text-center text-xs font-semibold text-primary pt-3">Lihat semua transaksi</Link>}</section>
-      {topCats.length > 0 && <section className="dashboard-glass-card p-4 sm:p-5"><div className="flex items-center justify-between mb-4"><h2 className="text-base font-bold text-white">Pengeluaran Terbesar</h2><span className="text-[11px] text-white/35">Bulan ini</span></div><div className="space-y-3">{topCats.map((cat) => <div key={cat.id} className="flex items-center gap-3"><span className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${cat.color}18` }}>{cat.icon}</span><span className="flex-1 min-w-0"><span className="block text-xs font-semibold text-white/75 truncate">{cat.label}</span><span className="block h-1.5 rounded-full bg-white/5 mt-1.5 overflow-hidden"><span className="block h-full rounded-full" style={{ width: `${Math.max(8, (cat.amount / Math.max(topCats[0].amount, 1)) * 100)}%`, background: cat.color }} /></span></span><strong className="text-xs text-white/70">{formatShortCurrency(cat.amount)}</strong></div>)}</div></section>}
+      <section className="dashboard-glass-card p-4 sm:p-5"><div className="mb-3"><h2 className="text-base font-bold text-white">Transaksi</h2><p className="text-[11px] text-white/35 mt-0.5">Hari ini, {todayLabel}</p></div>{todayTransactions.length ? todayTransactions.map((tx) => <TransactionRow key={tx.id} transaction={tx} onEdit={openEdit} />) : <p className="py-8 text-center text-sm text-white/30">Belum ada transaksi hari ini</p>}</section>
     </main>
     {editingShortcut && <ShortcutEditModal selected={shortcuts} onSave={saveShortcuts} onClose={() => setEditingShortcut(false)} />}
   </div>;
