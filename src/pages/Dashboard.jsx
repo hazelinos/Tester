@@ -129,20 +129,22 @@ function TransactionRow({ transaction, onEdit }) {
 
 function getPeriodBounds(period) {
   const now = new Date();
-  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
+  if (period === 'today') {
+    return { start: todayStart, end: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1) };
+  }
   if (period === '7days') {
-    start.setDate(start.getDate() - 6);
-  } else if (period === 'thisMonth') {
-    start.setDate(1);
-  } else if (period === 'lastMonth') {
-    start.setMonth(start.getMonth() - 1, 1);
-    end.setDate(1);
-    end.setMonth(end.getMonth() - 1);
+    return { start: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6), end: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1) };
+  }
+  if (period === 'thisMonth') {
+    return { start: new Date(now.getFullYear(), now.getMonth(), 1), end: new Date(now.getFullYear(), now.getMonth() + 1, 1) };
+  }
+  if (period === 'lastMonth') {
+    return { start: new Date(now.getFullYear(), now.getMonth() - 1, 1), end: new Date(now.getFullYear(), now.getMonth(), 1) };
   }
 
-  return { start, end };
+  return { start: todayStart, end: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1) };
 }
 
 export default function Dashboard() {
@@ -151,25 +153,17 @@ export default function Dashboard() {
   const [balanceVisible, setBalanceVisible] = useState(true);
   const [shortcuts, setShortcuts] = useState(loadShortcuts);
   const [editingShortcut, setEditingShortcut] = useState(false);
-  const [transactionPeriod, setTransactionPeriod] = useState('thisMonth');
+  const [transactionPeriod, setTransactionPeriod] = useState('today');
 
   const {
     accounts, transactions, getMonthlyIncome, getMonthlyExpense, getTotalBalance,
-    getMonthlyTransactions, getExpenseByCategory, savings: savingsGoals, getBudgetUsage,
+    getExpenseByCategory, savings: savingsGoals, getBudgetUsage,
   } = useFinance();
 
   const currentMonth = useMemo(() => new Date(), []);
   const income = useMemo(() => getMonthlyIncome(currentMonth), [getMonthlyIncome, currentMonth]);
   const expense = useMemo(() => getMonthlyExpense(currentMonth), [getMonthlyExpense, currentMonth]);
   const balance = useMemo(() => getTotalBalance(), [getTotalBalance]);
-  const monthlyTransactions = useMemo(() => getMonthlyTransactions(currentMonth), [getMonthlyTransactions, currentMonth]);
-  const todayTransactions = useMemo(() => {
-    const today = new Date();
-    return getMonthlyTransactions(today).filter((tx) => {
-      const d = new Date(tx.date);
-      return d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate();
-    }).slice(0, mobile ? 4 : 6);
-  }, [getMonthlyTransactions, mobile]);
   const filteredTransactions = useMemo(() => {
     const { start, end } = getPeriodBounds(transactionPeriod);
     return (transactions || []).filter((tx) => {
@@ -188,7 +182,7 @@ export default function Dashboard() {
     setShortcuts(picks);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(picks));
   };
-  const periodLabel = PERIOD_OPTIONS.find((item) => item.id === transactionPeriod)?.label || 'Bulan Ini';
+  const periodLabel = PERIOD_OPTIONS.find((item) => item.id === transactionPeriod)?.label || 'Hari Ini';
   const transactionSubtitle = transactionPeriod === 'today'
     ? 'Transaksi yang terjadi hari ini'
     : transactionPeriod === '7days'
@@ -231,11 +225,6 @@ export default function Dashboard() {
       <section>
         <div className="flex items-center justify-between mb-3 px-0.5"><div><h2 className="text-base font-bold text-white">Shortcut</h2><p className="text-[11px] text-white/35 mt-0.5">Akses cepat ke fitur favorit</p></div><button onClick={() => setEditingShortcut(true)} className="dashboard-edit-button"><Pencil size={13} /> Edit</button></div>
         <div className="flex gap-3 overflow-x-auto scrollbar-none snap-x pb-1">{shortcuts.map((id) => { const option = SHORTCUT_OPTIONS.find((item) => item.id === id); return option ? <ShortcutCard key={id} option={option} savingsGoals={savingsGoals} budgetUsage={budgetUsage} overBudget={overBudget} /> : null; })}</div>
-      </section>
-
-      <section className="dashboard-glass-card p-4 sm:p-5">
-        <div className="flex items-center justify-between mb-2"><div><h2 className="text-base font-bold text-white">Aktivitas Hari Ini</h2><p className="text-[11px] text-white/35 mt-0.5">Transaksi yang terjadi hari ini</p></div><Link to="/history" className="text-xs font-semibold text-primary">Lihat semua</Link></div>
-        {todayTransactions.length ? todayTransactions.map((tx) => <TransactionRow key={tx.id} transaction={tx} onEdit={openEdit} />) : <p className="py-8 text-center text-sm text-white/30">Belum ada aktivitas hari ini</p>}
       </section>
 
       <section className="dashboard-glass-card p-4 sm:p-5">
