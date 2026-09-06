@@ -51,9 +51,14 @@ function loadShortcuts() {
 function ShortcutEditModal({ selected, onSave, onClose }) {
   const [picks, setPicks] = useState(selected.filter((id) => SHORTCUT_OPTIONS.some((option) => option.id === id)));
   const [draggedId, setDraggedId] = useState(null);
+  const [showAddMenu, setShowAddMenu] = useState(false);
 
-  const toggle = (id) => {
-    setPicks((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
+  const addShortcut = (id) => {
+    setPicks((current) => current.includes(id) ? current : [...current, id]);
+  };
+
+  const removeShortcut = (id) => {
+    setPicks((current) => current.filter((item) => item !== id));
   };
 
   const moveShortcut = (targetId) => {
@@ -78,43 +83,74 @@ function ShortcutEditModal({ selected, onSave, onClose }) {
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
           <div>
             <h2 className="font-bold text-base text-white">Atur Shortcut</h2>
-            <p className="text-xs text-white/45 mt-0.5">Pilih menu dan geser untuk mengatur urutan</p>
+            <p className="text-xs text-white/45 mt-0.5">Geser untuk mengatur urutan</p>
           </div>
           <button onClick={onClose} className="p-2 rounded-xl text-white/50 hover:bg-white/5"><X size={17} /></button>
         </div>
 
-        <div className="p-5 space-y-5 max-h-[70vh] overflow-y-auto">
-          {selectedOptions.length > 0 && (
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-[.14em] text-white/35 mb-2">Urutan Shortcut</p>
-              <div className="space-y-2">
-                {selectedOptions.map(({ id, label, Icon }, index) => (
-                  <div key={id} draggable onDragStart={() => setDraggedId(id)} onDragEnd={() => setDraggedId(null)} onDragOver={(event) => { event.preventDefault(); moveShortcut(id); }} className={clsx('flex items-center gap-3 rounded-2xl border px-3 py-3 bg-white/[.025] transition-all select-none', draggedId === id ? 'border-primary/40 opacity-50' : 'border-white/8')}>
-                    <span className="text-[10px] font-bold text-white/25 w-4 text-center">{index + 1}</span>
-                    <span className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0"><Icon size={17} /></span>
-                    <span className="flex-1 text-xs font-semibold text-white/85">{label}</span>
-                    <GripVertical size={17} className="text-white/25 shrink-0" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {availableOptions.length > 0 && (
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-[.14em] text-white/35 mb-2">Tambah Menu</p>
-              <div className="grid grid-cols-2 gap-2">
-                {availableOptions.map(({ id, label, Icon }) => (
-                  <button key={id} onClick={() => toggle(id)} className="flex items-center gap-2.5 p-3 rounded-2xl border border-white/8 bg-white/[.025] text-left text-white/70 hover:border-primary/30 hover:bg-primary/5 transition-all">
-                    <span className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center shrink-0"><Icon size={16} /></span>
-                    <span className="text-xs font-semibold truncate">{label}</span>
+        <div className="p-5 space-y-3 max-h-[70vh] overflow-y-auto">
+          {selectedOptions.length > 0 ? (
+            <div className="space-y-2">
+              {selectedOptions.map(({ id, label, Icon }, index) => (
+                <div
+                  key={id}
+                  draggable
+                  onDragStart={() => setDraggedId(id)}
+                  onDragEnd={() => setDraggedId(null)}
+                  onDragOver={(event) => { event.preventDefault(); moveShortcut(id); }}
+                  className={clsx(
+                    'flex items-center gap-3 rounded-2xl border px-3 py-3 bg-white/[.025] transition-all select-none',
+                    draggedId === id ? 'border-primary/40 opacity-50' : 'border-white/8'
+                  )}
+                >
+                  <span className="text-[10px] font-bold text-white/25 w-4 text-center">{index + 1}</span>
+                  <span className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0"><Icon size={17} /></span>
+                  <span className="flex-1 text-xs font-semibold text-white/85">{label}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeShortcut(id)}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center text-white/25 hover:text-red-300 hover:bg-red-400/10 transition-colors shrink-0"
+                    aria-label={`Hapus ${label} dari shortcut`}
+                  >
+                    <X size={15} />
                   </button>
-                ))}
-              </div>
+                  <GripVertical size={17} className="text-white/25 shrink-0" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-dashed border-white/10 px-4 py-7 text-center">
+              <p className="text-xs text-white/35">Belum ada shortcut</p>
             </div>
           )}
 
-          <button onClick={() => { onSave(picks); onClose(); }} className="btn-primary w-full py-3 rounded-2xl">Simpan</button>
+          <button
+            type="button"
+            onClick={() => setShowAddMenu((value) => !value)}
+            disabled={availableOptions.length === 0}
+            className="w-full flex items-center justify-center gap-2 rounded-2xl border border-white/8 bg-white/[.025] px-4 py-3 text-xs font-semibold text-primary hover:bg-primary/5 hover:border-primary/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          >
+            <Plus size={15} />
+            Tambah Menu
+          </button>
+
+          {showAddMenu && availableOptions.length > 0 && (
+            <div className="grid grid-cols-2 gap-2">
+              {availableOptions.map(({ id, label, Icon }) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => addShortcut(id)}
+                  className="flex items-center gap-2.5 p-3 rounded-2xl border border-white/8 bg-white/[.025] text-left text-white/70 hover:border-primary/30 hover:bg-primary/5 transition-all"
+                >
+                  <span className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center shrink-0"><Icon size={16} /></span>
+                  <span className="text-xs font-semibold truncate">{label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          <button onClick={() => { onSave(picks); onClose(); }} className="btn-primary w-full py-3 rounded-2xl mt-1">Simpan</button>
         </div>
       </div>
     </div>
