@@ -30,6 +30,7 @@ const SHORTCUT_OPTIONS = [
 
 const DEFAULT_SHORTCUTS = ['/accounts', '/savings', '/budget', '/debt', '/subscriptions'];
 const STORAGE_KEY = 'dashboard_shortcuts';
+const DEFAULT_VISIBLE_TRANSACTIONS = 5;
 
 function loadShortcuts() {
   try {
@@ -187,6 +188,7 @@ export default function Dashboard() {
   const [balanceVisible, setBalanceVisible] = useState(true);
   const [shortcuts, setShortcuts] = useState(loadShortcuts);
   const [editingShortcut, setEditingShortcut] = useState(false);
+  const [showAllTransactions, setShowAllTransactions] = useState(false);
   const { accounts, transactions, getMonthlyIncome, getMonthlyExpense, getTotalBalance, getBudgetUsage, savings: savingsGoals } = useFinance();
   const currentMonth = useMemo(() => new Date(), []);
   const income = useMemo(() => getMonthlyIncome(currentMonth), [getMonthlyIncome, currentMonth]);
@@ -203,13 +205,14 @@ export default function Dashboard() {
   const overBudget = useMemo(() => budgetUsage.filter((b) => b.spent > b.amount).length, [budgetUsage]);
   const saveShortcuts = (picks) => { setShortcuts(picks); localStorage.setItem(STORAGE_KEY, JSON.stringify(picks)); };
   const todayLabel = useMemo(() => new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date()), []);
+  const visibleTransactions = showAllTransactions ? todayTransactions : todayTransactions.slice(0, DEFAULT_VISIBLE_TRANSACTIONS);
 
   return <div className="dashboard-page min-h-full pb-8">
     <main className="max-w-6xl mx-auto px-4 sm:px-7 pt-4 sm:pt-6 space-y-5">
       <section className="dashboard-balance relative overflow-hidden rounded-[26px] p-5 sm:p-7"><div className="absolute -right-16 -top-20 w-56 h-56 rounded-full bg-primary/10 blur-3xl pointer-events-none" /><div className="relative"><div className="flex items-center justify-between"><p className="text-xs font-semibold uppercase tracking-[.16em] text-primary/70">Total Uang</p><button onClick={() => setBalanceVisible((v) => !v)} className="dashboard-icon-button" aria-label="Tampilkan atau sembunyikan nominal">{balanceVisible ? <Eye size={17} /> : <EyeOff size={17} />}</button></div><div className="flex items-end justify-between gap-4 mt-2"><p className="text-[30px] sm:text-[40px] leading-none font-extrabold tracking-tight text-white">{balanceVisible ? formatCurrency(balance) : 'Rp ••••••'}</p><span className="hidden sm:flex items-center gap-1.5 text-xs text-white/45"><WalletCards size={14} /> {accounts.length} akun</span></div><div className="flex gap-2.5 overflow-x-auto scrollbar-none mt-5">{accounts.map((account) => <div key={account.id} className="dashboard-account-chip shrink-0" style={{ borderColor: `${account.color}35` }}><span className="w-7 h-7 rounded-lg flex items-center justify-center overflow-hidden" style={{ background: `${account.color}18` }}>{account.iconType === 'photo' && account.iconPhoto ? <img src={account.iconPhoto} alt="" className="w-full h-full object-cover" /> : <span>{account.icon}</span>}</span><span className="text-xs font-semibold" style={{ color: account.color }}>{balanceVisible ? formatShortCurrency(account.balance) : '••••'}</span></div>)}</div></div></section>
       <section className="grid grid-cols-2 gap-3"><div className="dashboard-stat-card"><span className="dashboard-stat-icon income"><ArrowDownLeft size={17} /></span><span className="text-xs text-white/45">Pemasukan</span><strong className="text-lg sm:text-xl text-[#A8E6CF]">{formatShortCurrency(income)}</strong></div><div className="dashboard-stat-card"><span className="dashboard-stat-icon expense"><ArrowUpRight size={17} /></span><span className="text-xs text-white/45">Pengeluaran</span><strong className="text-lg sm:text-xl text-[#FF8C8C]">{formatShortCurrency(expense)}</strong></div></section>
       <section><div className="flex gap-2 overflow-x-auto scrollbar-none snap-x pb-1 items-stretch">{shortcuts.map((id) => { const option = SHORTCUT_OPTIONS.find((item) => item.id === id); return option ? <ShortcutCard key={id} option={option} savingsGoals={savingsGoals} budgetUsage={budgetUsage} overBudget={overBudget} /> : null; })}<AddShortcutCard onClick={() => setEditingShortcut(true)} /></div></section>
-      <section className="dashboard-glass-card p-4 sm:p-5"><div className="mb-3"><h2 className="text-base font-bold text-white">Transaksi</h2><p className="text-[11px] text-white/35 mt-0.5">Hari ini, {todayLabel}</p></div>{todayTransactions.length ? todayTransactions.map((tx) => <TransactionRow key={tx.id} transaction={tx} onEdit={openEdit} />) : <p className="py-8 text-center text-sm text-white/30">Belum ada transaksi hari ini</p>}</section>
+      <section className="dashboard-glass-card p-4 sm:p-5"><div className="mb-3"><h2 className="text-base font-bold text-white">Transaksi</h2><p className="text-[11px] text-white/35 mt-0.5">Hari ini, {todayLabel}</p></div>{todayTransactions.length ? visibleTransactions.map((tx) => <TransactionRow key={tx.id} transaction={tx} onEdit={openEdit} />) : <p className="py-8 text-center text-sm text-white/30">Belum ada transaksi hari ini</p>}{todayTransactions.length > DEFAULT_VISIBLE_TRANSACTIONS && <button type="button" onClick={() => setShowAllTransactions((value) => !value)} className="w-full pt-3 text-center text-xs font-semibold text-primary hover:text-primary/80 transition-colors">{showAllTransactions ? 'Tampilkan lebih sedikit' : 'Tampilkan semua'}</button>}</section>
     </main>
     {editingShortcut && <ShortcutEditModal selected={shortcuts} onSave={saveShortcuts} onClose={() => setEditingShortcut(false)} />}
   </div>;
