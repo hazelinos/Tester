@@ -36,10 +36,10 @@ const getTimeLabel = (value) => {
 };
 
 export default function TransactionModal({ editTx, onClose }) {
-  const { addTransaction, updateTransaction, deleteTransaction, updateAccount, accounts, transactions } = useFinance();
+  const { addTransaction, updateTransaction, deleteTransaction, accounts, transactions } = useFinance();
   const isEdit = !!editTx;
-  const [type, setType] = useState(editTx?.type || 'expense');
   const initialCategories = editTx?.type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+  const [type, setType] = useState(editTx?.type || 'expense');
   const [expression, setExpression] = useState(editTx?.amount ? String(editTx.amount) : '');
   const [categoryId, setCategoryId] = useState(editTx?.categoryId || initialCategories[0]?.id || '');
   const [accountId, setAccountId] = useState(editTx?.accountId || accounts[0]?.id || '');
@@ -55,7 +55,6 @@ export default function TransactionModal({ editTx, onClose }) {
   const calculatedAmount = calculateExpression(expression);
   const numAmount = calculatedAmount !== null ? calculatedAmount : (Number(expression) || 0);
   const accentColor = type === 'income' ? '#A8E6CF' : '#FF6B6B';
-
   const categoryUsage = useMemo(() => {
     const counts = {};
     transactions.forEach((tx) => { if (tx.type === type && tx.categoryId) counts[tx.categoryId] = (counts[tx.categoryId] || 0) + 1; });
@@ -75,27 +74,15 @@ export default function TransactionModal({ editTx, onClose }) {
     return columns;
   }, [filteredCategories, categoryRows]);
 
-  // Use the actual selected account balance as a number. Editing an expense restores its old amount first.
-  const availableBalance = useMemo(() => {
-    if (!selectedAcc) return 0;
-    const balance = Number.parseFloat(selectedAcc.balance);
-    const currentBalance = Number.isFinite(balance) ? balance : 0;
-    const oldAmount = isEdit && editTx?.type === 'expense' && editTx?.accountId === accountId
-      ? Number(editTx.amount) || 0
-      : 0;
-    return Math.max(0, currentBalance) + oldAmount;
-  }, [selectedAcc, isEdit, editTx, accountId]);
-  const balanceError = type === 'expense' && numAmount > 0 && selectedAcc && numAmount > availableBalance ? selectedAcc : null;
-
-  // All non-amount fields have real defaults, so entering a valid nominal is enough to enable ✓.
+  // The checkmark is the Add Transaction action. A transaction may make an account balance negative;
+  // the add action itself must not be disabled by the current account balance.
   const isValid = Boolean(
     numAmount > 0 &&
     !/[+\-*/]$/.test(expression) &&
     selectedAcc &&
     categoryId &&
     date &&
-    (type === 'income' || !!expenseType) &&
-    !balanceError
+    (type === 'income' || !!expenseType)
   );
 
   const changeType = (nextType) => {
@@ -178,11 +165,7 @@ export default function TransactionModal({ editTx, onClose }) {
               <label className="flex items-center gap-2 rounded-xl border border-border bg-input px-2.5 py-2 cursor-pointer min-w-0"><CalendarDays size={20} className="text-text-secondary shrink-0" /><input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full min-w-0 bg-transparent text-xs text-text-primary focus:outline-none [color-scheme:dark] appearance-none" /></label>
               <div className="flex items-center gap-2 rounded-xl border border-border bg-input px-2.5 py-2 min-w-0"><WalletCards size={20} className="text-text-secondary shrink-0" /><select value={accountId} onChange={(e) => setAccountId(e.target.value)} className="min-w-0 flex-1 bg-transparent text-xs text-text-primary focus:outline-none"><option value="" disabled>Pilih akun</option>{accounts.map((acc) => <option key={acc.id} value={acc.id}>{acc.name}</option>)}</select></div>
             </div>
-            <div className="text-center py-0.5">
-              <p className="text-[10px] text-text-muted mb-0.5">Jumlah</p>
-              <div className="flex items-center justify-center gap-1.5 min-h-[52px]"><span className="text-base font-semibold" style={{color:accentColor}}>Rp</span><span className="text-[36px] leading-none font-bold tracking-tight tabular-nums" style={{color:accentColor}}>{formatExpression(expression)||'0'}</span></div>
-              {balanceError && <p className="text-[10px] text-expense mt-1.5">Saldo {balanceError.name} tidak cukup · kurang {formatCurrency(numAmount-availableBalance)}</p>}
-            </div>
+            <div className="text-center py-0.5"><p className="text-[10px] text-text-muted mb-0.5">Jumlah</p><div className="flex items-center justify-center gap-1.5 min-h-[52px]"><span className="text-base font-semibold" style={{color:accentColor}}>Rp</span><span className="text-[36px] leading-none font-bold tracking-tight tabular-nums" style={{color:accentColor}}>{formatExpression(expression)||'0'}</span></div></div>
             <div className="flex items-center justify-between text-right px-1"><span className="text-[10px] text-text-muted">{expression&&/[+\-*/]/.test(expression)?'Hasil perhitungan':''}</span><span className="text-sm font-semibold text-text-secondary">= {formatAmount(numAmount)}</span></div>
             <div>
               <div className="flex items-center justify-between gap-2 mb-1.5"><p className="text-xs font-bold tracking-widest text-text-muted">KATEGORI</p><div className="flex items-center gap-1">{[1,2,3].map((rows)=><button key={rows} type="button" onClick={()=>setCategoryRows(rows)} className={clsx('min-w-6 h-6 px-1.5 rounded-md text-[10px] font-bold border',categoryRows===rows?'bg-primary/15 text-primary border-primary/30':'bg-input text-text-muted border-border')}>{rows}</button>)}</div></div>
