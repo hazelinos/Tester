@@ -15,7 +15,7 @@
 @layer components {
   .card { @apply bg-card border border-border rounded-2xl p-4; }
   .btn-primary { @apply bg-primary text-bg font-semibold px-4 py-2 rounded-xl hover:bg-primary-dark transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed; }
-  .btn-ghost { @apply bg-elevated text-text-secondary font-medium px-4 py-2 rounded-xl hover:bg-border transition-colors duration-150; }
+  .btn-ghost { @apply bg-elevated text-text-secondary font-medium px-4 py-2.5 rounded-xl hover:bg-border transition-colors duration-150; }
   .btn-danger { @apply bg-danger/20 text-danger font-medium px-4 py-2 rounded-xl hover:bg-danger/30 transition-colors duration-150; }
   .input { @apply bg-input border border-border rounded-xl px-4 py-2.5 text-text-primary placeholder-text-muted focus:outline-none focus:border-primary/50 transition-colors w-full text-sm; }
   .badge-income { @apply text-income bg-income/10 px-2 py-0.5 rounded-full text-xs font-semibold; }
@@ -25,7 +25,7 @@
 }
 
 .dashboard-page { background: radial-gradient(circle at 85% 0%, rgba(38,88,68,.18), transparent 28rem), linear-gradient(180deg,#0b100e 0%,#080c0a 48%,#070a09 100%); color: #f5f5f5; }
-.dashboard-header { background: linear-gradient(180deg,#17372b 0%,#10251d 72%,rgba(16,37,29,.82) 100%); border-bottom: 1px solid rgba(168,230,207,.08); }
+.dashboard-header { position:sticky; top:0; z-index:30; background:linear-gradient(180deg,#17372b 0%,#10251d 72%,rgba(16,37,29,.96) 100%); border-bottom:1px solid rgba(168,230,207,.08); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); }
 .dashboard-logo { width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;background:rgba(4,15,11,.46);border:1px solid rgba(168,230,207,.13);box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 10px 30px rgba(0,0,0,.18); }
 .dashboard-logo img { width:31px;height:31px;object-fit:contain; }
 .dashboard-marquee { width:min(310px,48vw);overflow:hidden;white-space:nowrap;color:rgba(226,244,237,.55);font-size:10px;line-height:14px; }
