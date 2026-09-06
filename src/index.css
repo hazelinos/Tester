@@ -29,8 +29,9 @@
 .dashboard-logo { width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;background:rgba(4,15,11,.46);border:1px solid rgba(168,230,207,.13);box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 10px 30px rgba(0,0,0,.18); }
 .dashboard-logo img { width:31px;height:31px;object-fit:contain; }
 .dashboard-marquee { width:min(310px,48vw);overflow:hidden;white-space:nowrap;color:rgba(226,244,237,.55);font-size:10px;line-height:14px; }
-.dashboard-marquee-track { display:inline-block;min-width:max-content;animation:dashboardMarquee 12s linear infinite;will-change:transform; }
-@keyframes dashboardMarquee { from { transform:translateX(0); } to { transform:translateX(-100%); } }
+.dashboard-marquee-track { display:flex;width:max-content;min-width:max-content;animation:dashboardMarquee 12s linear infinite;will-change:transform; }
+.dashboard-marquee-track > span { display:block;flex:0 0 auto;padding-right:60px; }
+@keyframes dashboardMarquee { from { transform:translateX(0); } to { transform:translateX(-50%); } }
 .dashboard-month-control { display:flex;align-items:center;gap:2px;padding:4px;border:1px solid rgba(255,255,255,.08);border-radius:15px;background:rgba(3,12,8,.26);backdrop-filter:blur(14px); }
 .dashboard-month-control button { width:30px;height:30px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.62);transition:.18s ease; }
 .dashboard-month-control button:hover { background:rgba(255,255,255,.07);color:#fff; }
