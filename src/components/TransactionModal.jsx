@@ -56,13 +56,13 @@ export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
   const calculatedAmount = calculateExpression(expression);
   const numAmount = calculatedAmount !== null ? calculatedAmount : (Number(expression) || 0);
   const accentColor = type === 'income' ? '#A8E6CF' : '#FF6B6B';
+  const transactionTimeLabel = getTimeLabel(editTx?.date);
   const categoryUsage = useMemo(() => { const counts = {}; transactions.forEach((tx) => { if (tx.type === type && tx.categoryId) counts[tx.categoryId] = (counts[tx.categoryId] || 0) + 1; }); return counts; }, [transactions, type]);
   const sortedCategories = useMemo(() => [...categories].sort((a, b) => { const diff = (categoryUsage[b.id] || 0) - (categoryUsage[a.id] || 0); return diff || categories.indexOf(a) - categories.indexOf(b); }), [categories, categoryUsage]);
   const filteredCategories = useMemo(() => { const query = categorySearch.trim().toLowerCase(); return query ? sortedCategories.filter((cat) => cat.label.toLowerCase().includes(query)) : sortedCategories; }, [sortedCategories, categorySearch]);
   const categoryColumns = useMemo(() => { const columns = []; for (let i = 0; i < filteredCategories.length; i += categoryRows) columns.push(filteredCategories.slice(i, i + categoryRows)); return columns; }, [filteredCategories, categoryRows]);
   const balanceError = useMemo(() => { if (type !== 'expense' || !numAmount || !selectedAcc) return null; const oldAmount = isEdit && editTx?.type === 'expense' && editTx?.accountId === accountId ? editTx.amount : 0; const effectiveBalance = selectedAcc.balance + oldAmount; return numAmount > effectiveBalance ? selectedAcc : null; }, [type, numAmount, selectedAcc, isEdit, editTx, accountId]);
   const isValid = numAmount > 0 && !/[+\-*/]$/.test(expression) && categoryId && accountId && date && !balanceError && (type === 'income' || expenseType);
-  const displayTime = getTimeLabel(isEdit ? editTx?.date : null);
 
   useEffect(() => {
     if (!isEdit) {
@@ -85,9 +85,8 @@ export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
     if (!isValid) return;
     if (isSalarySetup) { if (!selectedAcc) return; const salaryDate = new Date(`${date}T12:00:00`).getDate(); updateAccount({ ...selectedAcc, salaryEnabled: true, salaryAmount: numAmount, salaryDate }); onClose(); return; }
     const now = new Date();
-    const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-    const editTime = editTx?.date ? getTimeLabel(editTx.date) : currentTime;
-    const data = { type, amount: numAmount, categoryId, accountId, note: note.trim(), date: new Date(`${date}T${isEdit ? editTime : currentTime}:00`).toISOString(), ...(type === 'expense' ? { expenseType } : {}) };
+    const saveTime = isEdit && editTx?.date ? getTimeLabel(editTx.date) : getTimeLabel(now);
+    const data = { type, amount: numAmount, categoryId, accountId, note: note.trim(), date: new Date(`${date}T${saveTime}:00`).toISOString(), ...(type === 'expense' ? { expenseType } : {}) };
     if (isEdit) updateTransaction({ ...editTx, ...data }); else addTransaction(data); onClose();
   };
   const handleDelete = () => { if (window.confirm('Hapus transaksi ini?')) { deleteTransaction(editTx.id); onClose(); } };
@@ -100,7 +99,7 @@ export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
         <div className="flex-1 min-h-0 overflow-y-auto px-4 pt-1.5 pb-4"><div className="space-y-3">
           <div className="grid grid-cols-2 gap-1.5"><button type="button" onClick={() => setType('expense')} className={clsx('py-2 border-b-2 text-sm font-bold', type === 'expense' ? 'text-expense border-expense' : 'text-text-muted border-transparent')}>PENGELUARAN</button><button type="button" onClick={() => setType('income')} className={clsx('py-2 border-b-2 text-sm font-bold', type === 'income' ? 'text-income border-income' : 'text-text-muted border-transparent')}>PEMASUKAN</button></div>
           <div className="grid grid-cols-2 gap-2">
-            <label className="flex items-center gap-2 rounded-xl border border-border bg-input px-2.5 py-2 cursor-pointer min-w-0"><CalendarDays size={20} className="text-text-secondary shrink-0" /><div className="flex items-center gap-1.5 min-w-0 flex-1"><input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="min-w-0 flex-1 bg-transparent text-xs text-text-primary focus:outline-none [color-scheme:dark]" /><span className="shrink-0 text-xs text-text-primary tabular-nums">{displayTime}</span></div></label>
+            <label className="flex items-center gap-2 rounded-xl border border-border bg-input px-2.5 py-2 cursor-pointer min-w-0"><CalendarDays size={20} className="text-text-secondary shrink-0" /><div className="flex items-center gap-1.5 min-w-0 flex-1"><input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="min-w-0 flex-1 bg-transparent text-xs text-text-primary focus:outline-none [color-scheme:dark] appearance-none" /><span className="text-xs text-text-primary tabular-nums shrink-0">{transactionTimeLabel}</span></div></label>
             <div className="flex items-center gap-2 rounded-xl border border-border bg-input px-2.5 py-2 min-w-0"><WalletCards size={20} className="text-text-secondary shrink-0" /><select value={accountId} onChange={(e) => setAccountId(e.target.value)} className="min-w-0 flex-1 bg-transparent text-xs text-text-primary focus:outline-none"><option value="" disabled>Pilih akun</option>{accounts.map((acc) => <option key={acc.id} value={acc.id}>{acc.name}</option>)}</select></div>
           </div>
           <div className="text-center py-0.5"><p className="text-[10px] text-text-muted mb-0.5">Jumlah</p><div className="flex items-center justify-center gap-1.5 min-h-[52px]"><span className="text-base font-semibold" style={{color:accentColor}}>Rp</span><span className="text-[36px] leading-none font-bold tracking-tight tabular-nums" style={{color:accentColor}}>{formatExpression(expression)||'0'}</span></div>{balanceError&&<p className="text-[10px] text-expense mt-1.5">Saldo {balanceError.name} tidak cukup · kurang {formatCurrency(numAmount-balanceError.balance)}</p>}</div>
