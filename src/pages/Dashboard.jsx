@@ -3,6 +3,7 @@ import { Link, useOutletContext } from 'react-router-dom';
 import {
   ArrowDownLeft,
   ArrowUpRight,
+  CreditCard,
   Eye,
   EyeOff,
   GripVertical,
@@ -21,13 +22,14 @@ import { getCategoryById } from '../constants/categories';
 import clsx from 'clsx';
 
 const SHORTCUT_OPTIONS = [
+  { id: '/accounts', label: 'Dompet', Icon: CreditCard },
   { id: '/savings', label: 'Tabungan', Icon: PiggyBank },
   { id: '/budget', label: 'Budget', Icon: Target },
   { id: '/debt', label: 'Hutang', Icon: Landmark },
   { id: '/subscriptions', label: 'Langganan', Icon: Radio },
 ];
 
-const DEFAULT_SHORTCUTS = ['/savings', '/budget', '/debt', '/subscriptions'];
+const DEFAULT_SHORTCUTS = ['/accounts', '/savings', '/budget', '/debt', '/subscriptions'];
 const STORAGE_KEY = 'dashboard_shortcuts';
 const PERIOD_OPTIONS = [
   { id: 'today', label: 'Hari Ini' },
@@ -161,7 +163,8 @@ function ShortcutCard({ option, savingsGoals, budgetUsage, overBudget }) {
   const { id, label, Icon } = option;
   let value = 'Kelola';
   let sub = '';
-  if (id === '/savings') {
+  if (id === '/accounts') sub = 'Akun & saldo';
+  else if (id === '/savings') {
     const saved = (savingsGoals || []).reduce((sum, goal) => sum + Number(goal.collected || 0), 0);
     const active = (savingsGoals || []).filter((goal) => Number(goal.collected || 0) < Number(goal.target || 0)).length;
     value = formatShortCurrency(saved);
@@ -228,12 +231,11 @@ export default function Dashboard() {
   const periodLabel = PERIOD_OPTIONS.find((item) => item.id === transactionPeriod)?.label || 'Hari Ini';
   const transactionSubtitle = transactionPeriod === 'today' ? 'Transaksi yang terjadi hari ini' : transactionPeriod === '7days' ? 'Aktivitas 7 hari terakhir' : transactionPeriod === 'lastMonth' ? 'Aktivitas bulan lalu' : `Aktivitas ${getMonthName(currentMonth.getMonth())} ${currentMonth.getFullYear()}`;
 
-  return <div className="dashboard-page min-h-full pb-24 sm:pb-8">
-    <header className="dashboard-header px-4 sm:px-7 pt-5 pb-4"><div className="max-w-6xl mx-auto"><div className="flex items-center gap-3 min-w-0"><div className="dashboard-logo"><img src="/montra-logo.svg" alt="Montra" /></div><div className="min-w-0"><h1 className="text-[22px] sm:text-2xl font-extrabold tracking-tight text-white">Montra</h1><div className="dashboard-marquee mt-0.5" aria-label="A Simple Money Tracker For Your Finance"><div className="dashboard-marquee-track"><span>A Simple Money Tracker For Your Finance</span><span aria-hidden="true">A Simple Money Tracker For Your Finance</span></div></div></div></div></div></header>
+  return <div className="dashboard-page min-h-full pb-8">
     <main className="max-w-6xl mx-auto px-4 sm:px-7 pt-4 sm:pt-6 space-y-5">
       <section className="dashboard-balance relative overflow-hidden rounded-[26px] p-5 sm:p-7"><div className="absolute -right-16 -top-20 w-56 h-56 rounded-full bg-primary/10 blur-3xl pointer-events-none" /><div className="relative"><div className="flex items-center justify-between"><p className="text-xs font-semibold uppercase tracking-[.16em] text-primary/70">Total Uang</p><button onClick={() => setBalanceVisible((v) => !v)} className="dashboard-icon-button" aria-label="Tampilkan atau sembunyikan nominal">{balanceVisible ? <Eye size={17} /> : <EyeOff size={17} />}</button></div><div className="flex items-end justify-between gap-4 mt-2"><p className="text-[30px] sm:text-[40px] leading-none font-extrabold tracking-tight text-white">{balanceVisible ? formatCurrency(balance) : 'Rp ••••••'}</p><span className="hidden sm:flex items-center gap-1.5 text-xs text-white/45"><WalletCards size={14} /> {accounts.length} akun</span></div><div className="flex gap-2.5 overflow-x-auto scrollbar-none mt-5">{accounts.map((account) => <div key={account.id} className="dashboard-account-chip shrink-0" style={{ borderColor: `${account.color}35` }}><span className="w-7 h-7 rounded-lg flex items-center justify-center overflow-hidden" style={{ background: `${account.color}18` }}>{account.iconType === 'photo' && account.iconPhoto ? <img src={account.iconPhoto} alt="" className="w-full h-full object-cover" /> : <span>{account.icon}</span>}</span><span className="text-xs font-semibold" style={{ color: account.color }}>{balanceVisible ? formatShortCurrency(account.balance) : '••••'}</span></div>)}</div></div></section>
       <section className="grid grid-cols-2 gap-3"><div className="dashboard-stat-card"><span className="dashboard-stat-icon income"><ArrowDownLeft size={17} /></span><span className="text-xs text-white/45">Pemasukan</span><strong className="text-lg sm:text-xl text-[#A8E6CF]">{formatShortCurrency(income)}</strong></div><div className="dashboard-stat-card"><span className="dashboard-stat-icon expense"><ArrowUpRight size={17} /></span><span className="text-xs text-white/45">Pengeluaran</span><strong className="text-lg sm:text-xl text-[#FF8C8C]">{formatShortCurrency(expense)}</strong></div></section>
-      <section><div className="flex gap-2 overflow-x-auto scrollbar-none snap-x pb-1 items-stretch">{shortcuts.map((id) => { const option = SHORTCUT_OPTIONS.find((item) => item.id === id); return option ? <ShortcutCard key={id} option={option} savingsGoals={savingsGoals} budgetUsage={budgetUsage} overBudget={overBudget} /> : null; })}<button onClick={() => setEditingShortcut(true)} className="dashboard-shortcut shrink-0 w-[88px] sm:w-[100px] rounded-2xl p-2.5 flex flex-col items-center justify-center text-primary/80 hover:text-primary" aria-label="Tambah shortcut"><span className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center"><Plus size={15} /></span><span className="text-[10px] font-semibold mt-1.5">Tambah</span></button></div></section>
+      <section><div className="flex items-center justify-between gap-3 mb-2"><h2 className="text-base font-bold text-white">Shortcut</h2><button onClick={() => setEditingShortcut(true)} className="dashboard-edit-button" aria-label="Atur shortcut"><Plus size={13} /> Atur</button></div><div className="flex gap-2 overflow-x-auto scrollbar-none snap-x pb-1 items-stretch">{shortcuts.map((id) => { const option = SHORTCUT_OPTIONS.find((item) => item.id === id); return option ? <ShortcutCard key={id} option={option} savingsGoals={savingsGoals} budgetUsage={budgetUsage} overBudget={overBudget} /> : null; })}</div></section>
       <section className="dashboard-glass-card p-4 sm:p-5"><div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3"><div><h2 className="text-base font-bold text-white">Transaksi</h2><p className="text-[11px] text-white/35 mt-0.5">{transactionSubtitle}</p></div><div className="flex gap-1.5 overflow-x-auto scrollbar-none pb-0.5">{PERIOD_OPTIONS.map((option) => <button key={option.id} onClick={() => setTransactionPeriod(option.id)} className={clsx('shrink-0 rounded-xl px-3 py-2 text-[11px] font-semibold border transition-all', transactionPeriod === option.id ? 'bg-primary/15 border-primary/40 text-primary' : 'bg-white/[.025] border-white/8 text-white/45 hover:text-white/70')}>{option.label}</button>)}</div></div>{filteredTransactions.length ? filteredTransactions.slice(0, mobile ? 5 : 8).map((tx) => <TransactionRow key={tx.id} transaction={tx} onEdit={openEdit} />) : <p className="py-8 text-center text-sm text-white/30">Belum ada transaksi untuk {periodLabel.toLowerCase()}</p>}{filteredTransactions.length > (mobile ? 5 : 8) && <Link to="/history" className="block text-center text-xs font-semibold text-primary pt-3">Lihat semua transaksi</Link>}</section>
       {topCats.length > 0 && <section className="dashboard-glass-card p-4 sm:p-5"><div className="flex items-center justify-between mb-4"><h2 className="text-base font-bold text-white">Pengeluaran Terbesar</h2><span className="text-[11px] text-white/35">Bulan ini</span></div><div className="space-y-3">{topCats.map((cat) => <div key={cat.id} className="flex items-center gap-3"><span className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${cat.color}18` }}>{cat.icon}</span><span className="flex-1 min-w-0"><span className="block text-xs font-semibold text-white/75 truncate">{cat.label}</span><span className="block h-1.5 rounded-full bg-white/5 mt-1.5 overflow-hidden"><span className="block h-full rounded-full" style={{ width: `${Math.max(8, (cat.amount / Math.max(topCats[0].amount, 1)) * 100)}%`, background: cat.color }} /></span></span><strong className="text-xs text-white/70">{formatShortCurrency(cat.amount)}</strong></div>)}</div></section>}
     </main>
