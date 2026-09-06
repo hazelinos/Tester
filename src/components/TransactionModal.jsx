@@ -30,10 +30,10 @@ const calculateExpression = (expression) => {
   for (let i = 1; i < values.length; i += 2) result = values[i] === '+' ? result + Number(values[i + 1]) : result - Number(values[i + 1]);
   return Number.isFinite(result) ? Math.round((result + Number.EPSILON) * 100) / 100 : null;
 };
-const getTimeInputValue = (value) => {
+const getTimeLabel = (value) => {
   const d = value ? new Date(value) : new Date();
   if (Number.isNaN(d.getTime())) return '00:00';
-  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false });
 };
 
 export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
@@ -44,7 +44,6 @@ export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
   const [accountId, setAccountId] = useState(editTx?.accountId || accounts[0]?.id || '');
   const [note, setNote] = useState(editTx?.note || '');
   const [date, setDate] = useState(editTx?.date ? toDateInputValue(editTx.date) : toDateInputValue(new Date()));
-  const [time, setTime] = useState(getTimeInputValue(editTx?.date));
   const [expenseType, setExpenseType] = useState(editTx?.expenseType || 'need');
   const [justCalculated, setJustCalculated] = useState(false);
   const [categorySearch, setCategorySearch] = useState('');
@@ -62,7 +61,8 @@ export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
   const filteredCategories = useMemo(() => { const query = categorySearch.trim().toLowerCase(); return query ? sortedCategories.filter((cat) => cat.label.toLowerCase().includes(query)) : sortedCategories; }, [sortedCategories, categorySearch]);
   const categoryColumns = useMemo(() => { const columns = []; for (let i = 0; i < filteredCategories.length; i += categoryRows) columns.push(filteredCategories.slice(i, i + categoryRows)); return columns; }, [filteredCategories, categoryRows]);
   const balanceError = useMemo(() => { if (type !== 'expense' || !numAmount || !selectedAcc) return null; const oldAmount = isEdit && editTx?.type === 'expense' && editTx?.accountId === accountId ? editTx.amount : 0; const effectiveBalance = selectedAcc.balance + oldAmount; return numAmount > effectiveBalance ? selectedAcc : null; }, [type, numAmount, selectedAcc, isEdit, editTx, accountId]);
-  const isValid = numAmount > 0 && !/[+\-*/]$/.test(expression) && categoryId && accountId && date && time && !balanceError && (type === 'income' || expenseType);
+  const isValid = numAmount > 0 && !/[+\-*/]$/.test(expression) && categoryId && accountId && date && !balanceError && (type === 'income' || expenseType);
+  const displayTime = getTimeLabel(isEdit ? editTx?.date : null);
 
   useEffect(() => {
     if (!isEdit) {
@@ -84,7 +84,10 @@ export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
   const handleSave = () => {
     if (!isValid) return;
     if (isSalarySetup) { if (!selectedAcc) return; const salaryDate = new Date(`${date}T12:00:00`).getDate(); updateAccount({ ...selectedAcc, salaryEnabled: true, salaryAmount: numAmount, salaryDate }); onClose(); return; }
-    const data = { type, amount: numAmount, categoryId, accountId, note: note.trim(), date: new Date(`${date}T${time}:00`).toISOString(), ...(type === 'expense' ? { expenseType } : {}) };
+    const now = new Date();
+    const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const editTime = editTx?.date ? getTimeLabel(editTx.date) : currentTime;
+    const data = { type, amount: numAmount, categoryId, accountId, note: note.trim(), date: new Date(`${date}T${isEdit ? editTime : currentTime}:00`).toISOString(), ...(type === 'expense' ? { expenseType } : {}) };
     if (isEdit) updateTransaction({ ...editTx, ...data }); else addTransaction(data); onClose();
   };
   const handleDelete = () => { if (window.confirm('Hapus transaksi ini?')) { deleteTransaction(editTx.id); onClose(); } };
@@ -97,7 +100,7 @@ export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
         <div className="flex-1 min-h-0 overflow-y-auto px-4 pt-1.5 pb-4"><div className="space-y-3">
           <div className="grid grid-cols-2 gap-1.5"><button type="button" onClick={() => setType('expense')} className={clsx('py-2 border-b-2 text-sm font-bold', type === 'expense' ? 'text-expense border-expense' : 'text-text-muted border-transparent')}>PENGELUARAN</button><button type="button" onClick={() => setType('income')} className={clsx('py-2 border-b-2 text-sm font-bold', type === 'income' ? 'text-income border-income' : 'text-text-muted border-transparent')}>PEMASUKAN</button></div>
           <div className="grid grid-cols-2 gap-2">
-            <label className="flex items-center gap-2 rounded-xl border border-border bg-input px-2.5 py-2 cursor-pointer min-w-0"><CalendarDays size={20} className="text-text-secondary shrink-0" /><div className="flex items-center gap-1.5 min-w-0 flex-1"><input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="min-w-0 w-[7.5rem] bg-transparent text-xs text-text-primary focus:outline-none [color-scheme:dark]" /><input type="time" value={time} onChange={(e) => setTime(e.target.value)} className="min-w-0 w-[4.2rem] bg-transparent text-xs text-text-primary focus:outline-none [color-scheme:dark]" /></div></label>
+            <label className="flex items-center gap-2 rounded-xl border border-border bg-input px-2.5 py-2 cursor-pointer min-w-0"><CalendarDays size={20} className="text-text-secondary shrink-0" /><div className="flex items-center gap-1.5 min-w-0 flex-1"><input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="min-w-0 flex-1 bg-transparent text-xs text-text-primary focus:outline-none [color-scheme:dark]" /><span className="shrink-0 text-xs text-text-primary tabular-nums">{displayTime}</span></div></label>
             <div className="flex items-center gap-2 rounded-xl border border-border bg-input px-2.5 py-2 min-w-0"><WalletCards size={20} className="text-text-secondary shrink-0" /><select value={accountId} onChange={(e) => setAccountId(e.target.value)} className="min-w-0 flex-1 bg-transparent text-xs text-text-primary focus:outline-none"><option value="" disabled>Pilih akun</option>{accounts.map((acc) => <option key={acc.id} value={acc.id}>{acc.name}</option>)}</select></div>
           </div>
           <div className="text-center py-0.5"><p className="text-[10px] text-text-muted mb-0.5">Jumlah</p><div className="flex items-center justify-center gap-1.5 min-h-[52px]"><span className="text-base font-semibold" style={{color:accentColor}}>Rp</span><span className="text-[36px] leading-none font-bold tracking-tight tabular-nums" style={{color:accentColor}}>{formatExpression(expression)||'0'}</span></div>{balanceError&&<p className="text-[10px] text-expense mt-1.5">Saldo {balanceError.name} tidak cukup · kurang {formatCurrency(numAmount-balanceError.balance)}</p>}</div>
