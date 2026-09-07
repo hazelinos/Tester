@@ -86,5 +86,7 @@
 @keyframes slideUp { from { transform:translateY(20px);opacity:0; } to { transform:translateY(0);opacity:1; } }
 @media (prefers-reduced-motion:reduce) { .dashboard-marquee-track{animation:none;} .dashboard-shortcut{transition:none;} .keypad-key{transition:none;} }
 
-/* Keep the transparent month input from intercepting taps on the chevrons. */
-input[type="month"] { pointer-events: none; }
+/* Keep the month picker inside its own bounds so the next-month button stays clickable. */
+input[type="month"] { pointer-events: auto; }
+label:has(> input[type="month"]) { overflow: hidden; }
+label:has(> input[type="month"]) + button { position: relative; z-index: 10; }
