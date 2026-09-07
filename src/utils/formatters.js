@@ -12,9 +12,18 @@ export const formatShortCurrency = (amount) => {
   return `Rp ${num}`;
 };
 
+export const toDateInputValue = (date) => {
+  const d = new Date(date);
+  if (Number.isNaN(d.getTime())) return '';
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export const formatDate = (date, format = 'short') => {
   const d = new Date(date);
-  if (isNaN(d)) return '-';
+  if (Number.isNaN(d.getTime())) return '-';
   if (format === 'short')
     return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
   if (format === 'long')
@@ -22,7 +31,7 @@ export const formatDate = (date, format = 'short') => {
   if (format === 'monthYear')
     return d.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
   if (format === 'input')
-    return d.toISOString().split('T')[0];
+    return toDateInputValue(d);
   return d.toLocaleDateString('id-ID');
 };
 
@@ -39,9 +48,3 @@ export const isSameMonth = (date1, date2) => {
   const d2 = new Date(date2);
   return d1.getMonth() === d2.getMonth() && d1.getFullYear() === d2.getFullYear();
 };
-
-export const generateId = () =>
-  Date.now().toString(36) + Math.random().toString(36).substr(2);
-
-export const toDateInputValue = (date) =>
-  new Date(date).toISOString().split('T')[0];
