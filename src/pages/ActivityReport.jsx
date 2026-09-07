@@ -7,15 +7,10 @@ import clsx from 'clsx';
 
 const MINT = '#A8E6CF';
 const CORAL = '#FF6B6B';
-const NEED_COLOR = '#A8E6CF';
-const WANT_COLOR = '#FF6B6B';
+const SAVINGS = '#FFD369';
+const NEED = '#7ED08A';
+const WANT = '#FF6B6B';
 const monthKey = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-
-// Expense categories that are generally essential or recurring needs.
-const NEED_CATEGORY_IDS = new Set([
-  'child_baby', 'fuel', 'groceries', 'family', 'vehicle', 'work', 'health',
-  'internet_phone', 'tax_admin', 'pet', 'education', 'household', 'bills', 'transport',
-]);
 
 function TooltipContent({ active, payload, label }) {
   if (!active || !payload?.length) return null;
@@ -45,43 +40,48 @@ export default function ActivityReport({ selectedDate, onCategorySelect }) {
   const categories = useMemo(() => {
     const map = {};
     monthTransactions.filter(t => t.type === 'expense').forEach(t => { map[t.categoryId] = (map[t.categoryId] || 0) + Number(t.amount || 0); });
-    const sorted = Object.entries(map).map(([id, amount]) => ({ ...getCategoryById(id), amount })).sort((a,b) => b.amount - a.amount);
-    if (sorted.length <= 7) return sorted;
-    const top = sorted.slice(0, 6);
-    const rest = sorted.slice(6).reduce((s,c) => s + c.amount, 0);
-    return [...top, { id: 'other', label: 'Lainnya', icon: '💸', color: '#777777', amount: rest }];
+    return Object.entries(map).map(([id, amount]) => ({ ...getCategoryById(id), amount, count: monthTransactions.filter(t => t.type === 'expense' && t.categoryId === id).length })).sort((a,b) => b.amount - a.amount);
   }, [monthTransactions]);
+  const topCategories = categories.slice(0, 6);
   const totalCategories = categories.reduce((s,c) => s + c.amount, 0);
 
-  const needsWants = useMemo(() => {
-    const totals = { needs: 0, wants: 0 };
+  const incomeCategories = useMemo(() => {
+    const map = {};
+    monthTransactions.filter(t => t.type === 'income').forEach(t => { map[t.categoryId] = (map[t.categoryId] || 0) + Number(t.amount || 0); });
+    return Object.entries(map).map(([id, amount]) => ({ ...getCategoryById(id), amount, count: monthTransactions.filter(t => t.type === 'income' && t.categoryId === id).length })).sort((a,b) => b.amount - a.amount);
+  }, [monthTransactions]);
+
+  // No schema change: classify existing expense categories locally for reporting only.
+  const needIds = new Set(['groceries','fuel','family','health','education','household','bills','transport','vehicle','internet_phone','tax_admin','child_baby','pet','work']);
+  const savingIds = new Set(['investment_expense']);
+  const purpose = useMemo(() => {
+    const result = { need: 0, want: 0, savings: 0 };
     monthTransactions.filter(t => t.type === 'expense').forEach(t => {
       const amount = Number(t.amount || 0);
-      if (NEED_CATEGORY_IDS.has(t.categoryId)) totals.needs += amount;
-      else totals.wants += amount;
+      if (savingIds.has(t.categoryId)) result.savings += amount;
+      else if (needIds.has(t.categoryId)) result.need += amount;
+      else result.want += amount;
     });
-    return totals;
+    return result;
   }, [monthTransactions]);
-  const needsWantsTotal = needsWants.needs + needsWants.wants;
-  const needsPct = needsWantsTotal ? (needsWants.needs / needsWantsTotal) * 100 : 0;
-  const wantsPct = needsWantsTotal ? (needsWants.wants / needsWantsTotal) * 100 : 0;
+  const purposeTotal = purpose.need + purpose.want + purpose.savings;
+  const purposeData = [
+    { id: 'need', label: 'Need', localLabel: 'Kebutuhan', amount: purpose.need, color: NEED },
+    { id: 'want', label: 'Want', localLabel: 'Keinginan', amount: purpose.want, color: WANT },
+    { id: 'savings', label: 'Savings', localLabel: 'Tabungan', amount: purpose.savings, color: SAVINGS },
+  ].filter(x => x.amount > 0);
+  const dominantPurpose = purposeData.sort((a,b) => b.amount - a.amount)[0];
 
   const insight = useMemo(() => {
     if (!monthTransactions.length || !expense) return null;
     const top = categories[0];
     const parts = [];
-    if (top && totalCategories > 0) parts.push(`Kategori terbesar adalah ${top.label} dengan ${Math.round(top.amount / totalCategories * 100)}% dari total pengeluaran.`);
+    if (top && totalCategories > 0) parts.push(`Pengeluaran terbesar ada di ${top.label}, sebesar ${Math.round(top.amount / totalCategories * 100)}% dari total pengeluaran.`);
     if (expenseChange !== null) parts.push(`Pengeluaran bulan ini ${Math.abs(expenseChange).toFixed(1)}% ${expenseChange <= 0 ? 'lebih rendah' : 'lebih tinggi'} dibanding bulan lalu.`);
-    if (needsWantsTotal > 0) parts.push(`${needsPct >= wantsPct ? 'Kebutuhan' : 'Keinginan'} mengambil porsi terbesar, yaitu ${Math.round(Math.max(needsPct, wantsPct))}% dari uang yang keluar.`);
     return parts;
-  }, [monthTransactions, expense, categories, totalCategories, expenseChange, needsWantsTotal, needsPct, wantsPct]);
+  }, [monthTransactions, expense, categories, totalCategories, expenseChange]);
 
   if (!monthTransactions.length) return <div className="bg-card border border-border rounded-2xl p-8 text-center"><p className="text-2xl">📊</p><p className="font-semibold text-text-primary mt-2">Belum ada data untuk dianalisis.</p><p className="text-xs text-text-muted mt-1">Tambahkan transaksi pada bulan ini untuk melihat laporan.</p></div>;
-
-  const needsWantsData = [
-    { id: 'needs', label: 'Kebutuhan', icon: '🧰', amount: needsWants.needs, color: NEED_COLOR },
-    { id: 'wants', label: 'Keinginan', icon: '🎯', amount: needsWants.wants, color: WANT_COLOR },
-  ];
 
   return <div className="space-y-3">
     <div className="grid grid-cols-3 gap-2">{[['Pemasukan', income, 'text-income'], ['Pengeluaran', expense, 'text-expense'], [net < 0 ? 'Defisit' : 'Selisih', net, net < 0 ? 'text-expense' : 'text-income']].map(([label,value,color]) => <div key={label} className="bg-card border border-border rounded-2xl p-2.5 text-center"><p className="text-[10px] text-text-muted">{label}</p><p className={clsx('text-xs font-bold mt-1',color)}>{value < 0 ? '-' : ''}{formatShortCurrency(Math.abs(value))}</p></div>)}</div>
@@ -94,17 +94,14 @@ export default function ActivityReport({ selectedDate, onCategorySelect }) {
     </section>
 
     <section className="bg-card border border-border rounded-2xl p-3">
-      <div className="flex items-center justify-between"><div><p className="text-sm font-bold text-text-primary">Uang Habis Untuk</p><p className="text-[10px] text-text-muted mt-0.5">Kebutuhan vs keinginan</p></div><span className="text-[10px] text-text-muted">{formatShortCurrency(needsWantsTotal)}</span></div>
-      <div className="flex flex-col sm:flex-row items-center gap-4 mt-3">
-        <div className="relative w-40 h-40 shrink-0"><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={needsWantsData} dataKey="amount" nameKey="label" innerRadius={48} outerRadius={70} paddingAngle={3}><Cell fill={NEED_COLOR}/><Cell fill={WANT_COLOR}/></Pie><Tooltip formatter={(v) => formatCurrency(v)}/></PieChart></ResponsiveContainer><div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"><span className="text-lg font-bold text-text-primary">{formatShortCurrency(needsWantsTotal)}</span><span className="text-[9px] text-text-muted">Total keluar</span></div></div>
-        <div className="flex-1 w-full space-y-3">{needsWantsData.map(item => { const pct = needsWantsTotal ? (item.amount / needsWantsTotal) * 100 : 0; return <div key={item.id}><div className="flex items-center justify-between gap-2"><div className="flex items-center gap-2"><span>{item.icon}</span><span className="text-xs font-semibold text-text-primary">{item.label}</span></div><span className="text-xs font-bold text-text-primary">{formatShortCurrency(item.amount)}</span></div><div className="flex items-center gap-2 mt-1.5"><div className="h-2 flex-1 bg-elevated rounded-full overflow-hidden"><div className="h-full rounded-full" style={{width:`${pct}%`, backgroundColor:item.color}}/></div><span className="w-9 text-right text-[10px] text-text-muted">{pct.toFixed(0)}%</span></div></div>; })}</div>
-      </div>
+      <div className="flex items-center justify-between"><p className="text-sm font-bold text-text-primary">Pengeluaran teratas</p><span className="text-[11px] text-text-muted">{categories.length} categories</span></div>
+      <div className="space-y-3 mt-4">{topCategories.map(c => { const pct = totalCategories ? c.amount / totalCategories * 100 : 0; return <button key={c.id} onClick={() => onCategorySelect?.(c.id)} className="w-full text-left"><div className="flex items-center gap-3"><span className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0" style={{backgroundColor:`${c.color}22`, border:`1px solid ${c.color}66`}}>{c.icon}</span><div className="flex-1 min-w-0"><div className="flex items-center justify-between gap-2"><span className="text-sm font-semibold text-text-primary truncate">{c.label}</span><span className="text-sm font-bold text-text-primary whitespace-nowrap">{formatShortCurrency(c.amount)}</span></div><div className="flex items-center gap-2 mt-1"><span className="text-[10px] text-text-muted">{c.count}×</span><div className="h-1.5 flex-1 bg-elevated rounded-full overflow-hidden"><div className="h-full rounded-full" style={{width:`${pct}%`, backgroundColor:c.color}}/></div><span className="text-[10px] text-text-muted w-10 text-right">{pct.toFixed(1)}%</span></div></div></div></button>; })}</div>
+      {categories.length > 6 && <button onClick={() => categories.slice(6).forEach(c => onCategorySelect?.(c.id))} className="w-full text-center text-sm text-primary font-semibold mt-4">Tampilkan semua {categories.length}⌄</button>}
     </section>
 
-    <section className="bg-card border border-border rounded-2xl p-3">
-      <div className="flex items-center justify-between mb-3"><div><p className="text-sm font-bold text-text-primary">Pengeluaran per Kategori</p><p className="text-[10px] text-text-muted mt-0.5">Klik kategori untuk melihat transaksinya</p></div><span className="text-[10px] text-text-muted">{formatShortCurrency(totalCategories)}</span></div>
-      <div className="flex flex-col sm:flex-row items-center gap-4"><div className="relative w-40 h-40 shrink-0"><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={categories} dataKey="amount" nameKey="label" innerRadius={48} outerRadius={70} paddingAngle={2} onClick={(_, index) => { const c = categories[index]; if (c && c.id !== 'other') onCategorySelect?.(c.id); }}>{categories.map(c => <Cell key={c.id} fill={c.color}/>)}</Pie><Tooltip formatter={(v) => formatCurrency(v)}/></PieChart></ResponsiveContainer><div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"><span className="text-lg font-bold text-text-primary">{formatShortCurrency(totalCategories)}</span><span className="text-[9px] text-text-muted">Total Pengeluaran</span></div></div><div className="flex-1 w-full space-y-2">{categories.map(c => { const pct = totalCategories ? c.amount / totalCategories * 100 : 0; return <button key={c.id} onClick={() => c.id !== 'other' && onCategorySelect?.(c.id)} className="w-full text-left flex items-center gap-2"><span className="w-6 text-center">{c.icon}</span><span className="flex-1 min-w-0"><span className="flex justify-between gap-2"><span className="text-[11px] text-text-secondary truncate">{c.label}</span><span className="text-[10px] font-semibold text-text-primary">{pct.toFixed(0)}% · {formatShortCurrency(c.amount)}</span></span><span className="block h-1.5 bg-elevated rounded-full overflow-hidden mt-1"><span className="block h-full rounded-full" style={{ width:`${pct}%`, backgroundColor:c.color }}/></span></span></button>; })}</div></div>
-    </section>
+    {incomeCategories.length > 0 && <section className="bg-card border border-border rounded-2xl p-3"><div className="flex items-center justify-between"><p className="text-sm font-bold text-text-primary">Sumber pemasukan</p><span className="text-[11px] text-text-muted">{incomeCategories.length} categories</span></div><div className="space-y-3 mt-4">{incomeCategories.slice(0, 6).map(c => { const pct = income ? c.amount / income * 100 : 0; return <div key={c.id} className="flex items-center gap-3"><span className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0" style={{backgroundColor:`${c.color}22`, border:`1px solid ${c.color}66`}}>{c.icon}</span><div className="flex-1 min-w-0"><div className="flex items-center justify-between gap-2"><span className="text-sm font-semibold text-text-primary truncate">{c.label}</span><span className="text-sm font-bold text-text-primary">{formatShortCurrency(c.amount)}</span></div><div className="flex items-center gap-2 mt-1"><span className="text-[10px] text-text-muted">{c.count}×</span><div className="h-1.5 flex-1 bg-elevated rounded-full overflow-hidden"><div className="h-full rounded-full" style={{width:`${pct}%`, backgroundColor:c.color}}/></div><span className="text-[10px] text-text-muted w-10 text-right">{pct.toFixed(1)}%</span></div></div></div>; })}</div></section>}
+
+    <section className="bg-card border border-border rounded-2xl p-3"><p className="text-sm font-bold text-text-primary">Tujuan pengeluaran</p><div className="flex items-center gap-4 mt-3"><div className="relative w-40 h-40 shrink-0"><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={purposeData} dataKey="amount" nameKey="label" innerRadius={50} outerRadius={70} paddingAngle={2}>{purposeData.map(c => <Cell key={c.id} fill={c.color}/>)}</Pie><Tooltip formatter={(v) => formatCurrency(v)}/></PieChart></ResponsiveContainer><div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"><span className="text-[11px] text-text-muted">{dominantPurpose?.localLabel || 'Pengeluaran'}</span><span className="text-base font-bold text-text-primary">{purposeTotal ? `${(dominantPurpose.amount / purposeTotal * 100).toFixed(1)}%` : '0%'}</span></div></div><div className="flex-1 space-y-3">{purposeData.map(c => { const pct = purposeTotal ? c.amount / purposeTotal * 100 : 0; return <div key={c.id}><div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full shrink-0" style={{backgroundColor:c.color}}/><span className="text-sm text-text-secondary flex-1">{c.localLabel}</span><span className="text-sm font-bold text-text-primary">{formatShortCurrency(c.amount)}</span><span className="text-[11px] text-text-muted w-12 text-right">{pct.toFixed(1)}%</span></div><div className="h-1.5 bg-elevated rounded-full mt-1.5 overflow-hidden"><div className="h-full rounded-full" style={{width:`${pct}%`, backgroundColor:c.color}}/></div></div>; })}</div></div></section>
 
     {insight?.length > 0 && <section className="bg-card border border-border rounded-2xl p-3"><p className="text-sm font-bold text-text-primary">💡 Analisis Singkat</p><div className="space-y-2 mt-2">{insight.map(text => <p key={text} className="text-xs leading-relaxed text-text-secondary">{text}</p>)}</div></section>}
   </div>;
