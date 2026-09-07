@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Search, X, SlidersHorizontal, ChevronLeft, ChevronRight, CalendarDays, Filter, ArrowUpDown, Copy, Trash2, Pencil, Clock3 } from 'lucide-react';
+import { Search, X, ChevronLeft, ChevronRight, CalendarDays, Filter, Copy, Trash2, Pencil } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
 import { useIsMobile } from '../hooks/useIsMobile';
 import ActivityTransactionItem from '../components/ActivityTransactionItem';
@@ -88,12 +88,12 @@ function DetailSheet({ tx, accounts, onClose, onEdit, onDuplicate, onDelete }) {
 
 function TransactionsContent({ selectedDate, openEdit, mobile, onOpenDetail, categoryFilter, setCategoryFilter, typeFilter, setTypeFilter, search, setSearch, advanced, setAdvanced, filters, setFilters }) {
   const { transactions, accounts } = useFinance();
+  const monthTransactions = useMemo(() => transactions.filter(tx => isSameMonth(tx.date, selectedDate)), [transactions, selectedDate]);
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return transactions.filter(tx => {
-      if (!isSameMonth(tx.date, selectedDate)) return false;
+    return monthTransactions.filter(tx => {
       if (typeFilter !== 'all' && tx.type !== typeFilter) return false;
-      if (categoryFilter !== 'all' && tx.categoryId !== categoryFilter) return false;
+      if (categoryFilter !== 'all' && categoryFilter !== '__open__' && tx.categoryId !== categoryFilter) return false;
       if (filters.category !== 'all' && tx.categoryId !== filters.category) return false;
       if (filters.account !== 'all' && tx.accountId !== filters.account) return false;
       const amount = Number(tx.amount) || 0;
@@ -114,21 +114,20 @@ function TransactionsContent({ selectedDate, openEdit, mobile, onOpenDetail, cat
       if (filters.sort === 'lowest') return Number(a.amount) - Number(b.amount);
       return new Date(b.date) - new Date(a.date);
     });
-  }, [transactions, selectedDate, typeFilter, categoryFilter, search, filters]);
-  const totalIncome = filtered.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount || 0), 0);
-  const totalExpense = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount || 0), 0);
+  }, [monthTransactions, typeFilter, categoryFilter, search, filters]);
+  const totalIncome = monthTransactions.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount || 0), 0);
+  const totalExpense = monthTransactions.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount || 0), 0);
   const grouped = useMemo(() => {
     const map = {};
     filtered.forEach(tx => { const key = tx.date.slice(0, 10); (map[key] ||= []).push(tx); });
     return Object.entries(map).sort(([a], [b]) => new Date(b) - new Date(a)).map(([date, txs]) => ({ date, txs }));
   }, [filtered]);
-  const monthTransactions = transactions.filter(tx => isSameMonth(tx.date, selectedDate));
   const hasActiveAdvanced = filters.from || filters.to || filters.min || filters.max || filters.category !== 'all' || filters.account !== 'all' || filters.sort !== 'newest';
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-3 gap-2">{[['Masuk', totalIncome, 'text-income'], ['Keluar', totalExpense, 'text-expense'], ['Selisih', totalIncome - totalExpense, totalIncome - totalExpense >= 0 ? 'text-income' : 'text-expense']].map(([label, value, color]) => <div key={label} className="bg-card border border-border rounded-2xl p-2.5 text-center"><p className="text-[10px] text-text-muted">{label}</p><p className={clsx('text-xs font-bold mt-1', color)}>{value < 0 ? '-' : ''}{mobile ? formatShortCurrency(Math.abs(value)) : formatCurrency(Math.abs(value))}</p></div>)}</div>
       <div className="flex items-center gap-2 bg-input border border-border rounded-2xl px-3 py-2.5 focus-within:border-primary/50"><Search size={15} className="text-text-muted" /><input value={search} onChange={e => setSearch(e.target.value)} placeholder="Cari transaksi, kategori, nominal..." className="flex-1 bg-transparent text-sm focus:outline-none text-text-primary placeholder-text-muted" />{search && <button onClick={() => setSearch('')}><X size={14} className="text-text-muted" /></button>}</div>
-      <div className="flex gap-1.5 overflow-x-auto scrollbar-none pb-0.5">{TYPE_FILTERS.map(f => <button key={f.id} onClick={() => setTypeFilter(f.id)} className={clsx('px-3 py-1.5 rounded-full text-xs font-semibold border shrink-0 transition-all', typeFilter === f.id ? 'bg-primary text-bg border-primary' : 'border-border text-text-secondary')}>{f.label}</button>)}<button onClick={() => setCategoryFilter(categoryFilter === 'all' ? '__open__' : 'all')} className={clsx('px-3 py-1.5 rounded-full text-xs font-semibold border shrink-0', categoryFilter !== 'all' ? 'bg-primary text-bg border-primary' : 'border-border text-text-secondary')}>Kategori</button><button onClick={() => setAdvanced(!advanced)} className={clsx('flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold border shrink-0', advanced || hasActiveAdvanced ? 'bg-primary/15 text-primary border-primary/40' : 'border-border text-text-secondary')}><Filter size={12} /> Filter</button></div>
+      <div className="flex gap-1.5 overflow-x-auto scrollbar-none pb-0.5">{TYPE_FILTERS.map(f => <button key={f.id} onClick={() => setTypeFilter(f.id)} className={clsx('px-3 py-1.5 rounded-full text-xs font-semibold border shrink-0 transition-all', typeFilter === f.id ? 'bg-primary text-bg border-primary' : 'border-border text-text-secondary')}>{f.label}</button>)}<button onClick={() => setCategoryFilter(categoryFilter === 'all' ? '__open__' : 'all')} className={clsx('px-3 py-1.5 rounded-full text-xs font-semibold border shrink-0', categoryFilter !== 'all' && categoryFilter !== '__open__' ? 'bg-primary text-bg border-primary' : 'border-border text-text-secondary')}>Kategori</button><button onClick={() => setAdvanced(!advanced)} className={clsx('flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold border shrink-0', advanced || hasActiveAdvanced ? 'bg-primary/15 text-primary border-primary/40' : 'border-border text-text-secondary')}><Filter size={12} /> Filter</button></div>
       {categoryFilter === '__open__' && <div className="flex gap-1.5 flex-wrap p-2.5 bg-card border border-border rounded-2xl">{ALL_CATEGORIES.map(cat => <button key={cat.id} onClick={() => setCategoryFilter(cat.id)} className="px-2 py-1.5 rounded-lg text-[11px] border border-border text-text-secondary">{cat.icon} {cat.label}</button>)}</div>}
       {advanced && <AdvancedFilter value={filters} onChange={setFilters} accounts={accounts} onClose={() => setAdvanced(false)} />}
       {grouped.length === 0 ? <div className="bg-card border border-border rounded-2xl p-8 text-center"><p className="text-2xl">{monthTransactions.length ? '🔎' : '🧾'}</p><p className="font-semibold text-text-primary mt-2">{monthTransactions.length ? 'Tidak ada transaksi yang cocok' : 'Belum ada transaksi bulan ini'}</p><p className="text-xs text-text-muted mt-1">{monthTransactions.length ? 'Coba ubah pencarian atau filter.' : 'Tambahkan transaksi pertama kamu.'}</p></div> : grouped.map(({ date, txs }) => { const dayNet = txs.reduce((s, t) => s + (t.type === 'income' ? Number(t.amount) : -Number(t.amount)), 0); return <section key={date}><div className="flex items-center justify-between px-1 mb-1.5"><div><p className="text-[11px] font-bold text-text-secondary">{new Date(`${date}T12:00:00`).toLocaleDateString('id-ID', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}</p><p className="text-[10px] text-text-muted">{txs.length} transaksi</p></div><p className={clsx('text-[11px] font-bold', dayNet >= 0 ? 'text-income' : 'text-expense')}>{dayNet >= 0 ? '+' : '-'}{mobile ? formatShortCurrency(Math.abs(dayNet)) : formatCurrency(Math.abs(dayNet))}</p></div><div className="space-y-1.5">{txs.map(tx => <ActivityTransactionItem key={tx.id} transaction={tx} onEdit={openEdit} onOpenDetail={onOpenDetail} />)}</div></section>; })}
