@@ -1,240 +1,162 @@
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Search, X, SlidersHorizontal, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, X, SlidersHorizontal, ChevronLeft, ChevronRight, CalendarDays, Filter, ArrowUpDown, Copy, Trash2, Pencil, Clock3 } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
 import { useIsMobile } from '../hooks/useIsMobile';
-import TransactionItem from '../components/TransactionItem';
-import EmptyState from '../components/EmptyState';
-import { ReportContent } from './Report';
+import ActivityTransactionItem from '../components/ActivityTransactionItem';
+import ActivityReport from './ActivityReport';
 import { formatCurrency, formatShortCurrency, isSameMonth, getMonthName } from '../utils/formatters';
 import { ALL_CATEGORIES } from '../constants/categories';
 import clsx from 'clsx';
 
 const TYPE_FILTERS = [
-  { id: 'all',     label: 'Semua'       },
+  { id: 'all', label: 'Semua' },
   { id: 'expense', label: 'Pengeluaran' },
-  { id: 'income',  label: 'Pemasukan'   },
+  { id: 'income', label: 'Pemasukan' },
 ];
 
-// ── Tab bar ───────────────────────────────────────────────────────
+const monthInputValue = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+const parseLocalMonth = (value) => {
+  const [year, month] = value.split('-').map(Number);
+  return new Date(year, month - 1, 1);
+};
+
 function TabBar({ active, onChange }) {
   return (
-    <div className="flex bg-elevated rounded-xl p-1 gap-1">
-      {[
-        { id: 'transactions', label: '🧾 Transaksi' },
-        { id: 'report',       label: '📊 Laporan'   },
-      ].map((t) => (
-        <button
-          key={t.id}
-          onClick={() => onChange(t.id)}
-          className={clsx(
-            'flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all',
-            active === t.id
-              ? 'bg-card text-text-primary shadow-sm'
-              : 'text-text-muted hover:text-text-secondary'
-          )}
-        >
-          {t.label}
+    <div className="flex bg-elevated rounded-2xl p-1 gap-1">
+      {[['transactions', '🧾 Transaksi'], ['report', '📊 Laporan']].map(([id, label]) => (
+        <button key={id} onClick={() => onChange(id)} className={clsx('flex-1 py-2 rounded-xl text-xs font-semibold transition-all duration-200', active === id ? 'bg-card text-primary shadow-sm' : 'text-text-muted hover:text-text-secondary')}>
+          {label}
         </button>
       ))}
     </div>
   );
 }
 
-// ── Transaksi Content ─────────────────────────────────────────────
-function TransactionsContent({ selectedDate, openEdit, mobile }) {
-  const { transactions } = useFinance();
-
-  const [search,         setSearch]         = useState('');
-  const [typeFilter,     setTypeFilter]     = useState('all');
-  const [categoryFilter, setCategoryFilter] = useState('all');
-  const [showCatFilter,  setShowCatFilter]  = useState(false);
-
-  const filtered = useMemo(() => transactions.filter((tx) => {
-    const matchMonth    = isSameMonth(tx.date, selectedDate);
-    const matchType     = typeFilter === 'all' || tx.type === typeFilter;
-    const matchCategory = categoryFilter === 'all' || tx.categoryId === categoryFilter;
-    const matchSearch   = !search || tx.note?.toLowerCase().includes(search.toLowerCase());
-    return matchMonth && matchType && matchCategory && matchSearch;
-  }), [transactions, selectedDate, typeFilter, categoryFilter, search]);
-
-  const grouped = useMemo(() => {
-    const map = {};
-    filtered.forEach((tx) => {
-      const key = tx.date.split('T')[0];
-      if (!map[key]) map[key] = [];
-      map[key].push(tx);
-    });
-    return Object.entries(map)
-      .sort(([a], [b]) => new Date(b) - new Date(a))
-      .map(([date, txs]) => ({ date, txs }));
-  }, [filtered]);
-
-  const totalIncome  = filtered.filter(t => t.type === 'income').reduce((s, t)  => s + t.amount, 0);
-  const totalExpense = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
-
+function AdvancedFilter({ value, onChange, accounts, onClose }) {
   return (
-    <div className="space-y-3">
-      {/* Summary */}
-      <div className="grid grid-cols-3 gap-2">
-        {[
-          { label: 'Masuk',   val: totalIncome,              color: 'text-income'  },
-          { label: 'Keluar',  val: totalExpense,             color: 'text-expense' },
-          { label: 'Selisih', val: totalIncome - totalExpense,
-            color: totalIncome - totalExpense >= 0 ? 'text-income' : 'text-expense' },
-        ].map((s) => (
-          <div key={s.label} className="bg-card border border-border rounded-xl p-2 text-center">
-            <p className="text-[10px] text-text-muted mb-0.5">{s.label}</p>
-            <p className={clsx('text-xs font-bold', s.color)}>
-              {mobile ? formatShortCurrency(s.val) : formatCurrency(s.val)}
-            </p>
-          </div>
-        ))}
+    <div className="bg-card border border-border rounded-2xl p-3 space-y-3 shadow-lg">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-bold text-text-primary">Filter lanjutan</p>
+        <button onClick={onClose} className="text-text-muted"><X size={15} /></button>
       </div>
-
-      {/* Search */}
-      <div className="flex items-center gap-2 bg-input border border-border rounded-xl px-3 py-2 focus-within:border-primary/50">
-        <Search size={13} className="text-text-muted shrink-0" />
-        <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
-          placeholder="Cari catatan..."
-          className="flex-1 bg-transparent text-sm focus:outline-none text-text-primary placeholder-text-muted" />
-        {search && (
-          <button onClick={() => setSearch('')} className="text-text-muted"><X size={13} /></button>
-        )}
+      <div className="grid grid-cols-2 gap-2">
+        <label className="text-[10px] text-text-muted">Dari tanggal<input type="date" value={value.from} onChange={e => onChange({ ...value, from: e.target.value })} className="mt-1 w-full bg-input border border-border rounded-lg px-2 py-2 text-xs text-text-primary" /></label>
+        <label className="text-[10px] text-text-muted">Sampai tanggal<input type="date" value={value.to} onChange={e => onChange({ ...value, to: e.target.value })} className="mt-1 w-full bg-input border border-border rounded-lg px-2 py-2 text-xs text-text-primary" /></label>
+        <label className="text-[10px] text-text-muted">Nominal minimum<input type="number" min="0" value={value.min} onChange={e => onChange({ ...value, min: e.target.value })} className="mt-1 w-full bg-input border border-border rounded-lg px-2 py-2 text-xs text-text-primary" placeholder="0" /></label>
+        <label className="text-[10px] text-text-muted">Nominal maksimum<input type="number" min="0" value={value.max} onChange={e => onChange({ ...value, max: e.target.value })} className="mt-1 w-full bg-input border border-border rounded-lg px-2 py-2 text-xs text-text-primary" placeholder="Tanpa batas" /></label>
       </div>
-
-      {/* Filter chips */}
-      <div className="flex gap-1.5 overflow-x-auto scrollbar-none pb-0.5">
-        {TYPE_FILTERS.map((f) => (
-          <button key={f.id} onClick={() => setTypeFilter(f.id)}
-            className={clsx(
-              'px-3 py-1 rounded-full text-xs font-medium border shrink-0 transition-all',
-              typeFilter === f.id
-                ? 'bg-primary text-bg border-primary'
-                : 'border-border text-text-secondary'
-            )}>
-            {f.label}
-          </button>
-        ))}
-        <button onClick={() => setShowCatFilter(!showCatFilter)}
-          className={clsx(
-            'flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border shrink-0 transition-all',
-            categoryFilter !== 'all'
-              ? 'bg-primary text-bg border-primary'
-              : 'border-border text-text-secondary'
-          )}>
-          <SlidersHorizontal size={11} />
-          {ALL_CATEGORIES.find(c => c.id === categoryFilter)?.label || 'Kategori'}
-        </button>
+      <div className="grid grid-cols-2 gap-2">
+        <label className="text-[10px] text-text-muted">Kategori<select value={value.category} onChange={e => onChange({ ...value, category: e.target.value })} className="mt-1 w-full bg-input border border-border rounded-lg px-2 py-2 text-xs text-text-primary"><option value="all">Semua kategori</option>{ALL_CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.icon} {c.label}</option>)}</select></label>
+        <label className="text-[10px] text-text-muted">Akun<select value={value.account} onChange={e => onChange({ ...value, account: e.target.value })} className="mt-1 w-full bg-input border border-border rounded-lg px-2 py-2 text-xs text-text-primary"><option value="all">Semua akun</option>{accounts.map(a => <option key={a.id} value={a.id}>{a.icon} {a.name}</option>)}</select></label>
       </div>
-
-      {/* Category filter */}
-      {showCatFilter && (
-        <div className="flex gap-1.5 flex-wrap p-2 bg-card border border-border rounded-xl">
-          <button onClick={() => { setCategoryFilter('all'); setShowCatFilter(false); }}
-            className={clsx('px-2 py-1 rounded-lg text-xs border transition-all',
-              categoryFilter === 'all'
-                ? 'bg-primary/20 text-primary border-primary/40'
-                : 'border-border text-text-muted')}>
-            Semua
-          </button>
-          {ALL_CATEGORIES.map((cat) => (
-            <button key={cat.id} onClick={() => { setCategoryFilter(cat.id); setShowCatFilter(false); }}
-              className={clsx('flex items-center gap-1 px-2 py-1 rounded-lg text-xs border transition-all',
-                categoryFilter === cat.id ? 'border-current' : 'border-border text-text-muted')}
-              style={categoryFilter === cat.id
-                ? { borderColor: cat.color, backgroundColor: cat.color + '22', color: cat.color }
-                : {}}>
-              {cat.icon} {cat.label}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Transaction list */}
-      {grouped.length === 0
-        ? <EmptyState icon="🔍" title="Tidak ada transaksi" subtitle="Coba ubah filter" />
-        : grouped.map(({ date, txs }) => {
-            const dayNet = txs.reduce((s, t) => t.type === 'income' ? s + t.amount : s - t.amount, 0);
-            return (
-              <div key={date}>
-                <div className="flex items-center justify-between mb-1.5 px-0.5">
-                  <span className="text-[11px] font-semibold text-text-muted">
-                    {new Date(date).toLocaleDateString('id-ID', {
-                      weekday: 'short', day: '2-digit', month: 'short',
-                    })}
-                  </span>
-                  <span className={clsx('text-[11px] font-semibold', dayNet >= 0 ? 'text-income' : 'text-expense')}>
-                    {dayNet >= 0 ? '+' : ''}{mobile ? formatShortCurrency(dayNet) : formatCurrency(dayNet)}
-                  </span>
-                </div>
-                <div className="space-y-1.5">
-                  {txs.map((tx) => (
-                    <TransactionItem key={tx.id} transaction={tx} onEdit={openEdit} />
-                  ))}
-                </div>
-              </div>
-            );
-          })
-      }
+      <label className="text-[10px] text-text-muted">Urutan<select value={value.sort} onChange={e => onChange({ ...value, sort: e.target.value })} className="mt-1 w-full bg-input border border-border rounded-lg px-2 py-2 text-xs text-text-primary"><option value="newest">Terbaru</option><option value="oldest">Terlama</option><option value="highest">Nominal terbesar</option><option value="lowest">Nominal terkecil</option></select></label>
+      <button onClick={() => onChange({ from: '', to: '', min: '', max: '', category: 'all', account: 'all', sort: 'newest' })} className="text-[11px] text-text-muted hover:text-text-primary">Reset filter</button>
     </div>
   );
 }
 
-// ── Main Page ─────────────────────────────────────────────────────
-export default function History() {
-  const { openEdit }      = useOutletContext();
-  const mobile            = useIsMobile();
-  const [activeTab,       setActiveTab]       = useState('transactions');
-  const [selectedDate,    setSelectedDate]    = useState(new Date());
-
-  const changeMonth = (dir) => {
-    const d = new Date(selectedDate);
-    d.setMonth(d.getMonth() + dir);
-    setSelectedDate(d);
-  };
-
-  const monthLabel = `${getMonthName(selectedDate.getMonth())} ${selectedDate.getFullYear()}`;
-  const padding    = mobile ? 'px-3 pb-20' : 'p-6 max-w-4xl mx-auto';
-
+function DetailSheet({ tx, accounts, onClose, onEdit, onDuplicate, onDelete }) {
+  if (!tx) return null;
+  const cat = ALL_CATEGORIES.find(c => c.id === tx.categoryId);
+  const account = accounts.find(a => a.id === tx.accountId);
+  const isIncome = tx.type === 'income';
+  const date = new Date(tx.date);
+  const time = tx.createdAt ? new Date(tx.createdAt) : date;
   return (
-    <div className={clsx('space-y-3 pt-3', padding)}>
-      {/* Header: judul + month selector */}
-      <div className="flex items-center justify-between">
-        <p className={clsx('font-bold text-text-primary', mobile ? 'text-base' : 'text-2xl')}>
-          Aktivitas Keuangan
-        </p>
-        <div className="flex items-center gap-1">
-          <button onClick={() => changeMonth(-1)} className="p-1 text-text-muted">
-            <ChevronLeft size={16} />
-          </button>
-          <span className="text-xs font-semibold text-text-primary min-w-28 text-center">
-            {monthLabel}
-          </span>
-          <button onClick={() => changeMonth(1)} className="p-1 text-text-muted">
-            <ChevronRight size={16} />
-          </button>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
+      <div className="w-full max-w-lg bg-card border border-border rounded-t-3xl p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-2xl" onClick={e => e.stopPropagation()}>
+        <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-border" />
+        <div className="flex items-start gap-3">
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl" style={{ backgroundColor: `${cat?.color || '#AAAAAA'}22` }}>{cat?.icon || '📦'}</div>
+          <div className="flex-1 min-w-0"><p className="font-bold text-text-primary truncate">{tx.note || cat?.label || 'Transaksi'}</p><p className="text-xs text-text-muted mt-1">{cat?.label || 'Lainnya'} · {isIncome ? 'Pemasukan' : 'Pengeluaran'}</p></div>
+          <p className={clsx('font-bold text-base', isIncome ? 'text-income' : 'text-expense')}>{isIncome ? '+' : '-'}{formatCurrency(tx.amount)}</p>
+        </div>
+        <div className="grid grid-cols-2 gap-2 mt-4">
+          {[['Tanggal', date.toLocaleDateString('id-ID', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })], ['Waktu', time.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })], ['Akun', account?.name || '—'], ['Jenis transaksi', isIncome ? 'Pemasukan' : 'Pengeluaran']].map(([label, value]) => <div key={label} className="bg-elevated rounded-xl p-3"><p className="text-[10px] text-text-muted">{label}</p><p className="text-xs font-semibold text-text-primary mt-1 break-words">{value}</p></div>)}
+        </div>
+        <div className="bg-elevated rounded-xl p-3 mt-2"><p className="text-[10px] text-text-muted">Catatan</p><p className="text-sm text-text-primary mt-1">{tx.note || 'Tidak ada catatan'}</p></div>
+        <div className="grid grid-cols-3 gap-2 mt-4">
+          <button onClick={() => onEdit(tx)} className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-elevated text-text-primary text-xs font-semibold"><Pencil size={14} /> Edit</button>
+          <button onClick={() => onDuplicate(tx)} className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-elevated text-text-primary text-xs font-semibold"><Copy size={14} /> Duplikat</button>
+          <button onClick={() => onDelete(tx)} className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-expense/10 text-expense text-xs font-semibold"><Trash2 size={14} /> Hapus</button>
         </div>
       </div>
-
-      {/* Tab switcher */}
-      <TabBar active={activeTab} onChange={setActiveTab} />
-
-      {/* Content */}
-      {activeTab === 'transactions' ? (
-        <TransactionsContent
-          selectedDate={selectedDate}
-          openEdit={openEdit}
-          mobile={mobile}
-        />
-      ) : (
-        <ReportContent
-          selectedDate={selectedDate}
-          onChangeMonth={changeMonth}
-          mobile={mobile}
-          embedded
-        />
-      )}
     </div>
   );
+}
+
+function TransactionsContent({ selectedDate, openEdit, mobile, onOpenDetail, categoryFilter, setCategoryFilter, typeFilter, setTypeFilter, search, setSearch, advanced, setAdvanced, filters, setFilters }) {
+  const { transactions, accounts } = useFinance();
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return transactions.filter(tx => {
+      if (!isSameMonth(tx.date, selectedDate)) return false;
+      if (typeFilter !== 'all' && tx.type !== typeFilter) return false;
+      if (categoryFilter !== 'all' && tx.categoryId !== categoryFilter) return false;
+      if (filters.category !== 'all' && tx.categoryId !== filters.category) return false;
+      if (filters.account !== 'all' && tx.accountId !== filters.account) return false;
+      const amount = Number(tx.amount) || 0;
+      if (filters.min && amount < Number(filters.min)) return false;
+      if (filters.max && amount > Number(filters.max)) return false;
+      const day = tx.date.slice(0, 10);
+      if (filters.from && day < filters.from) return false;
+      if (filters.to && day > filters.to) return false;
+      if (q) {
+        const cat = ALL_CATEGORIES.find(c => c.id === tx.categoryId);
+        const haystack = `${tx.note || ''} ${cat?.label || ''} ${amount}`.toLowerCase();
+        if (!haystack.includes(q)) return false;
+      }
+      return true;
+    }).sort((a, b) => {
+      if (filters.sort === 'oldest') return new Date(a.date) - new Date(b.date);
+      if (filters.sort === 'highest') return Number(b.amount) - Number(a.amount);
+      if (filters.sort === 'lowest') return Number(a.amount) - Number(b.amount);
+      return new Date(b.date) - new Date(a.date);
+    });
+  }, [transactions, selectedDate, typeFilter, categoryFilter, search, filters]);
+  const totalIncome = filtered.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount || 0), 0);
+  const totalExpense = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount || 0), 0);
+  const grouped = useMemo(() => {
+    const map = {};
+    filtered.forEach(tx => { const key = tx.date.slice(0, 10); (map[key] ||= []).push(tx); });
+    return Object.entries(map).sort(([a], [b]) => new Date(b) - new Date(a)).map(([date, txs]) => ({ date, txs }));
+  }, [filtered]);
+  const monthTransactions = transactions.filter(tx => isSameMonth(tx.date, selectedDate));
+  const hasActiveAdvanced = filters.from || filters.to || filters.min || filters.max || filters.category !== 'all' || filters.account !== 'all' || filters.sort !== 'newest';
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-3 gap-2">{[['Masuk', totalIncome, 'text-income'], ['Keluar', totalExpense, 'text-expense'], ['Selisih', totalIncome - totalExpense, totalIncome - totalExpense >= 0 ? 'text-income' : 'text-expense']].map(([label, value, color]) => <div key={label} className="bg-card border border-border rounded-2xl p-2.5 text-center"><p className="text-[10px] text-text-muted">{label}</p><p className={clsx('text-xs font-bold mt-1', color)}>{value < 0 ? '-' : ''}{mobile ? formatShortCurrency(Math.abs(value)) : formatCurrency(Math.abs(value))}</p></div>)}</div>
+      <div className="flex items-center gap-2 bg-input border border-border rounded-2xl px-3 py-2.5 focus-within:border-primary/50"><Search size={15} className="text-text-muted" /><input value={search} onChange={e => setSearch(e.target.value)} placeholder="Cari transaksi, kategori, nominal..." className="flex-1 bg-transparent text-sm focus:outline-none text-text-primary placeholder-text-muted" />{search && <button onClick={() => setSearch('')}><X size={14} className="text-text-muted" /></button>}</div>
+      <div className="flex gap-1.5 overflow-x-auto scrollbar-none pb-0.5">{TYPE_FILTERS.map(f => <button key={f.id} onClick={() => setTypeFilter(f.id)} className={clsx('px-3 py-1.5 rounded-full text-xs font-semibold border shrink-0 transition-all', typeFilter === f.id ? 'bg-primary text-bg border-primary' : 'border-border text-text-secondary')}>{f.label}</button>)}<button onClick={() => setCategoryFilter(categoryFilter === 'all' ? '__open__' : 'all')} className={clsx('px-3 py-1.5 rounded-full text-xs font-semibold border shrink-0', categoryFilter !== 'all' ? 'bg-primary text-bg border-primary' : 'border-border text-text-secondary')}>Kategori</button><button onClick={() => setAdvanced(!advanced)} className={clsx('flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold border shrink-0', advanced || hasActiveAdvanced ? 'bg-primary/15 text-primary border-primary/40' : 'border-border text-text-secondary')}><Filter size={12} /> Filter</button></div>
+      {categoryFilter === '__open__' && <div className="flex gap-1.5 flex-wrap p-2.5 bg-card border border-border rounded-2xl">{ALL_CATEGORIES.map(cat => <button key={cat.id} onClick={() => setCategoryFilter(cat.id)} className="px-2 py-1.5 rounded-lg text-[11px] border border-border text-text-secondary">{cat.icon} {cat.label}</button>)}</div>}
+      {advanced && <AdvancedFilter value={filters} onChange={setFilters} accounts={accounts} onClose={() => setAdvanced(false)} />}
+      {grouped.length === 0 ? <div className="bg-card border border-border rounded-2xl p-8 text-center"><p className="text-2xl">{monthTransactions.length ? '🔎' : '🧾'}</p><p className="font-semibold text-text-primary mt-2">{monthTransactions.length ? 'Tidak ada transaksi yang cocok' : 'Belum ada transaksi bulan ini'}</p><p className="text-xs text-text-muted mt-1">{monthTransactions.length ? 'Coba ubah pencarian atau filter.' : 'Tambahkan transaksi pertama kamu.'}</p></div> : grouped.map(({ date, txs }) => { const dayNet = txs.reduce((s, t) => s + (t.type === 'income' ? Number(t.amount) : -Number(t.amount)), 0); return <section key={date}><div className="flex items-center justify-between px-1 mb-1.5"><div><p className="text-[11px] font-bold text-text-secondary">{new Date(`${date}T12:00:00`).toLocaleDateString('id-ID', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}</p><p className="text-[10px] text-text-muted">{txs.length} transaksi</p></div><p className={clsx('text-[11px] font-bold', dayNet >= 0 ? 'text-income' : 'text-expense')}>{dayNet >= 0 ? '+' : '-'}{mobile ? formatShortCurrency(Math.abs(dayNet)) : formatCurrency(Math.abs(dayNet))}</p></div><div className="space-y-1.5">{txs.map(tx => <ActivityTransactionItem key={tx.id} transaction={tx} onEdit={openEdit} onOpenDetail={onOpenDetail} />)}</div></section>; })}
+    </div>
+  );
+}
+
+export default function History() {
+  const { openEdit } = useOutletContext();
+  const { transactions, accounts, addTransaction, deleteTransaction } = useFinance();
+  const mobile = useIsMobile();
+  const [activeTab, setActiveTab] = useState('transactions');
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [search, setSearch] = useState('');
+  const [typeFilter, setTypeFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [advanced, setAdvanced] = useState(false);
+  const [detailTx, setDetailTx] = useState(null);
+  const [filters, setFilters] = useState({ from: '', to: '', min: '', max: '', category: 'all', account: 'all', sort: 'newest' });
+  const changeMonth = dir => { const d = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + dir, 1); setSelectedDate(d); };
+  const pickMonth = value => setSelectedDate(parseLocalMonth(value));
+  const duplicate = tx => { const { id, createdAt, ...data } = tx; addTransaction(data); setDetailTx(null); };
+  const remove = tx => { if (window.confirm('Hapus transaksi ini?')) { deleteTransaction(tx.id); setDetailTx(null); } };
+  const monthLabel = `${getMonthName(selectedDate.getMonth())} ${selectedDate.getFullYear()}`;
+  return <div className={clsx('space-y-3 pt-3', mobile ? 'px-3 pb-24' : 'p-6 max-w-4xl mx-auto')}>
+    <div className="flex items-center justify-between gap-3"><p className={clsx('font-bold text-text-primary', mobile ? 'text-base' : 'text-2xl')}>Aktivitas Keuangan</p><div className="flex items-center gap-0.5 bg-card border border-border rounded-xl px-1"><button onClick={() => changeMonth(-1)} className="p-1.5 text-text-muted"><ChevronLeft size={15}/></button><label className="relative flex items-center gap-1 px-1 cursor-pointer"><CalendarDays size={13} className="text-primary"/><span className="text-xs font-semibold text-text-primary min-w-24 text-center">{monthLabel}</span><input type="month" value={monthInputValue(selectedDate)} onChange={e => pickMonth(e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer"/></label><button onClick={() => changeMonth(1)} className="p-1.5 text-text-muted"><ChevronRight size={15}/></button></div></div>
+    <TabBar active={activeTab} onChange={setActiveTab}/>
+    {activeTab === 'transactions' ? <TransactionsContent selectedDate={selectedDate} openEdit={tx => openEdit(tx)} mobile={mobile} onOpenDetail={setDetailTx} categoryFilter={categoryFilter} setCategoryFilter={setCategoryFilter} typeFilter={typeFilter} setTypeFilter={setTypeFilter} search={search} setSearch={setSearch} advanced={advanced} setAdvanced={setAdvanced} filters={filters} setFilters={setFilters}/> : <ActivityReport selectedDate={selectedDate} onCategorySelect={cat => { setCategoryFilter(cat); setActiveTab('transactions'); }}/>} 
+    <DetailSheet tx={detailTx} accounts={accounts} onClose={() => setDetailTx(null)} onEdit={tx => { setDetailTx(null); openEdit(tx); }} onDuplicate={duplicate} onDelete={remove}/>
+  </div>;
 }
