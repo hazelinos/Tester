@@ -12,6 +12,8 @@ export const formatShortCurrency = (amount) => {
   return `Rp ${num}`;
 };
 
+export const generateId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+
 export const toDateInputValue = (date) => {
   const d = new Date(date);
   if (Number.isNaN(d.getTime())) return '';
