@@ -1,10 +1,12 @@
 import { useRef, useState } from 'react';
 import { getCategoryById } from '../constants/categories';
+import { useFinance } from '../context/FinanceContext';
 import { formatCurrency, formatDate } from '../utils/formatters';
 
 export default function ActivityTransactionItem({ transaction, onEdit, onOpenDetail, onDelete }) {
   const cat = getCategoryById(transaction.categoryId);
   const isIncome = transaction.type === 'income';
+  const { deleteTransaction } = useFinance();
   const [offset, setOffset] = useState(0);
   const startX = useRef(null);
   const startOffset = useRef(0);
@@ -50,10 +52,19 @@ export default function ActivityTransactionItem({ transaction, onEdit, onOpenDet
     onOpenDetail?.(transaction);
   };
 
+  const handleDelete = () => {
+    reset();
+    if (onDelete) {
+      onDelete(transaction);
+      return;
+    }
+    if (window.confirm('Hapus transaksi ini?')) deleteTransaction(transaction.id);
+  };
+
   return (
     <div className="relative overflow-hidden rounded-2xl" style={{ touchAction: 'pan-y' }}>
       <button
-        onClick={() => { reset(); onDelete?.(transaction); }}
+        onClick={handleDelete}
         className="absolute inset-y-0 left-0 w-20 bg-expense/15 text-expense text-[11px] font-bold flex flex-col items-center justify-center gap-1"
       >
         <span>×</span>Hapus
