@@ -9,8 +9,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'icons/*.png'],
       manifest: {
-        name: 'FinanceApp',
-        short_name: 'FinanceApp',
+        name: 'Montra',
+        short_name: 'Montra',
         description: 'Aplikasi pencatatan keuangan pribadi',
         theme_color: '#0F0F0F',
         background_color: '#0F0F0F',
