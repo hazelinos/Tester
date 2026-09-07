@@ -7,7 +7,15 @@ import clsx from 'clsx';
 
 const MINT = '#A8E6CF';
 const CORAL = '#FF6B6B';
+const NEED_COLOR = '#A8E6CF';
+const WANT_COLOR = '#FF6B6B';
 const monthKey = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+
+// Expense categories that are generally essential or recurring needs.
+const NEED_CATEGORY_IDS = new Set([
+  'child_baby', 'fuel', 'groceries', 'family', 'vehicle', 'work', 'health',
+  'internet_phone', 'tax_admin', 'pet', 'education', 'household', 'bills', 'transport',
+]);
 
 function TooltipContent({ active, payload, label }) {
   if (!active || !payload?.length) return null;
@@ -18,7 +26,6 @@ export default function ActivityReport({ selectedDate, onCategorySelect }) {
   const { transactions } = useFinance();
   const [range, setRange] = useState(6);
   const [selectedMonth, setSelectedMonth] = useState(null);
-  const [expandedCategories, setExpandedCategories] = useState(false);
 
   const monthTransactions = useMemo(() => transactions.filter(t => { const d = new Date(t.date); return d.getFullYear() === selectedDate.getFullYear() && d.getMonth() === selectedDate.getMonth(); }), [transactions, selectedDate]);
   const income = monthTransactions.filter(t => t.type === 'income').reduce((s,t) => s + Number(t.amount || 0), 0);
@@ -45,7 +52,19 @@ export default function ActivityReport({ selectedDate, onCategorySelect }) {
     return [...top, { id: 'other', label: 'Lainnya', icon: '💸', color: '#777777', amount: rest }];
   }, [monthTransactions]);
   const totalCategories = categories.reduce((s,c) => s + c.amount, 0);
-  const visibleCategories = expandedCategories ? categories : categories.slice(0, 5);
+
+  const needsWants = useMemo(() => {
+    const totals = { needs: 0, wants: 0 };
+    monthTransactions.filter(t => t.type === 'expense').forEach(t => {
+      const amount = Number(t.amount || 0);
+      if (NEED_CATEGORY_IDS.has(t.categoryId)) totals.needs += amount;
+      else totals.wants += amount;
+    });
+    return totals;
+  }, [monthTransactions]);
+  const needsWantsTotal = needsWants.needs + needsWants.wants;
+  const needsPct = needsWantsTotal ? (needsWants.needs / needsWantsTotal) * 100 : 0;
+  const wantsPct = needsWantsTotal ? (needsWants.wants / needsWantsTotal) * 100 : 0;
 
   const insight = useMemo(() => {
     if (!monthTransactions.length || !expense) return null;
@@ -53,10 +72,16 @@ export default function ActivityReport({ selectedDate, onCategorySelect }) {
     const parts = [];
     if (top && totalCategories > 0) parts.push(`Kategori terbesar adalah ${top.label} dengan ${Math.round(top.amount / totalCategories * 100)}% dari total pengeluaran.`);
     if (expenseChange !== null) parts.push(`Pengeluaran bulan ini ${Math.abs(expenseChange).toFixed(1)}% ${expenseChange <= 0 ? 'lebih rendah' : 'lebih tinggi'} dibanding bulan lalu.`);
+    if (needsWantsTotal > 0) parts.push(`${needsPct >= wantsPct ? 'Kebutuhan' : 'Keinginan'} mengambil porsi terbesar, yaitu ${Math.round(Math.max(needsPct, wantsPct))}% dari uang yang keluar.`);
     return parts;
-  }, [monthTransactions, expense, categories, totalCategories, expenseChange]);
+  }, [monthTransactions, expense, categories, totalCategories, expenseChange, needsWantsTotal, needsPct, wantsPct]);
 
   if (!monthTransactions.length) return <div className="bg-card border border-border rounded-2xl p-8 text-center"><p className="text-2xl">📊</p><p className="font-semibold text-text-primary mt-2">Belum ada data untuk dianalisis.</p><p className="text-xs text-text-muted mt-1">Tambahkan transaksi pada bulan ini untuk melihat laporan.</p></div>;
+
+  const needsWantsData = [
+    { id: 'needs', label: 'Kebutuhan', icon: '🧰', amount: needsWants.needs, color: NEED_COLOR },
+    { id: 'wants', label: 'Keinginan', icon: '🎯', amount: needsWants.wants, color: WANT_COLOR },
+  ];
 
   return <div className="space-y-3">
     <div className="grid grid-cols-3 gap-2">{[['Pemasukan', income, 'text-income'], ['Pengeluaran', expense, 'text-expense'], [net < 0 ? 'Defisit' : 'Selisih', net, net < 0 ? 'text-expense' : 'text-income']].map(([label,value,color]) => <div key={label} className="bg-card border border-border rounded-2xl p-2.5 text-center"><p className="text-[10px] text-text-muted">{label}</p><p className={clsx('text-xs font-bold mt-1',color)}>{value < 0 ? '-' : ''}{formatShortCurrency(Math.abs(value))}</p></div>)}</div>
@@ -67,11 +92,20 @@ export default function ActivityReport({ selectedDate, onCategorySelect }) {
       {selectedMonth && <div className="mt-2 bg-elevated rounded-xl p-2.5"><p className="text-xs font-bold text-text-primary">{selectedMonth.fullLabel}</p><div className="grid grid-cols-2 gap-2 mt-1.5"><p className="text-[11px] text-income">Pemasukan: {formatCurrency(selectedMonth.income)}</p><p className="text-[11px] text-expense">Pengeluaran: {formatCurrency(selectedMonth.expense)}</p></div></div>}
       <div className="flex gap-4 mt-2"><span className="text-[10px] text-text-muted"><i className="inline-block w-2 h-2 rounded-full mr-1" style={{backgroundColor:MINT}}/>Pemasukan</span><span className="text-[10px] text-text-muted"><i className="inline-block w-2 h-2 rounded-full mr-1" style={{backgroundColor:CORAL}}/>Pengeluaran</span></div>
     </section>
+
     <section className="bg-card border border-border rounded-2xl p-3">
-      <p className="text-sm font-bold text-text-primary">Pengeluaran per Kategori</p>
-      <div className="flex flex-col sm:flex-row items-center gap-3 mt-3"><div className="relative w-44 h-44 shrink-0"><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={categories} dataKey="amount" nameKey="label" innerRadius={52} outerRadius={78} paddingAngle={2} onClick={(_, index) => { const c = categories[index]; if (c && c.id !== 'other') onCategorySelect?.(c.id); }}>{categories.map(c => <Cell key={c.id} fill={c.color}/>)}</Pie><Tooltip formatter={(v) => formatCurrency(v)}/></PieChart></ResponsiveContainer><div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"><span className="text-lg font-bold text-text-primary">{formatShortCurrency(totalCategories)}</span><span className="text-[9px] text-text-muted">Total Pengeluaran</span></div></div><div className="flex-1 w-full space-y-2">{categories.map(c => { const pct = totalCategories ? c.amount / totalCategories * 100 : 0; return <button key={c.id} onClick={() => c.id !== 'other' && onCategorySelect?.(c.id)} className="w-full text-left flex items-center gap-2"><span className="w-6 text-center">{c.icon}</span><span className="flex-1 min-w-0"><span className="flex justify-between gap-2"><span className="text-[11px] text-text-secondary truncate">{c.label}</span><span className="text-[10px] font-semibold text-text-primary">{pct.toFixed(0)}% · {formatShortCurrency(c.amount)}</span></span><span className="block h-1.5 bg-elevated rounded-full overflow-hidden mt-1"><span className="block h-full rounded-full" style={{ width:`${pct}%`, backgroundColor:c.color }}/></span></span></button>; })}</div></div>
+      <div className="flex items-center justify-between"><div><p className="text-sm font-bold text-text-primary">Uang Habis Untuk</p><p className="text-[10px] text-text-muted mt-0.5">Kebutuhan vs keinginan</p></div><span className="text-[10px] text-text-muted">{formatShortCurrency(needsWantsTotal)}</span></div>
+      <div className="flex flex-col sm:flex-row items-center gap-4 mt-3">
+        <div className="relative w-40 h-40 shrink-0"><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={needsWantsData} dataKey="amount" nameKey="label" innerRadius={48} outerRadius={70} paddingAngle={3}><Cell fill={NEED_COLOR}/><Cell fill={WANT_COLOR}/></Pie><Tooltip formatter={(v) => formatCurrency(v)}/></PieChart></ResponsiveContainer><div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"><span className="text-lg font-bold text-text-primary">{formatShortCurrency(needsWantsTotal)}</span><span className="text-[9px] text-text-muted">Total keluar</span></div></div>
+        <div className="flex-1 w-full space-y-3">{needsWantsData.map(item => { const pct = needsWantsTotal ? (item.amount / needsWantsTotal) * 100 : 0; return <div key={item.id}><div className="flex items-center justify-between gap-2"><div className="flex items-center gap-2"><span>{item.icon}</span><span className="text-xs font-semibold text-text-primary">{item.label}</span></div><span className="text-xs font-bold text-text-primary">{formatShortCurrency(item.amount)}</span></div><div className="flex items-center gap-2 mt-1.5"><div className="h-2 flex-1 bg-elevated rounded-full overflow-hidden"><div className="h-full rounded-full" style={{width:`${pct}%`, backgroundColor:item.color}}/></div><span className="w-9 text-right text-[10px] text-text-muted">{pct.toFixed(0)}%</span></div></div>; })}</div>
+      </div>
     </section>
-    <section className="bg-card border border-border rounded-2xl p-3"><div className="flex items-center justify-between"><p className="text-sm font-bold text-text-primary">Per Kategori</p>{categories.length > 5 && <button onClick={() => setExpandedCategories(v => !v)} className="text-[11px] text-primary font-semibold">{expandedCategories ? 'Tutup' : 'Lihat semua →'}</button>}</div><div className="space-y-3 mt-3">{visibleCategories.map(c => { const pct = totalCategories ? c.amount / totalCategories * 100 : 0; return <button key={c.id} onClick={() => c.id !== 'other' && onCategorySelect?.(c.id)} className="w-full text-left"><div className="flex items-center gap-2"><span>{c.icon}</span><div className="flex-1"><div className="flex justify-between"><span className="text-xs text-text-secondary">{c.label}</span><span className="text-xs font-semibold text-text-primary">{formatShortCurrency(c.amount)}</span></div><div className="h-1.5 bg-elevated rounded-full overflow-hidden mt-1"><div className="h-full rounded-full" style={{ width:`${pct}%`, backgroundColor:c.color }}/></div></div></div></button>; })}</div></section>
+
+    <section className="bg-card border border-border rounded-2xl p-3">
+      <div className="flex items-center justify-between mb-3"><div><p className="text-sm font-bold text-text-primary">Pengeluaran per Kategori</p><p className="text-[10px] text-text-muted mt-0.5">Klik kategori untuk melihat transaksinya</p></div><span className="text-[10px] text-text-muted">{formatShortCurrency(totalCategories)}</span></div>
+      <div className="flex flex-col sm:flex-row items-center gap-4"><div className="relative w-40 h-40 shrink-0"><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={categories} dataKey="amount" nameKey="label" innerRadius={48} outerRadius={70} paddingAngle={2} onClick={(_, index) => { const c = categories[index]; if (c && c.id !== 'other') onCategorySelect?.(c.id); }}>{categories.map(c => <Cell key={c.id} fill={c.color}/>)}</Pie><Tooltip formatter={(v) => formatCurrency(v)}/></PieChart></ResponsiveContainer><div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"><span className="text-lg font-bold text-text-primary">{formatShortCurrency(totalCategories)}</span><span className="text-[9px] text-text-muted">Total Pengeluaran</span></div></div><div className="flex-1 w-full space-y-2">{categories.map(c => { const pct = totalCategories ? c.amount / totalCategories * 100 : 0; return <button key={c.id} onClick={() => c.id !== 'other' && onCategorySelect?.(c.id)} className="w-full text-left flex items-center gap-2"><span className="w-6 text-center">{c.icon}</span><span className="flex-1 min-w-0"><span className="flex justify-between gap-2"><span className="text-[11px] text-text-secondary truncate">{c.label}</span><span className="text-[10px] font-semibold text-text-primary">{pct.toFixed(0)}% · {formatShortCurrency(c.amount)}</span></span><span className="block h-1.5 bg-elevated rounded-full overflow-hidden mt-1"><span className="block h-full rounded-full" style={{ width:`${pct}%`, backgroundColor:c.color }}/></span></span></button>; })}</div></div>
+    </section>
+
     {insight?.length > 0 && <section className="bg-card border border-border rounded-2xl p-3"><p className="text-sm font-bold text-text-primary">💡 Analisis Singkat</p><div className="space-y-2 mt-2">{insight.map(text => <p key={text} className="text-xs leading-relaxed text-text-secondary">{text}</p>)}</div></section>}
   </div>;
 }
