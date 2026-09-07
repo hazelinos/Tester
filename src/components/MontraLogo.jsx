@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export default function MontraLogo({ size = 32, showName = false, className = '', src = '/montra-logo.jpg' }) {
+export default function MontraLogo({ size = 32, showName = false, className = '', src = '/montra-logo.svg' }) {
   const [imageFailed, setImageFailed] = useState(false);
 
   return (
@@ -8,7 +8,7 @@ export default function MontraLogo({ size = 32, showName = false, className = ''
       {!imageFailed ? (
         <img
           src={src}
-          alt="MontraApp logo"
+          alt="Montra logo"
           width={size}
           height={size}
           className="object-contain shrink-0"
@@ -21,7 +21,7 @@ export default function MontraLogo({ size = 32, showName = false, className = ''
           viewBox="0 0 64 64"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          aria-label="MontraApp logo"
+          aria-label="Montra logo"
         >
           <defs>
             <linearGradient id="montra-gradient" x1="12" y1="52" x2="52" y2="8" gradientUnits="userSpaceOnUse">
@@ -41,7 +41,7 @@ export default function MontraLogo({ size = 32, showName = false, className = ''
       )}
       {showName && (
         <span className="font-bold text-text-primary whitespace-nowrap">
-          Montra<span className="text-primary">App</span>
+          Montra
         </span>
       )}
     </div>
