@@ -90,3 +90,7 @@
 input[type="month"] { pointer-events: auto; }
 label:has(> input[type="month"]) { overflow: hidden; }
 label:has(> input[type="month"]) + button { position: relative; z-index: 10; }
+
+/* Activity category picker: the filter already tells the user what is being shown, so hide the redundant heading row. */
+div.bg-card.border.border-border.rounded-2xl.p-2\.5.space-y-2:has(.snap-x) > div:first-child { display: none; }
+div.bg-card.border.border-border.rounded-2xl.p-2\.5.space-y-2:has(.snap-x) > div + div { margin-top: 0 !important; }
