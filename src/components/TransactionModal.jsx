@@ -174,10 +174,18 @@ export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
       onClose();
       return;
     }
-    const saveDate = new Date(`${date}T00:00:00`);
     const timeSource = isEdit && editTx?.date ? new Date(editTx.date) : new Date();
-    saveDate.setHours(timeSource.getHours(), timeSource.getMinutes(), timeSource.getSeconds(), timeSource.getMilliseconds());
-    const data = { type, amount: numAmount, categoryId, accountId, note: note.trim(), date: saveDate.toISOString(), ...(type === 'expense' ? { expenseType } : {}) };
+    const time = [timeSource.getHours(), timeSource.getMinutes(), timeSource.getSeconds(), timeSource.getMilliseconds()];
+    const pad = value => String(value).padStart(2, '0');
+    const data = {
+      type,
+      amount: numAmount,
+      categoryId,
+      accountId,
+      note: note.trim(),
+      date: `${date}T${pad(time[0])}:${pad(time[1])}:${pad(time[2])}.${String(time[3]).padStart(3, '0')}+07:00`,
+      ...(type === 'expense' ? { expenseType } : {}),
+    };
     if (isEdit) updateTransaction({ ...editTx, ...data });
     else addTransaction(data);
     onClose();
