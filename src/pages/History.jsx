@@ -6,7 +6,7 @@ import { useIsMobile } from '../hooks/useIsMobile';
 import ActivityTransactionItem from '../components/ActivityTransactionItem';
 import ActivityReport from './ActivityReport';
 import { formatCurrency, formatShortCurrency, isSameMonth, getMonthName } from '../utils/formatters';
-import { ALL_CATEGORIES } from '../constants/categories';
+import { ALL_CATEGORIES, EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '../constants/categories';
 import clsx from 'clsx';
 
 const TYPE_FILTERS = [
@@ -86,6 +86,58 @@ function DetailSheet({ tx, accounts, onClose, onEdit, onDuplicate, onDelete }) {
   );
 }
 
+function CategoryPicker({ typeFilter, transactions, categoryFilter, onSelect }) {
+  const categories = typeFilter === 'expense' ? EXPENSE_CATEGORIES : typeFilter === 'income' ? INCOME_CATEGORIES : ALL_CATEGORIES;
+  const categoryUsage = useMemo(() => {
+    const counts = {};
+    transactions.forEach(tx => {
+      if (tx.categoryId && (typeFilter === 'all' || tx.type === typeFilter)) counts[tx.categoryId] = (counts[tx.categoryId] || 0) + 1;
+    });
+    return counts;
+  }, [transactions, typeFilter]);
+  const sortedCategories = useMemo(() => [...categories].sort((a, b) => {
+    const usageDiff = (categoryUsage[b.id] || 0) - (categoryUsage[a.id] || 0);
+    return usageDiff || categories.indexOf(a) - categories.indexOf(b);
+  }), [categories, categoryUsage]);
+  const rows = Math.min(3, Math.max(1, Math.ceil(sortedCategories.length / 5)));
+  const columns = useMemo(() => {
+    const result = [];
+    for (let i = 0; i < sortedCategories.length; i += rows) result.push(sortedCategories.slice(i, i + rows));
+    return result;
+  }, [sortedCategories, rows]);
+
+  return (
+    <div className="bg-card border border-border rounded-2xl p-2.5 space-y-2">
+      <div className="flex items-center justify-between px-0.5">
+        <div>
+          <p className="text-[11px] font-bold tracking-wide text-text-primary">Kategori</p>
+          <p className="text-[9px] text-text-muted">Diurutkan dari yang paling sering digunakan</p>
+        </div>
+        <span className="text-[9px] text-text-muted">{sortedCategories.length} kategori</span>
+      </div>
+      <div className="overflow-x-auto scrollbar-none -mx-0.5 px-0.5 pb-0.5 snap-x">
+        <div className="flex gap-1.5 w-max">
+          {columns.map((column, index) => (
+            <div key={index} className="grid gap-1.5 shrink-0" style={{ gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))` }}>
+              {column.map((cat, catIndex) => {
+                const rank = index * rows + catIndex + 1;
+                const isSelected = categoryFilter === cat.id;
+                return (
+                  <button key={cat.id} type="button" onClick={() => onSelect(cat.id)} className={clsx('w-[92px] h-[42px] rounded-xl border bg-input flex items-center gap-1.5 px-2 text-left transition-all shrink-0', isSelected ? 'border-primary bg-primary/10 text-primary' : 'border-border text-text-secondary')}>
+                    <span className="text-[17px] leading-none shrink-0">{cat.icon}</span>
+                    <span className="min-w-0 flex-1 text-[9px] leading-tight font-medium line-clamp-2">{cat.label}</span>
+                    {rank === 1 && <span className="text-[8px] font-bold text-primary shrink-0">#1</span>}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function TransactionsContent({ selectedDate, openEdit, mobile, onOpenDetail, categoryFilter, setCategoryFilter, typeFilter, setTypeFilter, search, setSearch, advanced, setAdvanced, filters, setFilters }) {
   const { transactions, accounts } = useFinance();
   const monthTransactions = useMemo(() => transactions.filter(tx => isSameMonth(tx.date, selectedDate)), [transactions, selectedDate]);
@@ -127,8 +179,9 @@ function TransactionsContent({ selectedDate, openEdit, mobile, onOpenDetail, cat
     <div className="space-y-3">
       <div className="grid grid-cols-3 gap-2">{[['Masuk', totalIncome, 'text-income'], ['Keluar', totalExpense, 'text-expense'], ['Selisih', totalIncome - totalExpense, totalIncome - totalExpense >= 0 ? 'text-income' : 'text-expense']].map(([label, value, color]) => <div key={label} className="bg-card border border-border rounded-2xl p-2.5 text-center"><p className="text-[10px] text-text-muted">{label}</p><p className={clsx('text-xs font-bold mt-1', color)}>{value < 0 ? '-' : ''}{mobile ? formatShortCurrency(Math.abs(value)) : formatCurrency(Math.abs(value))}</p></div>)}</div>
       <div className="flex items-center gap-2 bg-input border border-border rounded-2xl px-3 py-2.5 focus-within:border-primary/50"><Search size={15} className="text-text-muted" /><input value={search} onChange={e => setSearch(e.target.value)} placeholder="Cari transaksi, kategori, nominal..." className="flex-1 bg-transparent text-sm focus:outline-none text-text-primary placeholder-text-muted" />{search && <button onClick={() => setSearch('')}><X size={14} className="text-text-muted" /></button>}</div>
-      <div className="flex gap-1.5 overflow-x-auto scrollbar-none pb-0.5">{TYPE_FILTERS.map(f => <button key={f.id} onClick={() => setTypeFilter(f.id)} className={clsx('px-3 py-1.5 rounded-full text-xs font-semibold border shrink-0 transition-all', typeFilter === f.id ? 'bg-primary text-bg border-primary' : 'border-border text-text-secondary')}>{f.label}</button>)}<button onClick={() => setCategoryFilter(categoryFilter === 'all' ? '__open__' : 'all')} className={clsx('px-3 py-1.5 rounded-full text-xs font-semibold border shrink-0', categoryFilter !== 'all' && categoryFilter !== '__open__' ? 'bg-primary text-bg border-primary' : 'border-border text-text-secondary')}>Kategori</button><button onClick={() => setAdvanced(!advanced)} className={clsx('flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold border shrink-0', advanced || hasActiveAdvanced ? 'bg-primary/15 text-primary border-primary/40' : 'border-border text-text-secondary')}><Filter size={12} /> Filter</button></div>
-      {categoryFilter === '__open__' && <div className="flex gap-1.5 flex-wrap p-2.5 bg-card border border-border rounded-2xl">{ALL_CATEGORIES.map(cat => <button key={cat.id} onClick={() => setCategoryFilter(cat.id)} className="px-2 py-1.5 rounded-lg text-[11px] border border-border text-text-secondary">{cat.icon} {cat.label}</button>)}</div>}
+      <div className="flex gap-1.5 overflow-x-auto scrollbar-none pb-0.5">{TYPE_FILTERS.map(f => <button key={f.id} onClick={() => { setTypeFilter(f.id); setCategoryFilter('all'); }} className={clsx('px-3 py-1.5 rounded-full text-xs font-semibold border shrink-0 transition-all', typeFilter === f.id ? 'bg-primary text-bg border-primary' : 'border-border text-text-secondary')}>{f.label}</button>)}<button onClick={() => setCategoryFilter(categoryFilter === 'all' ? '__open__' : 'all')} className={clsx('px-3 py-1.5 rounded-full text-xs font-semibold border shrink-0', categoryFilter !== 'all' && categoryFilter !== '__open__' ? 'bg-primary text-bg border-primary' : 'border-border text-text-secondary')}>Kategori</button><button onClick={() => setAdvanced(!advanced)} className={clsx('flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold border shrink-0', advanced || hasActiveAdvanced ? 'bg-primary/15 text-primary border-primary/40' : 'border-border text-text-secondary')}><Filter size={12} /> Filter</button></div>
+      {categoryFilter === '__open__' && <CategoryPicker typeFilter={typeFilter} transactions={transactions} categoryFilter={categoryFilter} onSelect={setCategoryFilter} />}
+      {categoryFilter !== 'all' && categoryFilter !== '__open__' && <CategoryPicker typeFilter={typeFilter} transactions={transactions} categoryFilter={categoryFilter} onSelect={setCategoryFilter} />}
       {advanced && <AdvancedFilter value={filters} onChange={setFilters} accounts={accounts} onClose={() => setAdvanced(false)} />}
       {grouped.length === 0 ? <div className="bg-card border border-border rounded-2xl p-8 text-center"><p className="text-2xl">{monthTransactions.length ? '🔎' : '🧾'}</p><p className="font-semibold text-text-primary mt-2">{monthTransactions.length ? 'Tidak ada transaksi yang cocok' : 'Belum ada transaksi bulan ini'}</p><p className="text-xs text-text-muted mt-1">{monthTransactions.length ? 'Coba ubah pencarian atau filter.' : 'Tambahkan transaksi pertama kamu.'}</p></div> : grouped.map(({ date, txs }) => { const dayNet = txs.reduce((s, t) => s + (t.type === 'income' ? Number(t.amount) : -Number(t.amount)), 0); return <section key={date}><div className="flex items-center justify-between px-1 mb-1.5"><div><p className="text-[11px] font-bold text-text-secondary">{new Date(`${date}T12:00:00`).toLocaleDateString('id-ID', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}</p><p className="text-[10px] text-text-muted">{txs.length} transaksi</p></div><p className={clsx('text-[11px] font-bold', dayNet >= 0 ? 'text-income' : 'text-expense')}>{dayNet >= 0 ? '+' : '-'}{mobile ? formatShortCurrency(Math.abs(dayNet)) : formatCurrency(Math.abs(dayNet))}</p></div><div className="space-y-1.5">{txs.map(tx => <ActivityTransactionItem key={tx.id} transaction={tx} onEdit={openEdit} onOpenDetail={onOpenDetail} />)}</div></section>; })}
     </div>
