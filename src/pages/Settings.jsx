@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { RotateCcw, Download, Upload, FileJson, Sun, Moon, Smartphone } from 'lucide-react';
+import { RotateCcw, Download, Upload, Cloud, Palette, ChevronRight } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
 import { useFinance } from '../context/FinanceContext';
 import { useIsMobile } from '../hooks/useIsMobile';
@@ -29,19 +29,14 @@ function exportData(finance, settingsData) {
   URL.revokeObjectURL(url);
 }
 
-const THEME_OPTIONS = [
-  { value: 'light', label: 'Terang', icon: Sun },
-  { value: 'dark', label: 'Gelap', icon: Moon },
-  { value: 'system', label: 'Perangkat', icon: Smartphone },
-];
-
 export default function Settings() {
   const mobile = useIsMobile();
-  const { settings, updateSettings } = useSettings();
+  const { settings } = useSettings();
   const finance = useFinance();
   const { transactions, accounts, budgets, savings, debts, subscriptions } = finance;
   const [importing, setImporting] = useState(false);
   const [importMsg, setImportMsg] = useState(null);
+  const [showBackupRestore, setShowBackupRestore] = useState(false);
   const importInputRef = useRef(null);
 
   const handleImportFile = (e) => {
@@ -65,6 +60,7 @@ export default function Settings() {
         localStorage.setItem('finance_subscriptions', JSON.stringify(data.subscriptions || []));
         if (data.settings) localStorage.setItem('finance_settings', JSON.stringify(data.settings));
         setImportMsg({ type: 'success', text: 'Data berhasil di-restore! Halaman akan dimuat ulang...' });
+        setShowBackupRestore(false);
         setTimeout(() => window.location.reload(), 1500);
       } catch (err) {
         setImportMsg({ type: 'error', text: `Gagal import: ${err.message}` });
@@ -79,49 +75,80 @@ export default function Settings() {
   const padding = mobile ? 'px-3 pb-24' : 'p-6 max-w-xl mx-auto';
 
   return (
-    <div className={clsx('space-y-4 pt-3', padding)}>
-      {!mobile && <div><h1 className="text-2xl font-bold text-text-primary">Pengaturan</h1><p className="text-text-muted text-sm mt-0.5">Kelola tampilan dan data Montra</p></div>}
+    <div className={clsx('space-y-6 pt-3', padding)}>
+      {!mobile && <h1 className="text-2xl font-bold text-text-primary">Pengaturan</h1>}
       {mobile && <p className="text-base font-bold text-text-primary">Pengaturan</p>}
 
-      <div className="card space-y-3">
-        <div>
-          <h2 className="text-sm font-bold text-text-primary">Tampilan</h2>
-          <p className="text-xs text-text-muted mt-0.5">Pilih tema yang nyaman untuk digunakan</p>
-        </div>
-        <div className="grid grid-cols-3 gap-2">
-          {THEME_OPTIONS.map(({ value, label, icon: Icon }) => {
-            const active = (settings.theme || 'system') === value;
-            return (
-              <button
-                key={value}
-                type="button"
-                onClick={() => updateSettings({ theme: value })}
-                aria-pressed={active}
-                className={clsx(
-                  'flex flex-col items-center justify-center gap-1.5 rounded-xl border py-3 text-xs font-semibold transition-colors',
-                  active ? 'bg-primary text-bg border-primary' : 'bg-elevated text-text-secondary border-border hover:bg-border hover:text-text-primary'
-                )}
-              >
-                <Icon size={17} />
-                {label}
-              </button>
-            );
-          })}
-        </div>
-        <p className="text-[10px] text-text-muted">Jika memilih Perangkat, Montra otomatis mengikuti pengaturan tema HP atau sistem operasi.</p>
-      </div>
+      <section className="space-y-2">
+        <h2 className="px-1 text-sm font-bold text-text-primary">Tampilan</h2>
+        <button
+          type="button"
+          className="card w-full flex items-center gap-4 text-left transition-colors hover:bg-elevated"
+          onClick={() => {}}
+        >
+          <span className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <Palette size={22} strokeWidth={2} />
+          </span>
+          <span className="flex-1 text-base font-semibold text-text-primary">Tema</span>
+          <ChevronRight size={20} className="text-text-muted shrink-0" />
+        </button>
+      </section>
 
-      <div className="card space-y-3">
-        <div><h2 className="text-sm font-bold text-text-primary">Backup & Restore</h2><p className="text-xs text-text-muted mt-0.5">Simpan semua data ke file JSON atau pulihkan dari backup sebelumnya</p></div>
-        <div className="bg-bg rounded-xl p-3 border border-border"><div className="flex items-center gap-2 mb-2"><FileJson size={14} className="text-primary" /><span className="text-xs font-semibold text-text-primary">Data saat ini</span></div><div className="grid grid-cols-3 gap-2">{[
-          { label: 'Transaksi', val: transactions.length }, { label: 'Akun', val: accounts.length }, { label: 'Budget', val: budgets.length }, { label: 'Tabungan', val: savings?.length || 0 }, { label: 'Hutang', val: debts?.length || 0 }, { label: 'Langganan', val: subscriptions?.length || 0 },
-        ].map((s) => <div key={s.label} className="text-center"><p className="text-sm font-bold text-text-primary">{s.val}</p><p className="text-[10px] text-text-muted">{s.label}</p></div>)}</div></div>
-        <div className="grid grid-cols-2 gap-2"><button onClick={() => exportData(finance, settings)} className="flex items-center justify-center gap-2 py-3 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-sm font-semibold border border-primary/20"><Download size={15} /> Simpan File</button><button onClick={() => importInputRef.current?.click()} disabled={importing} className="flex items-center justify-center gap-2 py-3 rounded-xl bg-elevated hover:bg-border transition-colors text-sm font-semibold border border-border text-text-secondary disabled:opacity-50"><Upload size={15} /> Restore File</button><input ref={importInputRef} type="file" accept=".json" onChange={handleImportFile} className="hidden" /></div>
-        {importMsg && <div className={clsx('rounded-xl px-3 py-2.5 text-xs font-medium', importMsg.type === 'success' ? 'bg-income/10 text-income border border-income/30' : 'bg-expense/10 text-expense border border-expense/30')}>{importMsg.type === 'success' ? '✓ ' : '✕ '}{importMsg.text}</div>}
-        <p className="text-[10px] text-text-muted">File backup berformat .json dan berisi semua data termasuk transaksi, akun, budget, tabungan, hutang, dan langganan.</p>
-      </div>
+      <section className="space-y-2">
+        <h2 className="px-1 text-sm font-bold text-text-primary">Data</h2>
+        <button
+          type="button"
+          onClick={() => setShowBackupRestore(true)}
+          className="card w-full flex items-center gap-4 text-left transition-colors hover:bg-elevated"
+        >
+          <span className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <Cloud size={22} strokeWidth={2} />
+          </span>
+          <span className="flex-1 text-base font-semibold text-text-primary">Backup & Restore</span>
+          <ChevronRight size={20} className="text-text-muted shrink-0" />
+        </button>
+      </section>
 
-      <div className="card space-y-3 border-expense/20"><h2 className="text-sm font-bold text-expense">Zona Berbahaya</h2><p className="text-xs text-text-muted">Sebaiknya backup data dulu sebelum reset.</p><button onClick={() => { if (window.confirm('Reset semua data? Semua transaksi, akun, budget, tabungan, hutang, dan langganan akan dihapus permanen.')) { localStorage.clear(); window.location.reload(); } }} className="btn-danger flex items-center gap-2 text-sm"><RotateCcw size={14} /> Reset Semua Data</button></div>
+      <button
+        type="button"
+        onClick={() => { if (window.confirm('Reset semua data? Semua transaksi, akun, budget, tabungan, hutang, dan langganan akan dihapus permanen.')) { localStorage.clear(); window.location.reload(); } }}
+        className="w-full flex items-center gap-4 rounded-2xl border border-expense/40 bg-expense/10 px-4 py-4 text-left transition-colors hover:bg-expense/15"
+      >
+        <span className="w-11 h-11 rounded-xl bg-expense/10 text-expense flex items-center justify-center shrink-0">
+          <RotateCcw size={22} strokeWidth={2} />
+        </span>
+        <span className="flex-1 text-base font-semibold text-expense">Reset semua data</span>
+        <ChevronRight size={20} className="text-text-muted shrink-0" />
+      </button>
+
+      {showBackupRestore && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-3" onClick={() => setShowBackupRestore(false)}>
+          <div className="w-full max-w-md card space-y-2" onClick={(e) => e.stopPropagation()}>
+            <div className="px-1 pb-2">
+              <h3 className="text-base font-bold text-text-primary">Backup & Restore</h3>
+            </div>
+            <button
+              type="button"
+              onClick={() => exportData(finance, settings)}
+              className="w-full flex items-center gap-3 rounded-xl bg-elevated px-3 py-3 text-left hover:bg-border transition-colors"
+            >
+              <Download size={18} className="text-primary" />
+              <span className="text-sm font-semibold text-text-primary">Backup data</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => importInputRef.current?.click()}
+              disabled={importing}
+              className="w-full flex items-center gap-3 rounded-xl bg-elevated px-3 py-3 text-left hover:bg-border transition-colors disabled:opacity-50"
+            >
+              <Upload size={18} className="text-primary" />
+              <span className="text-sm font-semibold text-text-primary">Restore data</span>
+            </button>
+            <input ref={importInputRef} type="file" accept=".json" onChange={handleImportFile} className="hidden" />
+            {importMsg && <div className={clsx('rounded-xl px-3 py-2.5 text-xs font-medium', importMsg.type === 'success' ? 'bg-income/10 text-income border border-income/30' : 'bg-expense/10 text-expense border border-expense/30')}>{importMsg.type === 'success' ? '✓ ' : '✕ '}{importMsg.text}</div>}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
