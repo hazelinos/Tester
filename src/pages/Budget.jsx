@@ -127,7 +127,7 @@ export default function Budget() {
             <div className="h-full rounded-full transition-all"
               style={{
                 width: `${totalBudget > 0 ? Math.min((totalSpent / totalBudget) * 100, 100) : 0}%`,
-                backgroundColor: totalSpent > totalBudget ? '#FF6B6B' : '#A8E6CF',
+                backgroundColor: totalSpent > totalBudget ? '#C92F1C' : '#146466',
               }} />
           </div>
           {overCount > 0 && (
@@ -146,7 +146,7 @@ export default function Budget() {
             {itemsWithCat.map((item) => {
               const isOver    = item.spent > item.amount;
               const isWarning = !isOver && item.percentage >= 80;
-              const barColor  = isOver ? '#FF6B6B' : isWarning ? '#FFD3A5' : '#A8E6CF';
+              const barColor  = isOver ? '#C92F1C' : isWarning ? '#E2E2C4' : '#146466';
               return (
                 <div key={item.id} className="bg-card border border-border rounded-xl p-3 space-y-2">
                   <div className="flex items-center gap-2">
