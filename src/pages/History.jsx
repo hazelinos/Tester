@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Search, X, ChevronLeft, ChevronRight, CalendarDays, Filter, Copy, Trash2, Pencil } from 'lucide-react';
+import { Search, X, ChevronLeft, ChevronRight, CalendarDays, Filter, Copy, Trash2, Pencil, ReceiptText, BarChart3 } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
 import { useIsMobile } from '../hooks/useIsMobile';
 import ActivityTransactionItem from '../components/ActivityTransactionItem';
@@ -22,11 +22,16 @@ const parseLocalMonth = (value) => {
 };
 
 function TabBar({ active, onChange }) {
+  const tabs = [
+    { id: 'transactions', label: 'Transaksi', Icon: ReceiptText },
+    { id: 'report', label: 'Laporan', Icon: BarChart3 },
+  ];
   return (
     <div className="flex bg-elevated rounded-2xl p-1 gap-1">
-      {[['transactions', '🧾 Transaksi'], ['report', '📊 Laporan']].map(([id, label]) => (
-        <button key={id} onClick={() => onChange(id)} className={clsx('flex-1 py-2 rounded-xl text-xs font-semibold transition-all duration-200', active === id ? 'bg-card text-primary shadow-sm' : 'text-text-muted hover:text-text-secondary')}>
-          {label}
+      {tabs.map(({ id, label, Icon }) => (
+        <button key={id} onClick={() => onChange(id)} className={clsx('flex-1 py-3 rounded-xl flex items-center justify-center gap-2.5 text-base font-bold transition-all duration-200', active === id ? 'bg-card text-primary shadow-sm' : 'text-text-muted hover:text-text-secondary')}>
+          <Icon size={27} strokeWidth={2.2} />
+          <span>{label}</span>
         </button>
       ))}
     </div>
