@@ -20,9 +20,9 @@ const loadFromStorage = (key, fallback) => {
 };
 
 const DEFAULT_ACCOUNTS = [
-  { id: 'cash',    name: 'Kas',      icon: '💵', color: '#A8E6CF', balance: 0 },
-  { id: 'bank',    name: 'Bank',     icon: '🏦', color: '#69B4FF', balance: 0 },
-  { id: 'ewallet', name: 'E-Wallet', icon: '📱', color: '#C469FF', balance: 0 },
+  { id: 'cash',    name: 'Kas',      icon: '💵', color: '#146466', balance: 0 },
+  { id: 'bank',    name: 'Bank',     icon: '🏦', color: '#5AABA9', balance: 0 },
+  { id: 'ewallet', name: 'E-Wallet', icon: '📱', color: '#146466', balance: 0 },
 ];
 
 const initialState = {
@@ -238,6 +238,6 @@ export const FinanceProvider = ({ children }) => {
 
 export const useFinance = () => {
   const ctx = useContext(FinanceContext);
-  if (!ctx) throw new Error('useFinance must be inside FinanceProvider');
+  if (!ctx) throw new Error('useFinance must be used within FinanceProvider');
   return ctx;
 };
