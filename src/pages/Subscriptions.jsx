@@ -8,23 +8,23 @@ import clsx from 'clsx';
 
 // ─── Kategori langganan ───────────────────────────────────────────
 const SUB_CATEGORIES = [
-  { id: 'streaming', label: 'Streaming',  icon: '📺', color: '#FF6B6B',
+  { id: 'streaming', label: 'Streaming',  icon: '📺', color: '#C92F1C',
     examples: ['Netflix','Disney+','Vidio','WeTV'] },
-  { id: 'music',     label: 'Musik',      icon: '🎵', color: '#C469FF',
+  { id: 'music',     label: 'Musik',      icon: '🎵', color: '#5AABA9',
     examples: ['Spotify','Apple Music','YouTube Music'] },
-  { id: 'internet',  label: 'Internet',   icon: '📡', color: '#69B4FF',
+  { id: 'internet',  label: 'Internet',   icon: '📡', color: '#146466',
     examples: ['WiFi','Paket Data','IndiHome'] },
-  { id: 'apps',      label: 'Aplikasi',   icon: '📱', color: '#69FFD3',
+  { id: 'apps',      label: 'Aplikasi',   icon: '📱', color: '#5AABA9',
     examples: ['iCloud','Google One','Canva Pro'] },
-  { id: 'games',     label: 'Game',       icon: '🎮', color: '#FFD369',
+  { id: 'games',     label: 'Game',       icon: '🎮', color: '#E2E2C4',
     examples: ['Xbox Game Pass','PlayStation Plus'] },
-  { id: 'news',      label: 'Berita',     icon: '📰', color: '#FF9F69',
+  { id: 'news',      label: 'Berita',     icon: '📰', color: '#E2E2C4',
     examples: ['Kompas Premium','The Athletic'] },
-  { id: 'fitness',   label: 'Fitness',    icon: '💪', color: '#6BCF9F',
+  { id: 'fitness',   label: 'Fitness',    icon: '💪', color: '#5AABA9',
     examples: ['Gym','Classpass'] },
-  { id: 'software',  label: 'Software',   icon: '💻', color: '#A8E6CF',
+  { id: 'software',  label: 'Software',   icon: '💻', color: '#146466',
     examples: ['Adobe CC','Microsoft 365','Notion'] },
-  { id: 'other',     label: 'Lainnya',    icon: '📦', color: '#AAAAAA',
+  { id: 'other',     label: 'Lainnya',    icon: '📦', color: '#5AABA9',
     examples: [] },
 ];
 
@@ -290,7 +290,7 @@ function SubCard({ sub, onEdit, onDelete, mobile }) {
       {/* Amount + billing info */}
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-base font-bold" style={{ color: sub.active ? cat.color : '#5A5A5A' }}>
+          <p className="text-base font-bold" style={{ color: sub.active ? cat.color : '#72817C' }}>
             {mobile ? formatShortCurrency(sub.amount) : formatCurrency(sub.amount)}
             <span className="text-[10px] text-text-muted font-normal ml-1">/{cycleLabel.toLowerCase()}</span>
           </p>
