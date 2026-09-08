@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { RotateCcw, Download, Upload, FileJson } from 'lucide-react';
+import { RotateCcw, Download, Upload, FileJson, Sun, Moon, Smartphone } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
 import { useFinance } from '../context/FinanceContext';
 import { useIsMobile } from '../hooks/useIsMobile';
@@ -29,9 +29,15 @@ function exportData(finance, settingsData) {
   URL.revokeObjectURL(url);
 }
 
+const THEME_OPTIONS = [
+  { value: 'light', label: 'Terang', icon: Sun },
+  { value: 'dark', label: 'Gelap', icon: Moon },
+  { value: 'system', label: 'Perangkat', icon: Smartphone },
+];
+
 export default function Settings() {
   const mobile = useIsMobile();
-  const { settings } = useSettings();
+  const { settings, updateSettings } = useSettings();
   const finance = useFinance();
   const { transactions, accounts, budgets, savings, debts, subscriptions } = finance;
   const [importing, setImporting] = useState(false);
@@ -76,6 +82,34 @@ export default function Settings() {
     <div className={clsx('space-y-4 pt-3', padding)}>
       {!mobile && <div><h1 className="text-2xl font-bold text-text-primary">Pengaturan</h1><p className="text-text-muted text-sm mt-0.5">Kelola tampilan dan data Montra</p></div>}
       {mobile && <p className="text-base font-bold text-text-primary">Pengaturan</p>}
+
+      <div className="card space-y-3">
+        <div>
+          <h2 className="text-sm font-bold text-text-primary">Tampilan</h2>
+          <p className="text-xs text-text-muted mt-0.5">Pilih tema yang nyaman untuk digunakan</p>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          {THEME_OPTIONS.map(({ value, label, icon: Icon }) => {
+            const active = (settings.theme || 'system') === value;
+            return (
+              <button
+                key={value}
+                type="button"
+                onClick={() => updateSettings({ theme: value })}
+                aria-pressed={active}
+                className={clsx(
+                  'flex flex-col items-center justify-center gap-1.5 rounded-xl border py-3 text-xs font-semibold transition-colors',
+                  active ? 'bg-primary text-bg border-primary' : 'bg-elevated text-text-secondary border-border hover:bg-border hover:text-text-primary'
+                )}
+              >
+                <Icon size={17} />
+                {label}
+              </button>
+            );
+          })}
+        </div>
+        <p className="text-[10px] text-text-muted">Jika memilih Perangkat, Montra otomatis mengikuti pengaturan tema HP atau sistem operasi.</p>
+      </div>
 
       <div className="card space-y-3">
         <div><h2 className="text-sm font-bold text-text-primary">Backup & Restore</h2><p className="text-xs text-text-muted mt-0.5">Simpan semua data ke file JSON atau pulihkan dari backup sebelumnya</p></div>
