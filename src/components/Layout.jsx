@@ -85,7 +85,7 @@ export default function Layout() {
           onClick={openAdd}
           aria-label="Tambah transaksi"
           className="fixed right-5 bottom-5 z-40 w-14 h-14 rounded-full flex items-center justify-center shadow-xl"
-          style={{ background: 'linear-gradient(135deg, #A8E6CF, #6BCF9F)' }}
+          style={{ background: 'linear-gradient(135deg, #146466, #5AABA9)' }}
         >
           <Plus size={28} className="text-bg" strokeWidth={2.5} />
         </button>

@@ -86,7 +86,7 @@ export default function ActivityTransactionItem({ transaction, onEdit, onOpenDet
       >
         <div className="w-9 h-9 rounded-xl flex items-center justify-center text-base shrink-0" style={{ backgroundColor: `${cat.color}22` }}>{cat.icon}</div>
         <div className="flex-1 min-w-0"><p className="text-[13px] font-semibold text-text-primary truncate">{transaction.note || cat.label}</p><p className="text-[10px] text-text-muted mt-0.5 truncate">{time}</p></div>
-        <span className="text-[13px] font-bold shrink-0" style={{ color: isIncome ? '#A8E6CF' : '#FF6B6B' }}>{isIncome ? '+' : '-'}{formatCurrency(transaction.amount)}</span>
+        <span className="text-[13px] font-bold shrink-0" style={{ color: isIncome ? '#5AABA9' : '#E35A49' }}>{isIncome ? '+' : '-'}{formatCurrency(transaction.amount)}</span>
       </div>
     </div>
   );

@@ -31,7 +31,7 @@ export default function TransactionItem({ transaction, onEdit }) {
 
       <span
         className="text-sm font-bold shrink-0"
-        style={{ color: isIncome ? '#A8E6CF' : '#FF6B6B' }}
+        style={{ color: isIncome ? '#5AABA9' : '#E35A49' }}
       >
         {isIncome ? '+' : '-'}{formatCurrency(transaction.amount)}
       </span>
