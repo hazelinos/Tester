@@ -3,9 +3,10 @@ import {
   Award,
   Baby,
   Banknote,
+  BarChart3,
+  BriefcaseBusiness,
   BusFront,
   Car,
-  ChartNoAxesCombined,
   Dumbbell,
   Fuel,
   Gamepad2,
@@ -31,7 +32,6 @@ import {
   Users,
   Wallet,
   Wifi,
-  BriefcaseBusiness,
 } from 'lucide-react';
 
 export const CATEGORY_ICONS = {
@@ -43,7 +43,7 @@ export const CATEGORY_ICONS = {
   game: Gamepad2,
   entertainment_subscription: Popcorn,
   internet_phone: Wifi,
-  investment_expense: ChartNoAxesCombined,
+  investment_expense: BarChart3,
   family: Users,
   vehicle: Car,
   work: BriefcaseBusiness,
