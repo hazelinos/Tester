@@ -80,7 +80,32 @@ function CategoryPicker({ typeFilter, transactions, categoryFilter, onSelect }) 
 function TransactionsContent({ selectedDate, openEdit, mobile, onOpenDetail, categoryFilter, setCategoryFilter, typeFilter, setTypeFilter, search, setSearch, advanced, setAdvanced, filters, setFilters }) {
   const { transactions, accounts } = useFinance();
   const monthTransactions = useMemo(() => transactions.filter(tx => isSameMonth(tx.date, selectedDate)), [transactions, selectedDate]);
-  const filtered = useMemo(() => { const q=search.trim().toLowerCase(); return monthTransactions.filter(tx=>{if(typeFilter!=='all'&&tx.type!==typeFilter)return false;if(categoryFilter!=='all'&&categoryFilter!=='__open__'&&tx.categoryId!==categoryFilter)return false;if(filters.category!=='all'&&tx.categoryId!==filters.category)return false;if(filters.account!=='all'&&tx.accountId!==filters.account)return false;const amount=Number(tx.amount)||0;if(filters.min&&amount<Number(filters.min))return false;if(filters.max&&amount>Number(filters.max))return false;const day=tx.date.slice(0,10);if(filters.from&&day<filters.from)return false;if(filters.to&&day>filters.to)return false;if(q){const cat=ALL_CATEGORIES.find(c=>c.id===tx.categoryId);if(!`${tx.note||''} ${cat?.label||''} ${amount}`.toLowerCase().includes(q))return false;}return true;}).sort((a,b)=>filters.sort==='oldest'?new Date(a.date)-new Date(b.date):filters.sort==='highest'?Number(b.amount)-Number(a.amount):filters.sort==='lowest'?Number(a.amount)-Number(b.amount):new Date(b.date)-new Date(a.date);},[monthTransactions,typeFilter,categoryFilter,search,filters]);
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return monthTransactions.filter(tx => {
+      if (typeFilter !== 'all' && tx.type !== typeFilter) return false;
+      if (categoryFilter !== 'all' && categoryFilter !== '__open__' && tx.categoryId !== categoryFilter) return false;
+      if (filters.category !== 'all' && tx.categoryId !== filters.category) return false;
+      if (filters.account !== 'all' && tx.accountId !== filters.account) return false;
+      const amount = Number(tx.amount) || 0;
+      if (filters.min && amount < Number(filters.min)) return false;
+      if (filters.max && amount > Number(filters.max)) return false;
+      const day = tx.date.slice(0, 10);
+      if (filters.from && day < filters.from) return false;
+      if (filters.to && day > filters.to) return false;
+      if (q) {
+        const cat = ALL_CATEGORIES.find(c => c.id === tx.categoryId);
+        if (!`${tx.note || ''} ${cat?.label || ''} ${amount}`.toLowerCase().includes(q)) return false;
+      }
+      return true;
+    }).sort((a, b) => filters.sort === 'oldest'
+      ? new Date(a.date) - new Date(b.date)
+      : filters.sort === 'highest'
+        ? Number(b.amount) - Number(a.amount)
+        : filters.sort === 'lowest'
+          ? Number(a.amount) - Number(b.amount)
+          : new Date(b.date) - new Date(a.date));
+  }, [monthTransactions, typeFilter, categoryFilter, search, filters]);
   const totalIncome=monthTransactions.filter(t=>t.type==='income').reduce((s,t)=>s+Number(t.amount||0),0);const totalExpense=monthTransactions.filter(t=>t.type==='expense').reduce((s,t)=>s+Number(t.amount||0),0);
   const grouped=useMemo(()=>{const map={};filtered.forEach(tx=>{const key=tx.date.slice(0,10);(map[key]||=[]).push(tx);});return Object.entries(map).sort(([a],[b])=>new Date(b)-new Date(a)).map(([date,txs])=>({date,txs}));},[filtered]);
   const hasActiveAdvanced=filters.from||filters.to||filters.min||filters.max||filters.category!=='all'||filters.account!=='all'||filters.sort!=='newest';
