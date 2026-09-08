@@ -5,11 +5,11 @@ import { getCategoryById, INCOME_CATEGORIES } from '../constants/categories';
 import { formatCurrency, formatShortCurrency, getMonthName } from '../utils/formatters';
 import clsx from 'clsx';
 
-const MINT = '#A8E6CF';
-const CORAL = '#FF6B6B';
-const SAVINGS = '#FFD369';
-const NEED = '#7ED08A';
-const WANT = '#FF6B6B';
+const MINT = '#146466';
+const CORAL = '#C92F1C';
+const SAVINGS = '#146466';
+const NEED = '#5AABA9';
+const WANT = '#E2E2C4';
 const monthKey = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 
 function TooltipContent({ active, payload, label }) {
