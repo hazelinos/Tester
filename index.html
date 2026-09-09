@@ -23,10 +23,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <link rel="stylesheet" href="/dashboard-balance-fix.css" />
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <!-- Loaded last so the reference-specific Total Uang overrides win over app CSS. -->
+    <link rel="stylesheet" href="/dashboard-balance-fix.css" />
   </body>
 </html>
