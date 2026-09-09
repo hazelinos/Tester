@@ -1,41 +1,136 @@
-/* Final visual polish: sizing first, then subtle design refinement. Loaded after dashboard-balance-fix.css. */
-.dashboard-balance::after{background-size:100% 58%!important;}
-.dashboard-balance::before{background-size:100% 56%!important;}
+/* Montra — Total Uang reference match. Size and composition first; existing JSX/data/logic stay untouched. */
+.dashboard-balance{
+  aspect-ratio:2/1!important;
+  border-radius:30px!important;
+}
 
-.dashboard-balance-title{top:15.5%!important;left:5.5%!important;gap:12px!important;}
-.dashboard-balance-title>p{font-size:clamp(20px,2.1vw,32px)!important;letter-spacing:.08em!important;font-weight:500!important;}
-.dashboard-balance-title .dashboard-icon-button{transform:scale(.9)!important;transform-origin:left center!important;}
+/* Liquid layers: intentionally lower on the left, dip in the middle, then rise strongly to the right. */
+.dashboard-balance::after,
+.dashboard-balance::before{
+  background-size:100% 72%!important;
+  background-position:center bottom!important;
+}
+.dashboard-balance::after{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 400' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='r2' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop stop-color='%230b5794'/%3E%3Cstop offset='1' stop-color='%23022b5d'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M0 248 C95 308 185 302 280 250 C370 201 445 223 525 253 C615 286 680 238 755 194 C835 147 905 142 1000 205 L1000 400 L0 400Z' fill='url(%23r2)'/%3E%3C/svg%3E")!important;
+}
+.dashboard-balance::before{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 400' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='f2' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop stop-color='%232f9eea'/%3E%3Cstop offset='.55' stop-color='%231d82cf'/%3E%3Cstop offset='1' stop-color='%23105ba2'/%3E%3C/linearGradient%3E%3ClinearGradient id='e2' x1='0' y1='0' x2='1' y2='0'%3E%3Cstop stop-color='%2359cafa' stop-opacity='.62'/%3E%3Cstop offset='.5' stop-color='%2388ddff' stop-opacity='.95'/%3E%3Cstop offset='1' stop-color='%2359cafa' stop-opacity='.66'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M0 210 C95 270 180 278 275 205 C365 140 440 205 520 232 C605 260 675 218 750 158 C820 102 880 55 935 62 C965 66 985 78 1000 92 L1000 400 L0 400Z' fill='url(%23f2)'/%3E%3Cpath d='M0 210 C95 270 180 278 275 205 C365 140 440 205 520 232 C605 260 675 218 750 158 C820 102 880 55 935 62 C965 66 985 78 1000 92' fill='none' stroke='url(%23e2)' stroke-width='5'/%3E%3C/svg%3E")!important;
+}
 
-.dashboard-balance-amount{top:30%!important;font-size:clamp(42px,4.8vw,72px)!important;}
-.dashboard-balance-subtitle{top:48%!important;font-size:clamp(18px,1.55vw,24px)!important;}
+/* Reference typography / placement. */
+.dashboard-balance-title{
+  top:15.5%!important;
+  left:5.5%!important;
+  gap:22px!important;
+}
+.dashboard-balance-title>p{
+  font-size:clamp(28px,3.75vw,58px)!important;
+  line-height:1!important;
+  letter-spacing:.01em!important;
+  font-weight:500!important;
+  text-transform:none!important;
+}
+.dashboard-balance-title .dashboard-icon-button{
+  width:70px!important;
+  height:52px!important;
+  flex-basis:70px!important;
+  transform:none!important;
+}
+.dashboard-balance-title .dashboard-icon-button:before{
+  left:5px!important;
+  top:10px!important;
+  width:54px!important;
+  height:23px!important;
+  border-bottom-width:6px!important;
+}
+.dashboard-balance-title .dashboard-icon-button:after{
+  left:12px!important;
+  top:27px!important;
+  width:6px!important;
+  height:13px!important;
+  box-shadow:16px 2px 0 #fff,32px 0 0 #fff!important;
+}
 
-.dashboard-balance-accounts{left:3.5%!important;right:3.5%!important;bottom:6.5%!important;gap:18px!important;}
+.dashboard-balance-wallet{
+  top:8%!important;
+  right:5.5%!important;
+  width:176px!important;
+  height:176px!important;
+  border-radius:48px!important;
+  border-width:3px!important;
+}
+.dashboard-balance-wallet>svg{
+  width:78px!important;
+  height:78px!important;
+  stroke-width:1.9!important;
+}
+
+.dashboard-balance-amount{
+  left:5.5%!important;
+  top:30%!important;
+  font-size:clamp(48px,7vw,106px)!important;
+  line-height:.92!important;
+  letter-spacing:-.06em!important;
+  font-weight:800!important;
+}
+.dashboard-balance-subtitle{
+  left:5.5%!important;
+  top:48.5%!important;
+  font-size:clamp(20px,2.25vw,35px)!important;
+  line-height:1.1!important;
+}
+
+/* Account rail: reference is roughly 21–22% of card height. */
+.dashboard-balance-accounts{
+  left:3.5%!important;
+  right:3.5%!important;
+  bottom:6.5%!important;
+  gap:18px!important;
+}
 .dashboard-balance .dashboard-account-chip{
-  height:72px!important;
+  flex:0 0 calc((100% - 36px)/3)!important;
+  width:calc((100% - 36px)/3)!important;
   min-width:0!important;
-  padding:8px 18px 8px 10px!important;
-  gap:13px!important;
-  border-radius:25px!important;
+  height:21.5%!important;
+  padding:12px 28px 12px 22px!important;
+  gap:22px!important;
+  border-radius:30px!important;
   background:linear-gradient(135deg,rgba(93,180,235,.20),rgba(43,122,187,.16))!important;
   border-color:rgba(164,224,255,.30)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.24),inset 0 -10px 24px rgba(0,42,82,.08),0 8px 20px rgba(0,0,0,.07)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.24),inset 0 -12px 28px rgba(0,42,82,.08),0 10px 24px rgba(0,0,0,.08)!important;
 }
-.dashboard-balance .dashboard-account-icon{width:52px!important;height:52px!important;min-width:52px!important;font-size:22px!important;background:rgba(67,184,246,.28)!important;}
-.dashboard-balance .dashboard-account-meta{gap:4px!important;}
-.dashboard-balance .dashboard-account-meta strong{font-size:clamp(16px,1.35vw,22px)!important;}
-.dashboard-balance .dashboard-account-meta>span{font-size:clamp(14px,1.2vw,20px)!important;}
+.dashboard-balance .dashboard-account-icon{
+  width:106px!important;
+  height:106px!important;
+  min-width:106px!important;
+  font-size:40px!important;
+  background:rgba(67,184,246,.28)!important;
+}
+.dashboard-balance .dashboard-account-meta{gap:9px!important;}
+.dashboard-balance .dashboard-account-meta strong{
+  font-size:clamp(20px,2.1vw,34px)!important;
+  line-height:1!important;
+}
+.dashboard-balance .dashboard-account-meta>span{
+  font-size:clamp(17px,1.75vw,29px)!important;
+  line-height:1!important;
+}
 
 @media(max-width:767px){
-  .dashboard-balance::after{background-size:100% 58%!important;}
-  .dashboard-balance::before{background-size:100% 56%!important;}
+  .dashboard-balance{border-radius:25px!important;}
+  .dashboard-balance::after,.dashboard-balance::before{background-size:100% 70%!important;}
   .dashboard-balance-title{top:14%!important;gap:7px!important;}
   .dashboard-balance-title>p{font-size:14px!important;letter-spacing:.08em!important;}
-  .dashboard-balance-title .dashboard-icon-button{transform:scale(.85)!important;}
-  .dashboard-balance-amount{top:29%!important;font-size:clamp(29px,7.3vw,43px)!important;}
+  .dashboard-balance-title .dashboard-icon-button{width:34px!important;height:29px!important;flex-basis:34px!important;transform:scale(.85)!important;}
+  .dashboard-balance-title .dashboard-icon-button:before{left:2px!important;top:6px!important;width:29px!important;height:12px!important;border-bottom-width:4px!important;}
+  .dashboard-balance-title .dashboard-icon-button:after{left:7px!important;top:16px!important;width:4px!important;height:8px!important;box-shadow:9px 2px 0 #fff,18px 0 0 #fff!important;}
+  .dashboard-balance-wallet{top:8%!important;right:5.5%!important;width:58px!important;height:58px!important;border-radius:19px!important;border-width:2px!important;}
+  .dashboard-balance-wallet>svg{width:28px!important;height:28px!important;}
+  .dashboard-balance-amount{top:29%!important;font-size:clamp(29px,7.3vw,43px)!important;letter-spacing:-.05em!important;}
   .dashboard-balance-subtitle{top:48%!important;font-size:14px!important;}
   .dashboard-balance-accounts{left:5.5%!important;right:5.5%!important;bottom:6%!important;gap:8px!important;}
-  .dashboard-balance .dashboard-account-chip{height:48px!important;padding:5px 7px!important;gap:6px!important;border-radius:17px!important;}
-  .dashboard-balance .dashboard-account-icon{width:34px!important;height:34px!important;min-width:34px!important;font-size:14px!important;}
+  .dashboard-balance .dashboard-account-chip{flex:0 0 calc((100% - 16px)/3)!important;width:calc((100% - 16px)/3)!important;height:21.5%!important;min-width:0!important;padding:5px 6px!important;gap:5px!important;border-radius:17px!important;}
+  .dashboard-balance .dashboard-account-icon{width:30px!important;height:30px!important;min-width:30px!important;font-size:13px!important;}
   .dashboard-balance .dashboard-account-meta{gap:2px!important;}
   .dashboard-balance .dashboard-account-meta strong{font-size:10px!important;}
   .dashboard-balance .dashboard-account-meta>span{font-size:9px!important;}
