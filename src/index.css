@@ -101,3 +101,12 @@ div.flex.gap-1\\.5.overflow-x-auto.scrollbar-none.pb-0\\.5:has(+ div.bg-card.bor
 .dashboard-balance p { color:#FFFFFF !important; }
 .dashboard-balance .dashboard-account-chip { background:rgba(255,255,255,.16); border-color:rgba(255,255,255,.28) !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.22), inset 0 0 18px rgba(255,255,255,.05); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); }
 .dashboard-balance .dashboard-account-chip > span:first-child { background:rgba(255,255,255,.12) !important; }
+
+/* Transaction list: blue hierarchy with red amounts. */
+.dashboard-glass-card h2 { color:#123F78 !important; }
+.dashboard-glass-card > div > p { color:#7890A3 !important; }
+.dashboard-glass-card button { color:#17324D; }
+.dashboard-glass-card button > span:first-child { background:rgba(18,63,120,.10) !important; color:#123F78 !important; border-color:rgba(18,63,120,.14); }
+.dashboard-glass-card button > span:nth-child(2) > span:first-child { color:#123F78 !important; }
+.dashboard-glass-card button > span:nth-child(2) > span:nth-child(2) { color:#7890A3 !important; }
+.dashboard-glass-card button > span:last-child { color:#C92F1C !important; }
