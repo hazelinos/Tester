@@ -1,72 +1,232 @@
-/* Montra Total Uang — reference-matched liquid card. */
+/* MONTRA — Total Uang reference implementation */
 .dashboard-balance {
   position:relative !important;
   display:block !important;
   overflow:hidden !important;
   isolation:isolate !important;
+  width:100% !important;
+  aspect-ratio:2 / 1 !important;
+  height:auto !important;
   min-height:0 !important;
-  height:clamp(330px, 46vw, 520px) !important;
-  padding:28px 30px 24px !important;
-  border-radius:28px !important;
-  background:linear-gradient(145deg,#123f78 0%,#0e467f 48%,#063b72 100%) !important;
-  border:1px solid rgba(116,194,255,.34) !important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.18),inset 0 -30px 80px rgba(3,30,67,.22),0 22px 55px rgba(10,48,89,.20) !important;
+  padding:38px 42px 42px !important;
+  border-radius:34px !important;
+  background:linear-gradient(145deg,#0b5792 0%,#07528d 42%,#063b72 100%) !important;
+  border:1px solid rgba(116,194,255,.42) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.20),inset 0 -45px 90px rgba(2,29,64,.22),0 22px 55px rgba(10,48,89,.18) !important;
 }
-.dashboard-balance > .absolute { position:absolute !important; z-index:0 !important; pointer-events:none !important; }
+.dashboard-balance > .absolute { display:none !important; }
 .dashboard-balance > .relative { position:relative !important; z-index:5 !important; height:100% !important; min-height:0 !important; display:flex !important; flex-direction:column !important; }
+.dashboard-balance > .relative > * { position:relative; z-index:5; }
 
-/* Rear dark liquid layer. */
+/* Layered liquid background — rear dark wave + bright front wave. */
 .dashboard-balance::after {
-  content:""; position:absolute; z-index:1; inset:0; pointer-events:none;
-  background-repeat:no-repeat; background-position:center bottom; background-size:100% 70%; opacity:.98;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 400' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop stop-color='%230d4f91'/%3E%3Cstop offset='1' stop-color='%23052f65'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M0 230 C120 300 210 292 320 245 C420 202 505 238 590 205 C710 158 790 135 875 170 C930 192 965 225 1000 244 L1000 400 L0 400Z' fill='url(%23g)'/%3E%3C/svg%3E");
+  content:"";
+  position:absolute;
+  z-index:1;
+  inset:0;
+  pointer-events:none;
+  background-repeat:no-repeat;
+  background-position:center bottom;
+  background-size:100% 72%;
+  opacity:.98;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 420' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='rear' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop stop-color='%230d4f91'/%3E%3Cstop offset='1' stop-color='%23042e63'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M0 275 C115 337 205 329 300 288 C398 246 482 260 560 292 C657 331 724 267 805 223 C884 180 941 186 1000 219 L1000 420 L0 420Z' fill='url(%23rear)'/%3E%3C/svg%3E");
 }
-
-/* Front bright liquid wave: low left, dip in the middle, rises toward the right. */
 .dashboard-balance::before {
-  content:""; position:absolute; z-index:2; inset:0; pointer-events:none;
-  background-repeat:no-repeat; background-position:center bottom; background-size:100% 68%;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 400' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop stop-color='%232c91dc'/%3E%3Cstop offset='.58' stop-color='%231d79c3'/%3E%3Cstop offset='1' stop-color='%23125ba4'/%3E%3C/linearGradient%3E%3ClinearGradient id='h' x1='0' y1='0' x2='1' y2='0'%3E%3Cstop stop-color='%2356c4f5' stop-opacity='.55'/%3E%3Cstop offset='.55' stop-color='%2385dcff' stop-opacity='.9'/%3E%3Cstop offset='1' stop-color='%2356c4f5' stop-opacity='.55'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M0 225 C105 276 175 276 260 235 C350 191 430 205 505 228 C590 254 650 220 715 178 C790 130 850 92 930 108 C960 114 980 123 1000 136 L1000 400 L0 400Z' fill='url(%23g)'/%3E%3Cpath d='M0 225 C105 276 175 276 260 235 C350 191 430 205 505 228 C590 254 650 220 715 178 C790 130 850 92 930 108 C960 114 980 123 1000 136' fill='none' stroke='url(%23h)' stroke-width='5'/%3E%3C/svg%3E");
+  content:"";
+  position:absolute;
+  z-index:2;
+  inset:0;
+  pointer-events:none;
+  background-repeat:no-repeat;
+  background-position:center bottom;
+  background-size:100% 67%;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 420' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='front' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop stop-color='%232d96df'/%3E%3Cstop offset='.55' stop-color='%231d79c5'/%3E%3Cstop offset='1' stop-color='%23105299'/%3E%3C/linearGradient%3E%3ClinearGradient id='edge' x1='0' y1='0' x2='1' y2='0'%3E%3Cstop stop-color='%2354c4f5' stop-opacity='.50'/%3E%3Cstop offset='.52' stop-color='%2387ddff' stop-opacity='.95'/%3E%3Cstop offset='1' stop-color='%2357c7f8' stop-opacity='.58'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M0 232 C96 276 175 274 265 231 C351 190 428 202 505 228 C593 257 652 220 720 177 C795 130 852 91 930 107 C960 113 982 123 1000 136 L1000 420 L0 420Z' fill='url(%23front)'/%3E%3Cpath d='M0 232 C96 276 175 274 265 231 C351 190 428 202 505 228 C593 257 652 220 720 177 C795 130 852 91 930 107 C960 113 982 123 1000 136' fill='none' stroke='url(%23edge)' stroke-width='5'/%3E%3C/svg%3E");
 }
-.dashboard-balance > * { position:relative; z-index:5; }
 
-/* Header: title + closed-eyelash mark. */
-.dashboard-balance > .relative > div:first-child { display:flex !important; align-items:center !important; justify-content:flex-start !important; gap:12px !important; flex:0 0 auto !important; }
-.dashboard-balance > .relative > div:first-child > p { margin:0 !important; color:#fff !important; font-size:18px !important; line-height:1 !important; letter-spacing:.17em !important; font-weight:700 !important; }
-.dashboard-balance > .relative > div:first-child .dashboard-icon-button { position:relative !important; width:34px !important; height:28px !important; flex:0 0 34px !important; padding:0 !important; border:0 !important; border-radius:8px !important; background:transparent !important; color:#fff !important; box-shadow:none !important; }
+/* Header — exact reference hierarchy. */
+.dashboard-balance > .relative > div:first-child {
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  gap:18px !important;
+  flex:0 0 auto !important;
+}
+.dashboard-balance > .relative > div:first-child > p {
+  margin:0 !important;
+  color:#fff !important;
+  font-size:clamp(18px,2vw,27px) !important;
+  line-height:1 !important;
+  letter-spacing:.13em !important;
+  font-weight:500 !important;
+  text-transform:uppercase !important;
+}
+.dashboard-balance > .relative > div:first-child .dashboard-icon-button {
+  position:relative !important;
+  width:48px !important;
+  height:38px !important;
+  flex:0 0 48px !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:8px !important;
+  background:transparent !important;
+  color:#fff !important;
+  box-shadow:none !important;
+}
 .dashboard-balance > .relative > div:first-child .dashboard-icon-button svg { display:none !important; }
-.dashboard-balance > .relative > div:first-child .dashboard-icon-button::before { content:""; position:absolute; left:3px; top:5px; width:27px; height:13px; border-bottom:4px solid #fff; border-radius:0 0 55% 55%; transform:rotate(-1deg); }
-.dashboard-balance > .relative > div:first-child .dashboard-icon-button::after { content:""; position:absolute; left:7px; top:15px; width:4px; height:8px; border-radius:5px; background:#fff; box-shadow:8px 2px 0 #fff,16px 0 0 #fff; transform:rotate(9deg); }
+.dashboard-balance > .relative > div:first-child .dashboard-icon-button::before {
+  content:"";
+  position:absolute;
+  left:3px;
+  top:7px;
+  width:39px;
+  height:17px;
+  border-bottom:5px solid #fff;
+  border-radius:0 0 55% 55%;
+  transform:rotate(-2deg);
+}
+.dashboard-balance > .relative > div:first-child .dashboard-icon-button::after {
+  content:"";
+  position:absolute;
+  left:10px;
+  top:21px;
+  width:5px;
+  height:10px;
+  border-radius:6px;
+  background:#fff;
+  box-shadow:11px 2px 0 #fff,22px 0 0 #fff;
+  transform:rotate(9deg);
+}
 
-/* Balance and wallet tile. */
-.dashboard-balance > .relative > div:nth-child(2) { display:block !important; margin-top:24px !important; flex:0 0 auto !important; }
-.dashboard-balance > .relative > div:nth-child(2) > p { color:#fff !important; font-size:clamp(34px,4vw,58px) !important; line-height:.98 !important; font-weight:800 !important; letter-spacing:-.045em !important; white-space:nowrap !important; }
-.dashboard-balance > .relative > div:nth-child(2) > span { position:absolute !important; top:0 !important; right:0 !important; width:82px !important; height:82px !important; display:flex !important; align-items:center !important; justify-content:center !important; color:rgba(255,255,255,.9) !important; font-size:0 !important; border:2px solid rgba(126,205,255,.48) !important; border-radius:26px !important; background:rgba(255,255,255,.075) !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 8px 24px rgba(0,0,0,.08) !important; backdrop-filter:blur(12px) !important; -webkit-backdrop-filter:blur(12px) !important; }
-.dashboard-balance > .relative > div:nth-child(2) > span svg { width:38px !important; height:38px !important; }
-.dashboard-balance > .relative > div:nth-child(2)::after { content:"3 akun terhubung" !important; display:block !important; position:absolute !important; left:0 !important; top:calc(100% + 12px) !important; color:rgba(190,222,245,.80) !important; font-size:18px !important; line-height:1.2 !important; font-weight:500 !important; }
+/* Wallet tile sits independently at the top-right. */
+.dashboard-balance .dashboard-balance-wallet {
+  position:absolute !important;
+  top:-2px !important;
+  right:0 !important;
+  width:92px !important;
+  height:92px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  color:rgba(255,255,255,.92) !important;
+  border:2px solid rgba(126,205,255,.52) !important;
+  border-radius:29px !important;
+  background:rgba(255,255,255,.075) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 10px 25px rgba(0,0,0,.08) !important;
+  backdrop-filter:blur(12px) !important;
+  -webkit-backdrop-filter:blur(12px) !important;
+}
+.dashboard-balance .dashboard-balance-wallet svg { width:43px !important; height:43px !important; stroke-width:2.2 !important; }
+.dashboard-balance .dashboard-balance-wallet > span { display:none !important; }
 
-/* Bottom glass account rail. */
-.dashboard-balance > .relative > div:last-child { position:absolute !important; left:0 !important; right:0 !important; bottom:0 !important; display:flex !important; gap:14px !important; margin:0 !important; padding:0 !important; overflow-x:auto !important; overflow-y:hidden !important; scrollbar-width:none !important; flex:0 0 auto !important; }
-.dashboard-balance > .relative > div:last-child::-webkit-scrollbar { display:none !important; }
-.dashboard-balance .dashboard-account-chip { width:210px !important; min-width:210px !important; height:82px !important; padding:11px 16px 11px 11px !important; display:flex !important; align-items:center !important; gap:12px !important; border:1px solid rgba(154,218,255,.34) !important; border-radius:28px !important; background:rgba(103,181,236,.20) !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.25),inset 0 0 24px rgba(255,255,255,.035),0 8px 24px rgba(0,0,0,.07) !important; backdrop-filter:blur(18px) !important; -webkit-backdrop-filter:blur(18px) !important; overflow:hidden !important; flex:0 0 210px !important; }
-.dashboard-balance .dashboard-account-chip > span:first-child { width:54px !important; height:54px !important; min-width:54px !important; border-radius:50% !important; display:flex !important; align-items:center !important; justify-content:center !important; background:rgba(65,180,244,.36) !important; color:#fff !important; font-size:24px !important; }
-.dashboard-balance .dashboard-account-chip > span:first-child img { border-radius:50% !important; }
-.dashboard-balance .dashboard-account-chip > span:last-child { min-width:0 !important; color:#d7efff !important; font-size:17px !important; font-weight:700 !important; white-space:nowrap !important; }
+/* Main balance and subtitle. */
+.dashboard-balance .dashboard-balance-amount {
+  margin-top:48px !important;
+  color:#fff !important;
+  font-size:clamp(42px,5vw,78px) !important;
+  line-height:.98 !important;
+  font-weight:800 !important;
+  letter-spacing:-.055em !important;
+  white-space:nowrap !important;
+  flex:0 0 auto !important;
+}
+.dashboard-balance .dashboard-balance-subtitle {
+  margin:13px 0 0 !important;
+  color:rgba(202,229,249,.82) !important;
+  font-size:clamp(18px,2vw,27px) !important;
+  line-height:1.15 !important;
+  font-weight:500 !important;
+  flex:0 0 auto !important;
+}
+
+/* Bottom account rail. */
+.dashboard-balance .dashboard-balance-accounts {
+  position:absolute !important;
+  z-index:6 !important;
+  left:0 !important;
+  right:0 !important;
+  bottom:0 !important;
+  display:flex !important;
+  gap:18px !important;
+  margin:0 !important;
+  padding:0 !important;
+  overflow-x:auto !important;
+  overflow-y:hidden !important;
+  scrollbar-width:none !important;
+}
+.dashboard-balance .dashboard-balance-accounts::-webkit-scrollbar { display:none !important; }
+.dashboard-balance .dashboard-account-chip {
+  width:calc((100% - 36px) / 3) !important;
+  min-width:calc((100% - 36px) / 3) !important;
+  height:102px !important;
+  padding:12px 20px 12px 12px !important;
+  display:flex !important;
+  align-items:center !important;
+  gap:16px !important;
+  border:1px solid rgba(154,218,255,.38) !important;
+  border-radius:30px !important;
+  background:rgba(93,175,233,.20) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.25),inset 0 0 26px rgba(255,255,255,.035),0 8px 24px rgba(0,0,0,.08) !important;
+  backdrop-filter:blur(18px) !important;
+  -webkit-backdrop-filter:blur(18px) !important;
+  overflow:hidden !important;
+  flex:0 0 calc((100% - 36px) / 3) !important;
+}
+.dashboard-balance .dashboard-account-chip > .dashboard-account-icon {
+  width:64px !important;
+  height:64px !important;
+  min-width:64px !important;
+  border-radius:50% !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  background:rgba(69,181,245,.36) !important;
+  color:#fff !important;
+  font-size:28px !important;
+  overflow:hidden !important;
+}
+.dashboard-balance .dashboard-account-chip > .dashboard-account-icon img { border-radius:50% !important; }
+.dashboard-balance .dashboard-account-chip > .dashboard-account-meta {
+  min-width:0 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:center !important;
+  gap:4px !important;
+  color:#d7efff !important;
+  white-space:nowrap !important;
+}
+.dashboard-balance .dashboard-account-chip > .dashboard-account-meta strong {
+  color:#fff !important;
+  font-size:22px !important;
+  line-height:1.05 !important;
+  font-weight:700 !important;
+}
+.dashboard-balance .dashboard-account-chip > .dashboard-account-meta span {
+  color:#b9dcf5 !important;
+  font-size:18px !important;
+  line-height:1.05 !important;
+  font-weight:500 !important;
+}
 
 @media (max-width:767px) {
-  .dashboard-balance { height:clamp(330px,78vw,390px) !important; padding:24px 20px 20px !important; border-radius:27px !important; }
-  .dashboard-balance > .relative > div:first-child > p { font-size:15px !important; letter-spacing:.16em !important; }
-  .dashboard-balance > .relative > div:first-child { gap:9px !important; }
-  .dashboard-balance > .relative > div:first-child .dashboard-icon-button { width:29px !important; flex-basis:29px !important; }
-  .dashboard-balance > .relative > div:first-child .dashboard-icon-button::before { width:23px; height:11px; border-bottom-width:3px; }
-  .dashboard-balance > .relative > div:first-child .dashboard-icon-button::after { left:6px; top:14px; width:3px; height:6px; box-shadow:7px 2px 0 #fff,14px 0 0 #fff; }
-  .dashboard-balance > .relative > div:nth-child(2) { margin-top:20px !important; }
-  .dashboard-balance > .relative > div:nth-child(2) > p { font-size:32px !important; }
-  .dashboard-balance > .relative > div:nth-child(2) > span { width:58px !important; height:58px !important; border-radius:19px !important; }
-  .dashboard-balance > .relative > div:nth-child(2) > span svg { width:28px !important; height:28px !important; }
-  .dashboard-balance > .relative > div:nth-child(2)::after { font-size:14px !important; top:calc(100% + 9px) !important; }
-  .dashboard-balance > .relative > div:last-child { gap:10px !important; }
-  .dashboard-balance .dashboard-account-chip { width:158px !important; min-width:158px !important; height:66px !important; border-radius:22px !important; padding:8px 11px 8px 8px !important; gap:9px !important; flex-basis:158px !important; }
-  .dashboard-balance .dashboard-account-chip > span:first-child { width:45px !important; height:45px !important; min-width:45px !important; font-size:20px !important; }
-  .dashboard-balance .dashboard-account-chip > span:last-child { font-size:13px !important; }
+  .dashboard-balance {
+    aspect-ratio:auto !important;
+    height:330px !important;
+    padding:24px 20px 20px !important;
+    border-radius:27px !important;
+  }
+  .dashboard-balance > .relative > div:first-child { gap:10px !important; }
+  .dashboard-balance > .relative > div:first-child > p { font-size:15px !important; letter-spacing:.13em !important; }
+  .dashboard-balance > .relative > div:first-child .dashboard-icon-button { width:32px !important; flex-basis:32px !important; height:29px !important; }
+  .dashboard-balance > .relative > div:first-child .dashboard-icon-button::before { left:2px; top:5px; width:27px; height:12px; border-bottom-width:3px; }
+  .dashboard-balance > .relative > div:first-child .dashboard-icon-button::after { left:7px; top:15px; width:3px; height:7px; box-shadow:8px 2px 0 #fff,16px 0 0 #fff; }
+  .dashboard-balance .dashboard-balance-wallet { top:-2px !important; right:0 !important; width:62px !important; height:62px !important; border-radius:20px !important; }
+  .dashboard-balance .dashboard-balance-wallet svg { width:29px !important; height:29px !important; }
+  .dashboard-balance .dashboard-balance-amount { margin-top:30px !important; font-size:34px !important; letter-spacing:-.045em !important; }
+  .dashboard-balance .dashboard-balance-subtitle { margin-top:9px !important; font-size:15px !important; }
+  .dashboard-balance .dashboard-balance-accounts { gap:10px !important; }
+  .dashboard-balance .dashboard-account-chip { width:158px !important; min-width:158px !important; height:70px !important; flex-basis:158px !important; border-radius:22px !important; padding:8px 11px 8px 8px !important; gap:9px !important; }
+  .dashboard-balance .dashboard-account-chip > .dashboard-account-icon { width:48px !important; height:48px !important; min-width:48px !important; font-size:21px !important; }
+  .dashboard-balance .dashboard-account-chip > .dashboard-account-meta { gap:3px !important; }
+  .dashboard-balance .dashboard-account-chip > .dashboard-account-meta strong { font-size:14px !important; }
+  .dashboard-balance .dashboard-account-chip > .dashboard-account-meta span { font-size:12px !important; }
 }
