@@ -1,67 +1,212 @@
-/* Montra Total Uang card refinement — additive override only. */
+/* Montra — Total Uang reference match.
+   Visual-only override for the balance card. */
 .dashboard-balance {
-  display:block !important;
-  position:relative !important;
-  min-height:300px !important;
-  overflow:hidden !important;
-  background:linear-gradient(145deg,#17457f 0%,#123f78 52%,#0c3568 100%) !important;
+  position: relative !important;
+  display: block !important;
+  min-height: 340px !important;
+  overflow: hidden !important;
+  isolation: isolate !important;
+  background: linear-gradient(145deg, #174b87 0%, #123f78 58%, #0b3568 100%) !important;
+  border-color: rgba(87, 169, 231, .28) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 18px 45px rgba(10,48,91,.20) !important;
 }
+
 .dashboard-balance > .absolute {
-  position:absolute !important;
-  z-index:0 !important;
+  position: absolute !important;
+  z-index: 4 !important;
+  top: 20px !important;
+  right: 20px !important;
+  width: 58px !important;
+  height: 58px !important;
+  border-radius: 18px !important;
+  background: rgba(255,255,255,.08) !important;
+  border: 2px solid rgba(157,211,246,.38) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12) !important;
+  filter: none !important;
+  opacity: 1 !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
 }
+.dashboard-balance > .absolute::before {
+  content: "▱" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: rgba(255,255,255,.92) !important;
+  font-size: 34px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  transform: rotate(90deg) !important;
+}
+.dashboard-balance > .absolute::after { display:none !important; }
+
 .dashboard-balance > .relative {
-  position:relative !important;
-  z-index:3 !important;
-  min-height:264px !important;
-  display:flex !important;
-  flex-direction:column !important;
+  position: relative !important;
+  z-index: 5 !important;
+  min-height: 300px !important;
+  display: flex !important;
+  flex-direction: column !important;
 }
+
 .dashboard-balance > .relative > div:first-child {
-  flex:0 0 auto !important;
-  justify-content:flex-start !important;
+  flex: 0 0 auto !important;
+  justify-content: flex-start !important;
+  gap: 9px !important;
+  padding-right: 72px !important;
 }
-.dashboard-balance > .relative > div:nth-child(2) {
-  flex:0 0 auto !important;
-}
-.dashboard-balance > .relative > div:last-child {
-  margin-top:auto !important;
-  flex:0 0 auto !important;
-}
-.dashboard-balance::before {
-  left:-16% !important;
-  bottom:-27% !important;
-  width:132% !important;
-  height:70% !important;
-  border-radius:50% 50% 0 0 / 52% 66% 0 0 !important;
-  background:linear-gradient(180deg,rgba(43,145,220,.86),rgba(18,91,164,.97)) !important;
-  transform:rotate(-2deg) !important;
-  box-shadow:inset 0 2px 0 rgba(112,213,255,.34),0 -10px 34px rgba(25,132,214,.12) !important;
-}
-.dashboard-balance::after {
-  left:24% !important;
-  bottom:-39% !important;
-  width:120% !important;
-  height:70% !important;
-  border-radius:52% 48% 0 0 / 60% 42% 0 0 !important;
-  background:linear-gradient(180deg,rgba(12,73,143,.94),rgba(7,43,94,.99)) !important;
-  transform:rotate(5deg) !important;
-  box-shadow:inset 0 2px 0 rgba(82,166,231,.18) !important;
-}
-.dashboard-balance .dashboard-account-chip {
-  position:relative !important;
-  z-index:4 !important;
+.dashboard-balance > .relative > div:first-child p {
+  color: #fff !important;
+  font-size: 13px !important;
+  letter-spacing: .16em !important;
 }
 .dashboard-balance > .relative > div:first-child .dashboard-icon-button {
-  width:25px !important;
-  height:24px !important;
-  flex:0 0 25px !important;
+  width: 25px !important;
+  height: 24px !important;
+  flex: 0 0 25px !important;
+  border: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  color: #fff !important;
+  box-shadow: none !important;
 }
+.dashboard-balance > .relative > div:first-child .dashboard-icon-button svg { display:none !important; }
+.dashboard-balance > .relative > div:first-child .dashboard-icon-button::before {
+  content:"" !important;
+  position:absolute !important;
+  left:2px !important;
+  top:5px !important;
+  width:21px !important;
+  height:11px !important;
+  border-bottom:3px solid #fff !important;
+  border-radius:0 0 50% 50% !important;
+}
+.dashboard-balance > .relative > div:first-child .dashboard-icon-button::after {
+  content:"" !important;
+  position:absolute !important;
+  left:5px !important;
+  top:13px !important;
+  width:3px !important;
+  height:6px !important;
+  border-radius:3px !important;
+  background:#fff !important;
+  box-shadow:6px 2px 0 #fff,12px 0 0 #fff !important;
+}
+
+.dashboard-balance > .relative > div:nth-child(2) {
+  position: relative !important;
+  flex: 0 0 auto !important;
+  margin-top: 14px !important;
+  align-items: flex-start !important;
+}
+.dashboard-balance > .relative > div:nth-child(2) p {
+  color: #fff !important;
+  font-size: 40px !important;
+  line-height: .98 !important;
+  font-weight: 800 !important;
+  letter-spacing: -.035em !important;
+}
+.dashboard-balance > .relative > div:nth-child(2)::after {
+  content: "3 akun terhubung" !important;
+  display: block !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: calc(100% + 10px) !important;
+  color: rgba(186,220,244,.78) !important;
+  font-size: 14px !important;
+  line-height: 1.2 !important;
+  font-weight: 500 !important;
+}
+
+.dashboard-balance > .relative > div:last-child {
+  margin-top: auto !important;
+  flex: 0 0 auto !important;
+  position: relative !important;
+  z-index: 8 !important;
+  gap: 10px !important;
+  padding-top: 12px !important;
+}
+.dashboard-balance .dashboard-account-chip {
+  min-width: 0 !important;
+  flex: 1 1 0 !important;
+  justify-content: flex-start !important;
+  position: relative !important;
+  z-index: 8 !important;
+  padding: 8px 10px 8px 8px !important;
+  border-radius: 18px !important;
+  background: rgba(255,255,255,.15) !important;
+  border-color: rgba(173,220,248,.42) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.20), inset 0 0 18px rgba(255,255,255,.04) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+}
+.dashboard-balance .dashboard-account-chip > span:first-child {
+  width: 32px !important;
+  height: 32px !important;
+  flex: 0 0 32px !important;
+  border-radius: 10px !important;
+  background: rgba(255,255,255,.16) !important;
+}
+.dashboard-balance .dashboard-account-chip > span:last-child {
+  color: #a9d8f6 !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+/* Two-layer liquid wave: low on the left, rising toward the right like the reference. */
+.dashboard-balance::before {
+  content:"" !important;
+  position:absolute !important;
+  z-index:2 !important;
+  left:-20% !important;
+  bottom:-37% !important;
+  width:150% !important;
+  height:82% !important;
+  border-radius:50% 50% 0 0 / 58% 48% 0 0 !important;
+  background: linear-gradient(180deg, rgba(45,151,224,.88), rgba(18,91,164,.97)) !important;
+  transform: rotate(-9deg) !important;
+  box-shadow: inset 0 2px 0 rgba(118,216,255,.48), 0 -10px 32px rgba(35,145,224,.16) !important;
+  pointer-events:none !important;
+}
+.dashboard-balance::after {
+  content:"" !important;
+  position:absolute !important;
+  z-index:3 !important;
+  left:23% !important;
+  bottom:-46% !important;
+  width:126% !important;
+  height:78% !important;
+  border-radius:52% 48% 0 0 / 55% 45% 0 0 !important;
+  background: linear-gradient(180deg, rgba(11,75,146,.94), rgba(6,43,94,.99)) !important;
+  transform: rotate(5deg) !important;
+  box-shadow: inset 0 2px 0 rgba(89,175,238,.24) !important;
+  pointer-events:none !important;
+}
+
+.dashboard-balance p { color:#fff !important; }
+
 @media (max-width:767px) {
   .dashboard-balance {
-    min-height:340px !important;
+    min-height: 340px !important;
   }
   .dashboard-balance > .relative {
-    min-height:300px !important;
+    min-height: 300px !important;
+  }
+  .dashboard-balance > .absolute {
+    top: 18px !important;
+    right: 18px !important;
+    width: 52px !important;
+    height: 52px !important;
+    border-radius: 16px !important;
+  }
+  .dashboard-balance > .relative > div:first-child {
+    padding-right: 62px !important;
+  }
+  .dashboard-balance > .relative > div:nth-child(2) p {
+    font-size: 34px !important;
+  }
+  .dashboard-balance > .relative > div:nth-child(2)::after {
+    font-size: 13px !important;
   }
 }
