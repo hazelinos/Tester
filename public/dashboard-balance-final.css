@@ -1,0 +1,45 @@
+/* Final pixel pass for Total Uang — calibrated to the supplied reference at desktop width. */
+.dashboard-balance-accounts{
+  bottom:6.5%!important;
+  gap:18px!important;
+}
+.dashboard-balance .dashboard-account-chip{
+  height:21.5%!important;
+  min-height:0!important;
+  border-radius:30px!important;
+}
+.dashboard-balance .dashboard-account-icon{
+  flex:0 0 66px!important;
+}
+
+/* Lower the liquid horizon so it does not collide with the balance/subtitle. */
+.dashboard-balance::before{
+  background-size:100% 60%!important;
+}
+.dashboard-balance::after{
+  background-size:100% 61%!important;
+}
+
+@media(max-width:767px){
+  .dashboard-balance-accounts{
+    bottom:6%!important;
+    gap:8px!important;
+  }
+  .dashboard-balance .dashboard-account-chip{
+    flex:0 0 calc((100% - 16px)/3)!important;
+    width:calc((100% - 16px)/3)!important;
+    height:21.5%!important;
+    min-width:0!important;
+    padding:5px 6px!important;
+    gap:5px!important;
+    border-radius:17px!important;
+  }
+  .dashboard-balance .dashboard-account-icon{
+    flex:0 0 30px!important;
+    width:30px!important;
+    height:30px!important;
+    min-width:30px!important;
+  }
+  .dashboard-balance .dashboard-account-meta strong{font-size:10px!important}
+  .dashboard-balance .dashboard-account-meta>span{font-size:9px!important}
+}
