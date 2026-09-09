@@ -36,24 +36,23 @@
 .dashboard-month-control button { width:30px;height:30px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#7890A3;transition:.18s ease; }
 .dashboard-month-control button:hover { background:#DCE5ED;color:#17324D; }
 .dashboard-month-control span { min-width:104px;text-align:center;color:#17324D;font-size:11px;font-weight:700; }
-.dashboard-balance { background:#FFFFFF; border:1px solid rgba(29,95,167,.22); box-shadow:inset 0 1px 0 rgba(255,255,255,.07),inset 0 0 18px rgba(29,95,167,.04),0 18px 50px rgba(0,0,0,.08); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); }
+.dashboard-balance { background:#FFFFFF; border:1px solid rgba(18,63,120,.34); box-shadow:inset 0 1px 0 rgba(255,255,255,.07),inset 0 0 18px rgba(18,63,120,.04),0 18px 50px rgba(0,0,0,.2); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); }
 .dashboard-icon-button { width:34px;height:34px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#7890A3;background:#E8F0FA;border:1px solid #DCE5ED; }
 .dashboard-icon-button:hover { background:#DCE5ED;color:#17324D; }
 .dashboard-account-chip { display:flex;align-items:center;gap:8px;padding:7px 10px 7px 7px;border:1px solid #DCE5ED;border-radius:15px;background:#FFFFFF;backdrop-filter:blur(12px); }
-.dashboard-stat-card { min-width:0;padding:16px;border-radius:22px;border:1px solid #DCE5ED;background:#FFFFFF;box-shadow:inset 0 1px 0 rgba(255,255,255,.025),0 14px 36px rgba(0,0,0,.08);backdrop-filter:blur(18px); }
+.dashboard-stat-card { min-width:0;padding:16px;border-radius:22px;border:1px solid #DCE5ED;background:#FFFFFF;box-shadow:inset 0 1px 0 rgba(255,255,255,.025),0 14px 36px rgba(0,0,0,.12);backdrop-filter:blur(18px); }
 .dashboard-stat-card strong { grid-column:2; }
 .dashboard-stat-icon { grid-row:1/span 2;width:38px;height:38px;border-radius:13px;display:flex;align-items:center;justify-content:center; }
 .dashboard-stat-icon.income { color:#1D5FA7;background:#E8F0FA; }
 .dashboard-stat-icon.expense { color:#C92F1C;background:#FBE9E6; }
-.dashboard-glass-card { border:1px solid #DCE5ED;background:#FFFFFF;border-radius:24px;box-shadow:inset 0 1px 0 rgba(255,255,255,.025),0 14px 36px rgba(0,0,0,.08);backdrop-filter:blur(18px); }
+.dashboard-glass-card { border:1px solid #DCE5ED;background:#FFFFFF;border-radius:24px;box-shadow:inset 0 1px 0 rgba(255,255,255,.025),0 14px 36px rgba(0,0,0,.12);backdrop-filter:blur(18px); }
 .dashboard-shortcut { border:1px solid #DCE5ED;background:#FFFFFF;box-shadow:inset 0 1px 0 rgba(255,255,255,.025);transition:transform .18s ease,border-color .18s ease,background .18s ease; }
 .dashboard-shortcut:hover { transform:translateY(-2px);border-color:#1D5FA7;background:#E8F0FA; }
 .dashboard-edit-button { display:inline-flex;align-items:center;gap:5px;color:#1D5FA7;font-size:11px;font-weight:700;padding:7px 9px;border-radius:11px;background:#E8F0FA;border:1px solid #DCE5ED; }
 .dashboard-edit-button:hover { background:#DCE5ED;color:#1D5FA7; }
 
-.keypad-key { min-height:42px; border-radius:10px; background:#FFFFFF; border:1px solid #DCE5ED; color:#17324D; display:flex; align-items:center; justify-content:center; font-size:19px; font-weight:500; box-shadow:inset 0 1px 0 rgba(255,255,255,.02); transition:transform .08s ease,background .12s ease; touch-action:manipulation; }
+.keypad-key { min-height:42px; border-radius:10px; background:#E8F0FA; border:1px solid #DCE5ED; color:#17324D; display:flex; align-items:center; justify-content:center; font-size:19px; font-weight:500; box-shadow:inset 0 1px 0 rgba(255,255,255,.02); transition:transform .08s ease,background .12s ease; touch-action:manipulation; }
 .keypad-key:active { transform:scale(.97); background:#DCE5ED; }
-.keypad-key:disabled { opacity:.35; }
 .keypad-danger { background:#FBE9E6; color:#C92F1C; }
 .keypad-purple { background:#E8F0FA; color:#17324D; }
 .keypad-blue { background:#123F78; color:#FFFFFF; }
@@ -61,7 +60,7 @@
 .keypad-save:not(:disabled):active { background:#1D5FA7; }
 
 @media (max-width:767px) {
-  nav.shrink-0.bg-card.border-t.border-border.z-20 { background:#FFFFFF !important;border-top-color:#DCE5ED !important;backdrop-filter:blur(22px);box-shadow:0 -12px 34px rgba(0,0,0,.08); }
+  nav.shrink-0.bg-card.border-t.border-border.z-20 { background:#FFFFFF !important;border-top-color:#DCE5ED !important;backdrop-filter:blur(22px);box-shadow:0 -12px 34px rgba(0,0,0,.24); }
   nav.shrink-0.bg-card.border-t.border-border.z-20 a { color:#7890A3; }
   nav.shrink-0.bg-card.border-t.border-border.z-20 a.text-primary { color:#1D5FA7; }
   nav.shrink-0.bg-card.border-t.border-border.z-20 a .w-8.h-8.rounded-xl { transition:.18s ease; }
@@ -92,17 +91,8 @@ label:has(> input[type="month"]) { overflow: hidden; }
 label:has(> input[type="month"]) + button { position: relative; z-index: 10; }
 
 /* Activity category picker: the filter already tells the user what is being shown, so hide the redundant heading row. */
-div.bg-card.border.border-border.rounded-2xl.p-2\.5.space-y-2:has(.snap-x) > div:first-child { display: none; }
-div.bg-card.border.border-border.rounded-2xl.p-2\.5.space-y-2:has(.snap-x) > div + div { margin-top: 0 !important; }
+div.bg-card.border.border-border.rounded-2xl.p-2\\.5.space-y-2:has(.snap-x) > div:first-child { display: none; }
+div.bg-card.border.border-border.rounded-2xl.p-2\\.5.space-y-2:has(.snap-x) > div + div { margin-top: 0 !important; }
 
 /* Keep the Category filter visibly active while its picker is open. */
-div.flex.gap-1\.5.overflow-x-auto.scrollbar-none.pb-0\.5:has(+ div.bg-card.border.border-border.rounded-2xl.p-2\.5.space-y-2) > button:nth-child(4) { background:#123F78; color:#FFFFFF; border-color:#123F78; }
-
-/* Dashboard JSX still contains legacy color literals. Normalize those text colors to the new light fintech palette. */
-.dashboard-page [class*="text-[#E2E2C4]"] { color:#17324D !important; }
-.dashboard-page [class*="text-[#5AABA9]"] { color:#1D5FA7 !important; }
-.dashboard-page [class*="text-[#F06A59]"] { color:#C92F1C !important; }
-.dashboard-page [class*="border-[#E2E2C4]"] { border-color:#DCE5ED !important; }
-.dashboard-page [class*="bg-[#E2E2C4]"] { background-color:#F8FAFC !important; }
-.dashboard-page [class*="bg-[#0B2A2B]"] { background-color:#FFFFFF !important; }
-.dashboard-page [class*="border-white/10"] { border-color:#DCE5ED !important; }
+div.flex.gap-1\\.5.overflow-x-auto.scrollbar-none.pb-0\\.5:has(+ div.bg-card.border.border-border.rounded-2xl.p-2\\.5.space-y-2) > button:nth-child(4) { background:#123F78; color:#FFFFFF; border-color:#123F78; }
