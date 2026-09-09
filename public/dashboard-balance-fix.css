@@ -1,0 +1,67 @@
+/* Montra Total Uang card refinement — additive override only. */
+.dashboard-balance {
+  display:block !important;
+  position:relative !important;
+  min-height:300px !important;
+  overflow:hidden !important;
+  background:linear-gradient(145deg,#17457f 0%,#123f78 52%,#0c3568 100%) !important;
+}
+.dashboard-balance > .absolute {
+  position:absolute !important;
+  z-index:0 !important;
+}
+.dashboard-balance > .relative {
+  position:relative !important;
+  z-index:3 !important;
+  min-height:264px !important;
+  display:flex !important;
+  flex-direction:column !important;
+}
+.dashboard-balance > .relative > div:first-child {
+  flex:0 0 auto !important;
+  justify-content:flex-start !important;
+}
+.dashboard-balance > .relative > div:nth-child(2) {
+  flex:0 0 auto !important;
+}
+.dashboard-balance > .relative > div:last-child {
+  margin-top:auto !important;
+  flex:0 0 auto !important;
+}
+.dashboard-balance::before {
+  left:-16% !important;
+  bottom:-27% !important;
+  width:132% !important;
+  height:70% !important;
+  border-radius:50% 50% 0 0 / 52% 66% 0 0 !important;
+  background:linear-gradient(180deg,rgba(43,145,220,.86),rgba(18,91,164,.97)) !important;
+  transform:rotate(-2deg) !important;
+  box-shadow:inset 0 2px 0 rgba(112,213,255,.34),0 -10px 34px rgba(25,132,214,.12) !important;
+}
+.dashboard-balance::after {
+  left:24% !important;
+  bottom:-39% !important;
+  width:120% !important;
+  height:70% !important;
+  border-radius:52% 48% 0 0 / 60% 42% 0 0 !important;
+  background:linear-gradient(180deg,rgba(12,73,143,.94),rgba(7,43,94,.99)) !important;
+  transform:rotate(5deg) !important;
+  box-shadow:inset 0 2px 0 rgba(82,166,231,.18) !important;
+}
+.dashboard-balance .dashboard-account-chip {
+  position:relative !important;
+  z-index:4 !important;
+}
+.dashboard-balance > .relative > div:first-child .dashboard-icon-button {
+  width:25px !important;
+  height:24px !important;
+  flex:0 0 25px !important;
+}
+@media (max-width:767px) {
+  .dashboard-balance {
+    min-height:340px !important;
+  }
+  .dashboard-balance > .relative {
+    min-height:300px !important;
+  }
+}
