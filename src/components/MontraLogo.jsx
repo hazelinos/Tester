@@ -25,8 +25,8 @@ export default function MontraLogo({ size = 32, showName = false, className = ''
         >
           <defs>
             <linearGradient id="montra-gradient" x1="12" y1="52" x2="52" y2="8" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#5AABA9" />
-              <stop offset="1" stopColor="#146466" />
+              <stop stopColor="#475569" />
+              <stop offset="1" stopColor="#0F172A" />
             </linearGradient>
           </defs>
           <path
@@ -36,7 +36,7 @@ export default function MontraLogo({ size = 32, showName = false, className = ''
             strokeLinecap="round"
             strokeLinejoin="round"
           />
-          <circle cx="50" cy="12" r="5" fill="#5AABA9" />
+          <circle cx="50" cy="12" r="5" fill="#0F172A" />
         </svg>
       )}
       {showName && (

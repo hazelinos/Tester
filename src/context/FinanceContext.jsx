@@ -20,9 +20,9 @@ const loadFromStorage = (key, fallback) => {
 };
 
 const DEFAULT_ACCOUNTS = [
-  { id: 'cash',    name: 'Kas',      icon: '💵', color: '#146466', balance: 0 },
-  { id: 'bank',    name: 'Bank',     icon: '🏦', color: '#5AABA9', balance: 0 },
-  { id: 'ewallet', name: 'E-Wallet', icon: '📱', color: '#146466', balance: 0 },
+  { id: 'cash',    name: 'Kas',      icon: '💵', color: '#0F172A', balance: 0 },
+  { id: 'bank',    name: 'Bank',     icon: '🏦', color: '#334155', balance: 0 },
+  { id: 'ewallet', name: 'E-Wallet', icon: '📱', color: '#475569', balance: 0 },
 ];
 
 const initialState = {

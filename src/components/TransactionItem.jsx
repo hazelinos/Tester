@@ -30,8 +30,7 @@ export default function TransactionItem({ transaction, onEdit }) {
       </div>
 
       <span
-        className="text-sm font-bold shrink-0"
-        style={{ color: isIncome ? '#5AABA9' : '#E35A49' }}
+        className={`text-sm font-bold shrink-0 ${isIncome ? 'text-primary' : 'text-danger'}`}
       >
         {isIncome ? '+' : '-'}{formatCurrency(transaction.amount)}
       </span>

@@ -8,23 +8,23 @@ import clsx from 'clsx';
 
 // ─── Kategori langganan ───────────────────────────────────────────
 const SUB_CATEGORIES = [
-  { id: 'streaming', label: 'Streaming',  icon: '📺', color: '#C92F1C',
+  { id: 'streaming', label: 'Streaming',  icon: '📺', color: '#E11D48',
     examples: ['Netflix','Disney+','Vidio','WeTV'] },
-  { id: 'music',     label: 'Musik',      icon: '🎵', color: '#5AABA9',
+  { id: 'music',     label: 'Musik',      icon: '🎵', color: '#0F172A',
     examples: ['Spotify','Apple Music','YouTube Music'] },
-  { id: 'internet',  label: 'Internet',   icon: '📡', color: '#146466',
+  { id: 'internet',  label: 'Internet',   icon: '📡', color: '#334155',
     examples: ['WiFi','Paket Data','IndiHome'] },
-  { id: 'apps',      label: 'Aplikasi',   icon: '📱', color: '#5AABA9',
+  { id: 'apps',      label: 'Aplikasi',   icon: '📱', color: '#475569',
     examples: ['iCloud','Google One','Canva Pro'] },
-  { id: 'games',     label: 'Game',       icon: '🎮', color: '#E2E2C4',
+  { id: 'games',     label: 'Game',       icon: '🎮', color: '#64748B',
     examples: ['Xbox Game Pass','PlayStation Plus'] },
-  { id: 'news',      label: 'Berita',     icon: '📰', color: '#E2E2C4',
+  { id: 'news',      label: 'Berita',     icon: '📰', color: '#94A3B8',
     examples: ['Kompas Premium','The Athletic'] },
-  { id: 'fitness',   label: 'Fitness',    icon: '💪', color: '#5AABA9',
+  { id: 'fitness',   label: 'Fitness',    icon: '💪', color: '#0F172A',
     examples: ['Gym','Classpass'] },
-  { id: 'software',  label: 'Software',   icon: '💻', color: '#146466',
+  { id: 'software',  label: 'Software',   icon: '💻', color: '#1E293B',
     examples: ['Adobe CC','Microsoft 365','Notion'] },
-  { id: 'other',     label: 'Lainnya',    icon: '📦', color: '#5AABA9',
+  { id: 'other',     label: 'Lainnya',    icon: '📦', color: '#64748B',
     examples: [] },
 ];
 

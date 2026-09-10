@@ -84,10 +84,9 @@ export default function Layout() {
         <button
           onClick={openAdd}
           aria-label="Tambah transaksi"
-          className="fixed right-5 bottom-5 z-40 w-14 h-14 rounded-full flex items-center justify-center shadow-xl"
-          style={{ background: 'linear-gradient(135deg, #146466, #5AABA9)' }}
+          className="fixed right-5 bottom-5 z-40 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl bg-primary hover:bg-primary-dark transition-all duration-150 active:scale-95"
         >
-          <Plus size={28} className="text-bg" strokeWidth={2.5} />
+          <Plus size={28} className="text-white" strokeWidth={2.5} />
         </button>
 
         {showModal && (

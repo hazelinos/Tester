@@ -7,7 +7,7 @@ import { formatCurrency, formatShortCurrency, generateId } from '../utils/format
 import clsx from 'clsx';
 
 const ACCOUNT_ICONS  = ['💵','🏦','📱','💳','🏧','💰','🪙','💎','🎯','📊'];
-const ACCOUNT_COLORS = ['#146466','#5AABA9','#146466','#E2E2C4','#C92F1C','#5AABA9','#146466','#C92F1C','#E2E2C4','#5AABA9'];
+const ACCOUNT_COLORS = ['#0F172A','#1E293B','#334155','#475569','#64748B','#94A3B8','#0284C7','#0D9488','#4F46E5','#E11D48'];
 const INCOME_CATS    = ['salary','freelance','business','investment','gift','other_income'];
 
 // ─── Cek apakah gaji sudah dicatat bulan ini ─────────────────────
