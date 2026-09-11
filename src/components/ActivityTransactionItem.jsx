@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { getCategoryById } from '../constants/categories';
 import { useFinance } from '../context/FinanceContext';
 import { formatCurrency } from '../utils/formatters';
+import clsx from 'clsx';
 
 export default function ActivityTransactionItem({ transaction, onEdit, onOpenDetail, onDelete }) {
   const cat = getCategoryById(transaction.categoryId);
