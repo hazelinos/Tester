@@ -243,6 +243,19 @@
   text-overflow: ellipsis !important;
 }
 
+/* ── Desktop: give the chip row a definite height so the chips keep the same
+      proportion to the card that they have on mobile. Percentage heights on the
+      chips need a definite parent height — without this the chips fall back to
+      min-height and look smaller/lower than the mobile reference. ── */
+@media (min-width: 768px) {
+  .dashboard-balance-accounts { height: 24.5% !important; }
+  .dashboard-balance .dashboard-account-chip {
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: none !important;
+  }
+}
+
 /* ── Mobile overrides ── */
 @media (max-width: 767px) {
   .dashboard-balance { border-radius: 22px !important; }
