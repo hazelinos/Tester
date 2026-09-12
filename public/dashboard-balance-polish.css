@@ -172,7 +172,9 @@
   color: rgba(186, 220, 255, 0.82) !important;
 }
 
-/* ── Account chips container ── */
+/* ── Account chips container ──
+   Scrolls horizontally when there are more accounts than fit. Without this the
+   extra chips were clipped by the card's overflow:hidden and unreachable. */
 .dashboard-balance-accounts {
   position: absolute !important;
   left: 5% !important;
@@ -182,12 +184,21 @@
   flex-wrap: nowrap !important;
   align-items: stretch !important;
   gap: 8px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scroll-snap-type: x proximity !important;
+  overscroll-behavior-x: contain !important;
+  -webkit-overflow-scrolling: touch !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
+.dashboard-balance-accounts::-webkit-scrollbar { display: none !important; }
 
 /* ── Individual chip ── */
 .dashboard-balance .dashboard-account-chip {
   display: flex !important;
   align-items: center !important;
+  scroll-snap-align: start !important;
   flex: 0 0 calc((100% - 16px) / 3) !important;
   width: calc((100% - 16px) / 3) !important;
   min-width: 0 !important;
