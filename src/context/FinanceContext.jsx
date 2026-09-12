@@ -20,14 +20,27 @@ const loadFromStorage = (key, fallback) => {
 };
 
 const DEFAULT_ACCOUNTS = [
-  { id: 'cash',    name: 'Kas',      icon: '💵', color: '#0F172A', balance: 0 },
-  { id: 'bank',    name: 'Bank',     icon: '🏦', color: '#334155', balance: 0 },
-  { id: 'ewallet', name: 'E-Wallet', icon: '📱', color: '#475569', balance: 0 },
+  { id: 'bca',     name: 'BCA',     icon: '💳', color: '#0284C7', balance: 5200000 },
+  { id: 'dompet',  name: 'Dompet',  icon: '👛', color: '#0EA5E9', balance: 4750000 },
+  { id: 'mandiri', name: 'Mandiri', icon: '🏦', color: '#0369A1', balance: 2500000 },
 ];
+
+// Placeholder set shipped before the redesign. Installations that never touched
+// their accounts still hold it, so swap it for the real defaults on load.
+const LEGACY_SEED_IDS = ['cash', 'bank', 'ewallet'];
+
+const loadAccounts = () => {
+  const stored = loadFromStorage(KEYS.ACCOUNTS, DEFAULT_ACCOUNTS);
+  const isUntouchedSeed =
+    Array.isArray(stored) &&
+    stored.length === LEGACY_SEED_IDS.length &&
+    stored.every((account, index) => account.id === LEGACY_SEED_IDS[index] && !account.balance);
+  return isUntouchedSeed ? DEFAULT_ACCOUNTS : stored;
+};
 
 const initialState = {
   transactions:  loadFromStorage(KEYS.TRANSACTIONS,  []),
-  accounts:      loadFromStorage(KEYS.ACCOUNTS,      DEFAULT_ACCOUNTS),
+  accounts:      loadAccounts(),
   budgets:       loadFromStorage(KEYS.BUDGETS,       []),
   savings:       loadFromStorage(KEYS.SAVINGS,       []),
   debts:         loadFromStorage(KEYS.DEBTS,         []),

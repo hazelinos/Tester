@@ -156,7 +156,7 @@ function SavingCard({ saving, onEdit, onDelete, onDeposit, onDeleteDeposit, mobi
   const isDone   = pct >= 100;
   const days     = daysLeft(saving.deadline);
   const isExpired = days !== null && days < 0;
-  const barColor  = isDone ? '#0F172A' : isExpired ? '#E11D48' : days !== null && days <= 7 ? '#94A3B8' : '#0F172A';
+  const barColor  = isDone ? '#10B981' : isExpired ? '#EF4444' : days !== null && days <= 7 ? '#F59E0B' : '#1D4ED8';
 
   return (
     <div className={clsx('bg-card border border-border rounded-xl overflow-hidden', isDone && 'border-income/30')}>

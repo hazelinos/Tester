@@ -256,7 +256,7 @@ function PaymentModal({ debt, onClose, onAdd }) {
             <div className="flex justify-between">
               <span className="text-[11px] text-text-muted">Sisa {debt.kind === 'debt' ? 'hutang' : 'piutang'}</span>
               <span className="text-sm font-bold"
-                style={{ color: debt.kind === 'debt' ? '#E11D48' : '#0F172A' }}>
+                style={{ color: debt.kind === 'debt' ? '#EF4444' : '#10B981' }}>
                 {formatCurrency(Math.max(remaining, 0))}
               </span>
             </div>
@@ -325,7 +325,7 @@ function DebtCard({ debt, onEdit, onDelete, onPay, onDeletePayment, mobile }) {
   const pct          = totalPayable > 0 ? Math.min((paid / totalPayable) * 100, 100) : 0;
   const isDone       = pct >= 100;
   const isDebt       = debt.kind === 'debt';
-  const accentColor  = isDebt ? '#E11D48' : '#0F172A';
+  const accentColor  = isDebt ? '#EF4444' : '#10B981';
 
   const days      = debt.dueDate ? Math.ceil((new Date(debt.dueDate) - new Date()) / (1000 * 60 * 60 * 24)) : null;
   const isExpired = days !== null && days < 0 && !isDone;
@@ -386,11 +386,11 @@ function DebtCard({ debt, onEdit, onDelete, onPay, onDeletePayment, mobile }) {
 
       <div className="h-1.5 bg-elevated rounded-full overflow-hidden">
         <div className="h-full rounded-full transition-all"
-          style={{ width: `${pct}%`, backgroundColor: isDone ? '#0F172A' : accentColor }} />
+          style={{ width: `${pct}%`, backgroundColor: isDone ? '#10B981' : accentColor }} />
       </div>
 
       <div className="flex items-center justify-between">
-        <span className="text-[10px] font-bold" style={{ color: isDone ? '#0F172A' : accentColor }}>
+        <span className="text-[10px] font-bold" style={{ color: isDone ? '#10B981' : accentColor }}>
           {pct.toFixed(0)}% {!isDone && `· Sisa ${mobile ? formatShortCurrency(remaining) : formatCurrency(remaining)}`}
         </span>
         <div className="flex items-center gap-2">

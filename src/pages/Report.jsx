@@ -35,9 +35,9 @@ export function ReportContent({ selectedDate, onChangeMonth, mobile, embedded = 
     <div className="space-y-3">
       <div className="grid grid-cols-3 gap-2">
         {[
-          { label: 'Pemasukan', val: income, color: '#0F172A' },
-          { label: 'Pengeluaran', val: expense, color: '#E11D48' },
-          { label: savings >= 0 ? 'Tabungan' : 'Defisit', val: Math.abs(savings), color: savings >= 0 ? '#0F172A' : '#E11D48' },
+          { label: 'Pemasukan', val: income, color: '#10B981' },
+          { label: 'Pengeluaran', val: expense, color: '#EF4444' },
+          { label: savings >= 0 ? 'Tabungan' : 'Defisit', val: Math.abs(savings), color: savings >= 0 ? '#10B981' : '#EF4444' },
         ].map((s) => (
           <div key={s.label} className="bg-card border border-border rounded-xl p-2 text-center">
             <p className="text-[10px] text-text-muted mb-0.5">{s.label}</p>
@@ -49,9 +49,9 @@ export function ReportContent({ selectedDate, onChangeMonth, mobile, embedded = 
         <div className="bg-card border border-border rounded-xl p-3">
           <div className="flex justify-between mb-1.5">
             <span className="text-xs text-text-muted">{savings >= 0 ? '💰 Tingkat Tabungan' : '⚠️ Defisit'}</span>
-            <span className="text-xs font-bold" style={{ color: savings >= 0 ? '#0F172A' : '#E11D48' }}>{Math.abs(savingsRate)}%</span>
+            <span className="text-xs font-bold" style={{ color: savings >= 0 ? '#10B981' : '#EF4444' }}>{Math.abs(savingsRate)}%</span>
           </div>
-          <div className="h-2 bg-elevated rounded-full overflow-hidden"><div className="h-full rounded-full" style={{ width: `${Math.abs(savingsRate)}%`, backgroundColor: savings >= 0 ? '#0F172A' : '#E11D48' }} /></div>
+          <div className="h-2 bg-elevated rounded-full overflow-hidden"><div className="h-full rounded-full" style={{ width: `${Math.abs(savingsRate)}%`, backgroundColor: savings >= 0 ? '#10B981' : '#EF4444' }} /></div>
         </div>
       )}
       <div className="bg-card border border-border rounded-xl p-3">
@@ -61,11 +61,11 @@ export function ReportContent({ selectedDate, onChangeMonth, mobile, embedded = 
             <XAxis dataKey="name" tick={{ fill: '#64748B', fontSize: 10 }} axisLine={false} tickLine={false} />
             <YAxis tickFormatter={(v) => formatShortCurrency(v).replace('Rp ', '')} tick={{ fill: '#64748B', fontSize: 9 }} axisLine={false} tickLine={false} width={36} />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(15,23,42,0.05)' }} />
-            <Bar dataKey="Masuk" fill="#0F172A" radius={[3,3,0,0]} />
-            <Bar dataKey="Keluar" fill="#E11D48" radius={[3,3,0,0]} />
+            <Bar dataKey="Masuk" fill="#10B981" radius={[3,3,0,0]} />
+            <Bar dataKey="Keluar" fill="#EF4444" radius={[3,3,0,0]} />
           </BarChart>
         </ResponsiveContainer>
-        <div className="flex gap-3 mt-1">{[['Masuk','#0F172A'],['Keluar','#E11D48']].map(([l,c]) => <div key={l} className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: c }} /><span className="text-[10px] text-text-secondary">{l}</span></div>)}</div>
+        <div className="flex gap-3 mt-1">{[['Masuk','#10B981'],['Keluar','#EF4444']].map(([l,c]) => <div key={l} className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: c }} /><span className="text-[10px] text-text-secondary">{l}</span></div>)}</div>
       </div>
       <div className="bg-card border border-border rounded-xl p-3">
         <p className="text-xs font-bold text-text-primary mb-3">Per Kategori</p>

@@ -1,22 +1,38 @@
-/* Montra — Total Uang card unified styling for both Desktop and Mobile */
+/* Montra — Total Uang card: Oceanic Blue theme, unified Desktop + Mobile */
+
+/* ── Card shell ── */
 .dashboard-balance {
   aspect-ratio: 2.05 / 1 !important;
   border-radius: 26px !important;
+  background: linear-gradient(145deg, #1748BE 0%, #1357CA 30%, #0F52C8 55%, #0C3FA8 100%) !important;
+  border: 1px solid rgba(255,255,255,.22) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.28), 0 22px 55px rgba(17,72,190,.40), 0 4px 16px rgba(17,72,190,.22) !important;
 }
 
-.dashboard-balance::after,
-.dashboard-balance::before {
+/* ── Wave layers (::before = front wave glowing edge, ::after = back fill) ── */
+.dashboard-balance::before,
+.dashboard-balance::after {
+  content: "" !important;
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  height: 100% !important;
+  pointer-events: none !important;
+  background-repeat: no-repeat !important;
   background-size: 100% 70% !important;
   background-position: center bottom !important;
 }
+.dashboard-balance::before { z-index: 1 !important; }
+.dashboard-balance::after { z-index: 0 !important; }
 .dashboard-balance::after {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 400' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='r2' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop stop-color='%231e293b'/%3E%3Cstop offset='1' stop-color='%230f172a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M0 248 C95 308 185 302 280 250 C370 201 445 223 525 253 C615 286 680 238 755 194 C835 147 905 142 1000 205 L1000 400 L0 400Z' fill='url(%23r2)'/%3E%3C/svg%3E") !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 400' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='r2' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop stop-color='%230e45a8'/%3E%3Cstop offset='1' stop-color='%230a3490'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M0 248 C95 308 185 302 280 250 C370 201 445 223 525 253 C615 286 680 238 755 194 C835 147 905 142 1000 205 L1000 400 L0 400Z' fill='url(%23r2)'/%3E%3C/svg%3E") !important;
 }
 .dashboard-balance::before {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 400' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='f2' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop stop-color='%23334155'/%3E%3Cstop offset='.55' stop-color='%231e293b'/%3E%3Cstop offset='1' stop-color='%230f172a'/%3E%3C/linearGradient%3E%3ClinearGradient id='e2' x1='0' y1='0' x2='1' y2='0'%3E%3Cstop stop-color='%23475569' stop-opacity='.62'/%3E%3Cstop offset='.5' stop-color='%2364748b' stop-opacity='.85'/%3E%3Cstop offset='1' stop-color='%23475569' stop-opacity='.66'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M0 210 C95 270 180 278 275 205 C365 140 440 205 520 232 C605 260 675 218 750 158 C820 102 880 55 935 62 C965 66 985 78 1000 92 L1000 400 L0 400Z' fill='url(%23f2)'/%3E%3Cpath d='M0 210 C95 270 180 278 275 205 C365 140 440 205 520 232 C605 260 675 218 750 158 C820 102 880 55 935 62 C965 66 985 78 1000 92' fill='none' stroke='url(%23e2)' stroke-width='5'/%3E%3C/svg%3E") !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 400' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='f2' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop stop-color='%231a5fd4'/%3E%3Cstop offset='.55' stop-color='%23124ec8'/%3E%3Cstop offset='1' stop-color='%230a3490'/%3E%3C/linearGradient%3E%3ClinearGradient id='e2' x1='0' y1='0' x2='1' y2='0'%3E%3Cstop stop-color='%2338bdf8' stop-opacity='.55'/%3E%3Cstop offset='.5' stop-color='%237dd3fc' stop-opacity='.90'/%3E%3Cstop offset='1' stop-color='%2338bdf8' stop-opacity='.55'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M0 210 C95 270 180 278 275 205 C365 140 440 205 520 232 C605 260 675 218 750 158 C820 102 880 55 935 62 C965 66 985 78 1000 92 L1000 400 L0 400Z' fill='url(%23f2)'/%3E%3Cpath d='M0 210 C95 270 180 278 275 205 C365 140 440 205 520 232 C605 260 675 218 750 158 C820 102 880 55 935 62 C965 66 985 78 1000 92' fill='none' stroke='url(%23e2)' stroke-width='5'/%3E%3C/svg%3E") !important;
 }
 
-/* Title and visibility button */
+/* ── Title row ── */
 .dashboard-balance-title {
   top: 13% !important;
   left: 5.5% !important;
@@ -28,21 +44,21 @@
   letter-spacing: 0.1em !important;
   font-weight: 600 !important;
   text-transform: uppercase !important;
-  opacity: 0.85 !important;
+  opacity: 0.92 !important;
 }
 
-/* Clean glass visibility button */
+/* ── Eye / visibility button ── */
 .dashboard-balance-title .dashboard-icon-button {
   position: relative !important;
   width: 32px !important;
   height: 32px !important;
   flex: 0 0 32px !important;
   padding: 0 !important;
-  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
   border-radius: 10px !important;
-  background: rgba(255, 255, 255, 0.08) !important;
+  background: rgba(255, 255, 255, 0.10) !important;
   color: rgba(255, 255, 255, 0.95) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 4px 12px rgba(0, 0, 0, 0.08) !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -60,22 +76,22 @@
   content: none !important;
 }
 .dashboard-balance-title .dashboard-icon-button:hover {
-  background: rgba(255, 255, 255, 0.15) !important;
-  border-color: rgba(255, 255, 255, 0.3) !important;
+  background: rgba(255, 255, 255, 0.18) !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
   transform: translateY(-1px) !important;
 }
 .dashboard-balance-title .dashboard-icon-button:active { transform: translateY(0) !important; }
 
-/* Wallet Icon Box — properly proportioned on both Desktop and Mobile */
+/* ── Wallet squircle ── */
 .dashboard-balance-wallet {
   top: 9% !important;
   right: 5.5% !important;
   width: 52px !important;
   height: 52px !important;
   border-radius: 17px !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
-  background: rgba(255, 255, 255, 0.08) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 8px 20px rgba(0, 0, 0, 0.12) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.25) !important;
+  background: rgba(255, 255, 255, 0.13) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 8px 20px rgba(0, 0, 0, 0.12) !important;
   backdrop-filter: blur(14px) !important;
   -webkit-backdrop-filter: blur(14px) !important;
 }
@@ -86,7 +102,7 @@
 }
 .dashboard-balance-wallet > span { display: none !important; }
 
-/* Balance amount */
+/* ── Balance amount ── */
 .dashboard-balance-amount {
   left: 5.5% !important;
   top: 29% !important;
@@ -97,17 +113,17 @@
   white-space: nowrap !important;
 }
 
-/* Subtitle */
+/* ── Subtitle ── */
 .dashboard-balance-subtitle {
   left: 5.5% !important;
   top: 48% !important;
   font-size: clamp(12px, 1.3vw, 14px) !important;
   line-height: 1.1 !important;
   font-weight: 500 !important;
-  color: rgba(226, 232, 240, 0.78) !important;
+  color: rgba(186, 220, 255, 0.82) !important;
 }
 
-/* Connected account chips container */
+/* ── Account chips container ── */
 .dashboard-balance-accounts {
   left: 5% !important;
   right: 5% !important;
@@ -115,6 +131,7 @@
   gap: 8px !important;
 }
 
+/* ── Individual chip ── */
 .dashboard-balance .dashboard-account-chip {
   flex: 0 0 calc((100% - 16px) / 3) !important;
   width: calc((100% - 16px) / 3) !important;
@@ -125,20 +142,21 @@
   padding: 6px 10px !important;
   gap: 8px !important;
   border-radius: 17px !important;
-  background: rgba(255, 255, 255, 0.08) !important;
-  border: 1px solid rgba(255, 255, 255, 0.16) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 4px 14px rgba(0, 0, 0, 0.12) !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+  border: 1px solid rgba(255, 255, 255, 0.20) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 4px 14px rgba(0, 0, 0, 0.10) !important;
   backdrop-filter: blur(16px) !important;
   -webkit-backdrop-filter: blur(16px) !important;
 }
 
+/* ── Chip icon circle ── */
 .dashboard-balance .dashboard-account-icon {
   width: 34px !important;
   height: 34px !important;
   min-width: 34px !important;
   flex: 0 0 34px !important;
   font-size: 15px !important;
-  background: rgba(255, 255, 255, 0.12) !important;
+  background: rgba(2, 132, 199, 0.40) !important;
   border-radius: 50% !important;
 }
 
@@ -149,29 +167,32 @@
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
+  color: #FFFFFF !important;
 }
 .dashboard-balance .dashboard-account-meta > span {
-  font-size: clamp(9.5px, 1vw, 11px) !important;
+  font-size: clamp(10px, 1vw, 12px) !important;
   line-height: 1 !important;
-  color: rgba(226, 232, 240, 0.82) !important;
+  color: rgba(186, 220, 255, 0.85) !important;
+  white-space: nowrap !important;
 }
 
+/* ── Mobile overrides ── */
 @media (max-width: 767px) {
-  .dashboard-balance {
-    border-radius: 22px !important;
-  }
-  .dashboard-balance-wallet {
-    width: 46px !important;
-    height: 46px !important;
-    border-radius: 15px !important;
-  }
-  .dashboard-balance-wallet > svg {
-    width: 22px !important;
-    height: 22px !important;
-  }
+  .dashboard-balance { border-radius: 22px !important; }
+  .dashboard-balance-title { left: 5.5% !important; top: 13% !important; gap: 7px !important; }
+  .dashboard-balance-title > p { font-size: 13px !important; }
+  .dashboard-balance-title .dashboard-icon-button { width: 28px !important; height: 28px !important; flex-basis: 28px !important; }
+  .dashboard-balance-title .dashboard-icon-button svg { width: 15px !important; height: 15px !important; }
+  .dashboard-balance-wallet { width: 44px !important; height: 44px !important; border-radius: 14px !important; }
+  .dashboard-balance-wallet > svg { width: 21px !important; height: 21px !important; }
+  .dashboard-balance-amount { left: 5.5% !important; top: 29% !important; font-size: clamp(25px, 7.2vw, 38px) !important; }
+  .dashboard-balance-subtitle { left: 5.5% !important; top: 49% !important; font-size: 12px !important; }
+  .dashboard-balance-accounts { left: 5% !important; right: 5% !important; bottom: 5.5% !important; gap: 6px !important; }
   .dashboard-balance .dashboard-account-chip {
     flex: 0 0 calc((100% - 12px) / 3) !important;
     width: calc((100% - 12px) / 3) !important;
+    min-height: 46px !important;
+    max-height: 56px !important;
     padding: 5px 6px !important;
     gap: 5px !important;
     border-radius: 14px !important;
@@ -183,11 +204,6 @@
     flex: 0 0 28px !important;
     font-size: 13px !important;
   }
-  .dashboard-balance .dashboard-account-meta strong {
-    font-size: 10px !important;
-  }
-  .dashboard-balance .dashboard-account-meta > span {
-    font-size: 9px !important;
-  }
+  .dashboard-balance .dashboard-account-meta strong { font-size: 10px !important; }
+  .dashboard-balance .dashboard-account-meta > span { font-size: 9px !important; }
 }
-

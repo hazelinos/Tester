@@ -59,7 +59,7 @@ export default function TransactionModal({ editTx, onClose, navigateToDebt }) {
   const selectedAcc = accounts.find((a) => a.id === accountId);
   const calculatedAmount = calculateExpression(expression);
   const numAmount = calculatedAmount !== null ? calculatedAmount : (Number(expression) || 0);
-  const accentColor = type === 'income' ? '#0F172A' : '#E11D48';
+  const accentColor = type === 'income' ? '#10B981' : '#EF4444';
 
   const categoryUsage = useMemo(() => {
     const counts = {};
