@@ -13,6 +13,12 @@ jobs:
   build:
     if: contains(github.event.head_commit.message, '[android-release]')
     runs-on: ubuntu-latest
+    env:
+      APP_VERSION: "1.0.2"
+      KEYSTORE_PATH: ${{ runner.temp }}/release.keystore
+      KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+      KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+      KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
     steps:
       - name: Checkout exact source
         uses: actions/checkout@v4
@@ -48,14 +54,64 @@ jobs:
       - name: Sync web assets into Android
         run: npx cap sync android
 
+      # Signature + versionCode yang stabil supaya instal di atas versi lama
+      # dikenali Android sebagai update (bukan bentrok), dan versi selalu naik.
+      - name: Configure release signing and version
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > "$KEYSTORE_PATH"
+          export VERSION_CODE="$(date +%s)"
+          python3 <<'PY'
+          import os
+          import pathlib
+
+          gradle = pathlib.Path("android/app/build.gradle")
+          source = gradle.read_text()
+
+          assert "versionCode 1" in source, "template versionCode not found"
+          assert 'versionName "1.0"' in source, "template versionName not found"
+
+          source = source.replace(
+              "versionCode 1", "versionCode " + os.environ["VERSION_CODE"], 1
+          )
+          source = source.replace(
+              'versionName "1.0"', 'versionName "' + os.environ["APP_VERSION"] + '"', 1
+          )
+
+          signing_config = (
+              "    signingConfigs {\n"
+              "        release {\n"
+              '            storeFile file(System.getenv("KEYSTORE_PATH"))\n'
+              '            storePassword System.getenv("KEYSTORE_PASSWORD")\n'
+              '            keyAlias System.getenv("KEY_ALIAS")\n'
+              '            keyPassword System.getenv("KEY_PASSWORD")\n'
+              "        }\n"
+              "    }\n"
+          )
+          assert "    buildTypes {" in source, "buildTypes block not found"
+          source = source.replace("    buildTypes {", signing_config + "    buildTypes {", 1)
+
+          assert "            minifyEnabled false" in source, "release block not found"
+          source = source.replace(
+              "            minifyEnabled false",
+              "            minifyEnabled false\n"
+              "            signingConfig signingConfigs.release",
+              1,
+          )
+
+          gradle.write_text(source)
+          print(source)
+          PY
+
       - name: Build APK
         working-directory: android
-        run: ./gradlew assembleDebug --no-daemon
+        run: ./gradlew assembleRelease --no-daemon
 
       - name: Rename APK
         run: |
           mkdir -p out
-          cp android/app/build/outputs/apk/debug/app-debug.apk "out/Montra-v1.0.1.apk"
+          cp android/app/build/outputs/apk/release/app-release.apk "out/Montra-v${APP_VERSION}.apk"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -68,5 +124,5 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: out/*.apk
-          tag_name: v1.0.1
+          tag_name: v${{ env.APP_VERSION }}
           generate_release_notes: true
