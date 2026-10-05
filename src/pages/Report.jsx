@@ -3,7 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pi
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
 import { useIsMobile } from '../hooks/useIsMobile';
-import { formatCurrency, formatShortCurrency, getMonthName } from '../utils/formatters';
+import { formatCurrency, formatShortCurrency, getMonthName, formatAmount } from '../utils/formatters';
 import { getCategoryById } from '../constants/categories';
 import clsx from 'clsx';
 
@@ -41,7 +41,7 @@ export function ReportContent({ selectedDate, onChangeMonth, mobile, embedded = 
         ].map((s) => (
           <div key={s.label} className="bg-card border border-border rounded-xl p-2 text-center">
             <p className="text-[10px] text-text-muted mb-0.5">{s.label}</p>
-            <p className="text-xs font-bold" style={{ color: s.color }}>{mobile ? formatShortCurrency(s.val) : formatCurrency(s.val)}</p>
+            <p className="text-xs font-bold" style={{ color: s.color }}>{formatAmount(s.val, 13)}</p>
           </div>
         ))}
       </div>

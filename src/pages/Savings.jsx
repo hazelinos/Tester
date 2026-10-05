@@ -3,7 +3,7 @@ import { Plus, Pencil, Trash2, Camera, PiggyBank, Calendar, ChevronDown, Chevron
 import { useFinance } from '../context/FinanceContext';
 import { useIsMobile } from '../hooks/useIsMobile';
 import EmptyState from '../components/EmptyState';
-import { formatCurrency, formatShortCurrency, formatDate } from '../utils/formatters';
+import { formatCurrency, formatShortCurrency, formatDate, formatAmount } from '../utils/formatters';
 import clsx from 'clsx';
 
 const daysLeft = (deadline) => {
@@ -190,8 +190,8 @@ function SavingCard({ saving, onEdit, onDelete, onDeposit, onDeleteDeposit, mobi
         </div>
 
         <div className="flex justify-between text-xs">
-          <span className="font-bold" style={{ color: barColor }}>{mobile ? formatShortCurrency(saving.collected) : formatCurrency(saving.collected)}</span>
-          <span className="text-text-muted">/ {mobile ? formatShortCurrency(saving.target) : formatCurrency(saving.target)}</span>
+          <span className="font-bold" style={{ color: barColor }}>{formatAmount(saving.collected, 13)}</span>
+          <span className="text-text-muted">/ {formatAmount(saving.target, 13)}</span>
         </div>
 
         <div className="h-1.5 bg-elevated rounded-full overflow-hidden">
@@ -293,7 +293,7 @@ export default function Savings() {
             <div key={s.label} className="bg-card border border-border rounded-xl p-2 text-center">
               <p className="text-[10px] text-text-muted mb-0.5">{s.label}</p>
               <p className={clsx('text-xs font-bold', s.color)}>
-                {s.isText ? s.val : (mobile ? formatShortCurrency(s.val) : formatCurrency(s.val))}
+                {s.isText ? s.val : (formatAmount(s.val, 13))}
               </p>
             </div>
           ))}

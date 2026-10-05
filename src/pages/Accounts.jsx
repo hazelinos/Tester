@@ -3,7 +3,7 @@ import { Plus, Pencil, Trash2, Camera, Smile, Wallet, Bell } from 'lucide-react'
 import { useFinance } from '../context/FinanceContext';
 import { useIsMobile } from '../hooks/useIsMobile';
 import EmptyState from '../components/EmptyState';
-import { formatCurrency, formatShortCurrency, generateId } from '../utils/formatters';
+import { formatCurrency, formatShortCurrency, generateId, formatAmount } from '../utils/formatters';
 import clsx from 'clsx';
 
 const ACCOUNT_ICONS  = ['💵','🏦','📱','💳','🏧','💰','🪙','💎','🎯','📊'];
@@ -373,7 +373,7 @@ export default function Accounts() {
       <div className="bg-card border border-border rounded-xl p-4 text-center">
         <p className="text-xs text-text-muted mb-1">Total Semua Akun</p>
         <p className={clsx('font-extrabold', mobile ? 'text-2xl' : 'text-4xl', totalBalance >= 0 ? 'text-income' : 'text-expense')}>
-          {mobile ? formatShortCurrency(totalBalance) : formatCurrency(totalBalance)}
+          {formatAmount(totalBalance, 16)}
         </p>
         <p className="text-xs text-text-secondary mt-0.5">{accounts.length} akun aktif</p>
       </div>
@@ -393,7 +393,7 @@ export default function Accounts() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-text-primary truncate">{acc.name}</p>
                   <p className={clsx('font-bold', mobile ? 'text-base' : 'text-lg', acc.balance >= 0 ? 'text-income' : 'text-expense')}>
-                    {mobile ? formatShortCurrency(acc.balance) : formatCurrency(acc.balance)}
+                    {formatAmount(acc.balance, 14)}
                   </p>
                   {acc.salaryEnabled && acc.salaryAmount > 0 && (
                     <p className="text-[10px] text-income/80 mt-0.5">

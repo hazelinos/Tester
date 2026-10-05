@@ -3,7 +3,7 @@ import { Plus, Pencil, Trash2, Camera, Bell, BellOff, Calendar, AlertTriangle } 
 import { useFinance } from '../context/FinanceContext';
 import { useIsMobile } from '../hooks/useIsMobile';
 import EmptyState from '../components/EmptyState';
-import { formatCurrency, formatShortCurrency, formatDate, generateId } from '../utils/formatters';
+import { formatCurrency, formatShortCurrency, formatDate, generateId, formatAmount } from '../utils/formatters';
 import clsx from 'clsx';
 
 // ─── Kategori langganan ───────────────────────────────────────────
@@ -291,7 +291,7 @@ function SubCard({ sub, onEdit, onDelete, mobile }) {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-base font-bold" style={{ color: sub.active ? cat.color : '#72817C' }}>
-            {mobile ? formatShortCurrency(sub.amount) : formatCurrency(sub.amount)}
+            {formatAmount(sub.amount, 13)}
             <span className="text-[10px] text-text-muted font-normal ml-1">/{cycleLabel.toLowerCase()}</span>
           </p>
           {sub.cycle !== 'monthly' && (

@@ -6,10 +6,18 @@ export const formatCurrency = (amount) => {
 
 export const formatShortCurrency = (amount) => {
   const num = Math.abs(Number(amount));
-  if (num >= 1_000_000_000) return `Rp ${(num / 1_000_000_000).toFixed(1)}M`;
-  if (num >= 1_000_000) return `Rp ${(num / 1_000_000).toFixed(1)}jt`;
-  if (num >= 1_000) return `Rp ${(num / 1_000).toFixed(0)}rb`;
+  const dec = (n) => n.toLocaleString('id-ID', { maximumFractionDigits: 1 });
+  if (num >= 1_000_000_000) return `Rp ${dec(num / 1_000_000_000)}M`;
+  if (num >= 1_000_000) return `Rp ${dec(num / 1_000_000)}jt`;
+  if (num >= 1_000) return `Rp ${dec(num / 1_000)}rb`;
   return `Rp ${num}`;
+};
+
+// Angka penuh bila muat dalam batas karakter; kalau tidak, format singkat
+// supaya tidak overflow di ruang sempit.
+export const formatAmount = (amount, maxChars = 13) => {
+  const full = formatCurrency(amount);
+  return full.length <= maxChars ? full : formatShortCurrency(amount);
 };
 
 export const generateId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;

@@ -4,7 +4,7 @@ import { useFinance } from '../context/FinanceContext';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { EXPENSE_CATEGORIES, getCategoryById } from '../constants/categories';
 import EmptyState from '../components/EmptyState';
-import { formatCurrency, formatShortCurrency, getMonthName } from '../utils/formatters';
+import { formatCurrency, getMonthName, formatAmount } from '../utils/formatters';
 import clsx from 'clsx';
 
 function BudgetModal({ onClose, onSave, existing, month, year }) {
@@ -117,7 +117,7 @@ export default function Budget() {
               <div key={s.label} className="text-center">
                 <p className="text-[10px] text-text-muted mb-0.5">{s.label}</p>
                 <p className={clsx('text-xs font-bold', s.color)}>
-                  {mobile ? formatShortCurrency(s.val) : formatCurrency(s.val)}
+                  {formatAmount(s.val, 13)}
                 </p>
               </div>
             ))}
@@ -157,7 +157,7 @@ export default function Budget() {
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-semibold text-text-primary truncate">{item.label}</p>
                       <p className="text-[10px] text-text-muted">
-                        {mobile ? formatShortCurrency(item.spent) : formatCurrency(item.spent)} / {mobile ? formatShortCurrency(item.amount) : formatCurrency(item.amount)}
+                        {formatAmount(item.spent, 12)} / {formatAmount(item.amount, 12)}
                       </p>
                     </div>
                     <div className="flex gap-1 shrink-0">
@@ -175,8 +175,8 @@ export default function Budget() {
                   </div>
                   <div className="flex justify-between">
                     <span className={clsx('text-[10px]', isOver ? 'text-expense' : 'text-text-muted')}>
-                      {isOver ? `⚠️ +${mobile ? formatShortCurrency(item.spent - item.amount) : formatCurrency(item.spent - item.amount)}`
-                        : `Sisa ${mobile ? formatShortCurrency(item.remaining) : formatCurrency(item.remaining)}`}
+                      {isOver ? `⚠️ +${formatAmount(item.spent - item.amount, 12)}`
+                        : `Sisa ${formatAmount(item.remaining, 12)}`}
                     </span>
                     <span className="text-[10px] font-bold" style={{ color: barColor }}>{item.percentage.toFixed(0)}%</span>
                   </div>

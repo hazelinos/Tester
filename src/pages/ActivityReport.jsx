@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useFinance } from '../context/FinanceContext';
 import { getCategoryById, INCOME_CATEGORIES } from '../constants/categories';
-import { formatCurrency, formatShortCurrency, getMonthName } from '../utils/formatters';
+import { formatCurrency, formatShortCurrency, getMonthName, formatAmount } from '../utils/formatters';
 import clsx from 'clsx';
 
 const MINT = '#10B981';
@@ -86,7 +86,7 @@ export default function ActivityReport({ selectedDate, onCategorySelect }) {
   if (!monthTransactions.length) return <div className="bg-card border border-border rounded-2xl p-8 text-center"><p className="text-2xl">📊</p><p className="font-semibold text-text-primary mt-2">Belum ada data untuk dianalisis.</p><p className="text-xs text-text-muted mt-1">Tambahkan transaksi pada bulan ini untuk melihat laporan.</p></div>;
 
   return <div className="space-y-3">
-    <div className="grid grid-cols-3 gap-2">{[['Pemasukan', income, 'text-income'], ['Pengeluaran', expense, 'text-expense'], [net < 0 ? 'Defisit' : 'Selisih', net, net < 0 ? 'text-expense' : 'text-income']].map(([label,value,color]) => <div key={label} className="bg-card border border-border rounded-2xl p-2.5 text-center"><p className="text-[10px] text-text-muted">{label}</p><p className={clsx('text-xs font-bold mt-1',color)}>{value < 0 ? '-' : ''}{formatShortCurrency(Math.abs(value))}</p></div>)}</div>
+    <div className="grid grid-cols-3 gap-2">{[['Pemasukan', income, 'text-income'], ['Pengeluaran', expense, 'text-expense'], [net < 0 ? 'Defisit' : 'Selisih', net, net < 0 ? 'text-expense' : 'text-income']].map(([label,value,color]) => <div key={label} className="bg-card border border-border rounded-2xl p-2.5 text-center"><p className="text-[10px] text-text-muted">{label}</p><p className={clsx('text-xs font-bold mt-1',color)}>{value < 0 ? '-' : ''}{formatAmount(Math.abs(value), 12)}</p></div>)}</div>
     {expenseChange !== null && <div className="bg-card border border-border rounded-2xl p-3"><p className="text-[10px] text-text-muted">Dibanding bulan sebelumnya</p><p className={clsx('text-sm font-bold mt-1', expenseChange <= 0 ? 'text-income' : 'text-expense')}>{expenseChange <= 0 ? '↓' : '↑'} {Math.abs(expenseChange).toFixed(1)}% pengeluaran</p></div>}
 
     <section className="bg-card border border-border rounded-2xl p-3">

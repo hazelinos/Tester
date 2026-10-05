@@ -3,7 +3,7 @@ import { Plus, Pencil, Trash2, ChevronDown, ChevronUp, Calendar, AlertTriangle, 
 import { useFinance } from '../context/FinanceContext';
 import { useIsMobile } from '../hooks/useIsMobile';
 import EmptyState from '../components/EmptyState';
-import { formatCurrency, formatShortCurrency, formatDate } from '../utils/formatters';
+import { formatCurrency, formatShortCurrency, formatDate, formatAmount } from '../utils/formatters';
 import clsx from 'clsx';
 
 // ─── Hitung cicilan dengan bunga flat ────────────────────────────
@@ -364,7 +364,7 @@ function DebtCard({ debt, onEdit, onDelete, onPay, onDeletePayment, mobile }) {
           )}
           {debt.interestRate > 0 && (
             <p className="text-[10px] text-expense/70 mt-0.5">
-              Bunga {debt.interestRate}%/thn · Total bayar {mobile ? formatShortCurrency(totalPayable) : formatCurrency(totalPayable)}
+              Bunga {debt.interestRate}%/thn · Total bayar {formatAmount(totalPayable, 14)}
             </p>
           )}
         </div>
@@ -380,8 +380,8 @@ function DebtCard({ debt, onEdit, onDelete, onPay, onDeletePayment, mobile }) {
 
       {/* Progress */}
       <div className="flex justify-between text-xs">
-        <span className="font-bold text-income">{mobile ? formatShortCurrency(paid) : formatCurrency(paid)}</span>
-        <span className="text-text-muted">/ {mobile ? formatShortCurrency(totalPayable) : formatCurrency(totalPayable)}</span>
+        <span className="font-bold text-income">{formatAmount(paid, 14)}</span>
+        <span className="text-text-muted">/ {formatAmount(totalPayable, 14)}</span>
       </div>
 
       <div className="h-1.5 bg-elevated rounded-full overflow-hidden">
@@ -391,7 +391,7 @@ function DebtCard({ debt, onEdit, onDelete, onPay, onDeletePayment, mobile }) {
 
       <div className="flex items-center justify-between">
         <span className="text-[10px] font-bold" style={{ color: isDone ? '#10B981' : accentColor }}>
-          {pct.toFixed(0)}% {!isDone && `· Sisa ${mobile ? formatShortCurrency(remaining) : formatCurrency(remaining)}`}
+          {pct.toFixed(0)}% {!isDone && `· Sisa ${formatAmount(remaining, 13)}`}
         </span>
         <div className="flex items-center gap-2">
           {debt.installment > 0 && !isDone && (
@@ -508,7 +508,7 @@ export default function Debt() {
             <div key={s.label} className="bg-card border border-border rounded-xl p-2 text-center">
               <p className="text-[10px] text-text-muted mb-0.5">{s.label}</p>
               <p className={clsx('text-xs font-bold', s.color)}>
-                {s.isText ? s.val : (mobile ? formatShortCurrency(s.val) : formatCurrency(s.val))}
+                {s.isText ? s.val : (formatAmount(s.val, 13))}
               </p>
             </div>
           ))}
