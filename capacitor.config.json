@@ -1,0 +1,8 @@
+{
+  "appId": "id.feezet.montra",
+  "appName": "Montra",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  }
+}
