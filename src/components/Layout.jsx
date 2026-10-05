@@ -77,7 +77,7 @@ export default function Layout() {
           </div>
         </nav>
 
-        <main className="flex-1 overflow-y-auto min-h-0 pt-14">
+        <main className="flex-1 overflow-y-auto min-h-0 pt-[calc(3.5rem+env(safe-area-inset-top))]">
           <Outlet context={{ openEdit }} />
         </main>
 
