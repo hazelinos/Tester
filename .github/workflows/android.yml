@@ -55,10 +55,7 @@ jobs:
       - name: Rename APK
         run: |
           mkdir -p out
-          VERSION="${GITHUB_REF_NAME##*/}"
-          VERSION="${VERSION#v}"
-          if [ -z "$VERSION" ]; then VERSION="dev"; fi
-          cp android/app/build/outputs/apk/debug/app-debug.apk "out/Montra-v${VERSION}.apk"
+          cp android/app/build/outputs/apk/debug/app-debug.apk "out/Montra-v1.0.1.apk"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -71,5 +68,5 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: out/*.apk
-          tag_name: v1.0.0
+          tag_name: v1.0.1
           generate_release_notes: true
