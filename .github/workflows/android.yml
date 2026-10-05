@@ -67,5 +67,5 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: out/*.apk
-          tag_name: v${{ startsWith(github.ref, 'refs/heads/release/') && github.ref_name || github.ref_name }}
+          tag_name: v1.0.0
           generate_release_notes: true
