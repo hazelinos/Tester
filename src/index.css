@@ -70,87 +70,6 @@
 .keypad-save { background:#2563EB; color:#FFFFFF; font-size:24px; }
 .keypad-save:not(:disabled):active { background:#1D4ED8; }
 
-
-
-  /* Mobile viewport: keep the dashboard fully inside the screen. */
-  .dashboard-page { width:100%; min-width:0; overflow-x:hidden; }
-  .dashboard-page > main { width:100%; min-width:0; }
-  .dashboard-balance { width:100%; }
-  .dashboard-balance-accounts { min-width:0; max-width:100%; overflow-x:auto; }
-  .dashboard-shortcut { width:auto !important; min-width:0 !important; flex:1 1 0; }
-  .dashboard-shortcut p { min-width:0; }
-tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-@layer base {
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { font-family: 'Inter', system-ui, sans-serif; background-color: #0B0F19; color: #F9FAFB; }
-  body { min-height: 100vh; background-color: #0B0F19; color: #F9FAFB; }
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: #0B0F19; }
-  ::-webkit-scrollbar-thumb { background: #1F2937; border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: #374151; }
-}
-
-@layer components {
-  .card { @apply bg-card border border-border rounded-2xl p-4; }
-  .btn-primary { @apply bg-primary text-white font-semibold px-4 py-2 rounded-xl hover:bg-primary-dark transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed; }
-  .btn-ghost { @apply bg-elevated text-text-secondary font-medium px-4 py-2.5 rounded-xl hover:bg-border transition-colors duration-150; }
-  .btn-danger { @apply bg-danger/10 text-danger font-medium px-4 py-2 rounded-xl hover:bg-danger/20 transition-colors duration-150; }
-  .input { @apply bg-input border border-border rounded-xl px-4 py-2.5 text-text-primary placeholder-text-muted focus:outline-none focus:border-primary/50 transition-colors w-full text-sm; }
-  .badge-income { @apply text-income bg-income/10 px-2 py-0.5 rounded-full text-xs font-semibold; }
-  .badge-expense { @apply text-danger bg-danger/10 px-2 py-0.5 rounded-full text-xs font-semibold; }
-  .nav-item { @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-text-secondary hover:text-text-primary hover:bg-elevated transition-all duration-150 cursor-pointer text-sm font-medium; }
-  .nav-item-active { @apply text-primary bg-primary/10 hover:text-primary hover:bg-primary/15 font-semibold; }
-}
-
-.dashboard-page { background: #0B0F19; color: #F9FAFB; }
-.dashboard-header { position:sticky; top:0; z-index:30; background:rgba(17,24,39,0.85); border-bottom:1px solid #1F2937; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); }
-.dashboard-logo { width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;background:#111827;border:1px solid #1F2937;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 4px 14px rgba(0,0,0,.3); }
-.dashboard-logo img { width:31px;height:31px;object-fit:contain; }
-.dashboard-marquee { width:min(310px,48vw);overflow:hidden;white-space:nowrap;color:#6B7280;font-size:10px;line-height:14px; }
-.dashboard-marquee-track { display:flex;width:max-content;min-width:max-content;animation:dashboardMarquee 12s linear infinite;will-change:transform; }
-.dashboard-marquee-track > span { display:block;flex:0 0 auto;padding-right:60px; }
-@keyframes dashboardMarquee { from { transform:translateX(0); } to { transform:translateX(-50%); } }
-.dashboard-month-control { display:flex;align-items:center;gap:2px;padding:4px;border:1px solid #1F2937;border-radius:15px;background:#111827;backdrop-filter:blur(14px); }
-.dashboard-month-control button { width:30px;height:30px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#9CA3AF;transition:.18s ease; }
-.dashboard-month-control button:hover { background:#1F2937;color:#60A5FA; }
-.dashboard-month-control span { min-width:104px;text-align:center;color:#F9FAFB;font-size:11px;font-weight:700; }
-
-/* ── Total Uang Card ── */
-.dashboard-balance {
-  position: relative;
-  isolation: isolate;
-  background: linear-gradient(145deg, #1748BE 0%, #1553C7 35%, #1045A8 65%, #0B3A96 100%);
-  border: 1px solid rgba(255,255,255,.22);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.28), 0 22px 55px rgba(17,72,190,.38), 0 4px 16px rgba(17,72,190,.22);
-  overflow: hidden;
-}
-/* Total Uang card internals are owned by dashboard-balance-polish.css. */
-
-.dashboard-icon-button { width:34px;height:34px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#9CA3AF;background:#1F2937;border:1px solid #374151; }
-.dashboard-icon-button:hover { background:#374151;color:#60A5FA; }
-.dashboard-account-chip { display:flex;align-items:center;gap:8px;padding:7px 10px 7px 7px;border:1px solid #1F2937;border-radius:15px;background:#111827;backdrop-filter:blur(12px); }
-.dashboard-stat-card { min-width:0;padding:16px;border-radius:22px;border:1px solid #1F2937;background:#111827;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 8px 24px rgba(0,0,0,.25);backdrop-filter:blur(18px); }
-.dashboard-stat-card strong { grid-column:2; }
-.dashboard-stat-icon { grid-row:1/span 2;width:38px;height:38px;border-radius:13px;display:flex;align-items:center;justify-content:center; }
-.dashboard-stat-icon.income { color:#10B981;background:rgba(16,185,129,0.15); }
-.dashboard-stat-icon.expense { color:#EF4444;background:rgba(239,68,68,0.15); }
-.dashboard-glass-card { border:1px solid #1F2937;background:#111827;border-radius:24px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 8px 24px rgba(0,0,0,.25);backdrop-filter:blur(18px); }
-.dashboard-shortcut { border:1px solid #1F2937;background:#111827;box-shadow:inset 0 1px 0 rgba(255,255,255,.05);transition:transform .18s ease,border-color .18s ease,background .18s ease; }
-.dashboard-shortcut:hover { transform:translateY(-2px);border-color:#374151;background:#1F2937; }
-.dashboard-edit-button { display:inline-flex;align-items:center;gap:5px;color:#60A5FA;font-size:11px;font-weight:700;padding:7px 9px;border-radius:11px;background:#1F2937;border:1px solid #374151; }
-.dashboard-edit-button:hover { background:#374151;color:#93C5FD; }
-
-.keypad-key { min-height:42px; border-radius:10px; background:#1F2937; border:1px solid #374151; color:#F9FAFB; display:flex; align-items:center; justify-content:center; font-size:19px; font-weight:500; box-shadow:inset 0 1px 0 rgba(255,255,255,.05); transition:transform .08s ease,background .12s ease; touch-action:manipulation; }
-.keypad-key:active { transform:scale(.97); background:#374151; }
-.keypad-danger { background:rgba(239,68,68,0.2); color:#EF4444; }
-.keypad-purple { background:#1F2937; color:#60A5FA; }
-.keypad-blue { background:#2563EB; color:#FFFFFF; }
-.keypad-save { background:#2563EB; color:#FFFFFF; font-size:24px; }
-.keypad-save:not(:disabled):active { background:#1D4ED8; }
-
 @media (max-width:767px) {
   nav.shrink-0.bg-card.border-t.border-border.z-20 { background:rgba(17,24,39,0.95) !important;border-top-color:#1F2937 !important;backdrop-filter:blur(22px);box-shadow:0 -12px 34px rgba(0,0,0,.4); }
   nav.shrink-0.bg-card.border-t.border-border.z-20 a { color:#6B7280; }
@@ -189,32 +108,12 @@ div.bg-card.border.border-border.rounded-2xl.p-2\.5.space-y-2:has(.snap-x) > div
 /* Keep the Category filter visibly active while its picker is open. */
 div.flex.gap-1\.5.overflow-x-auto.scrollbar-none.pb-0\.5:has(+ div.bg-card.border.border-border.rounded-2xl.p-2\.5.space-y-2) > button:nth-child(4) { background:#2563EB; color:#FFFFFF; border-color:#2563EB; }
 
-/* Mobile responsive fixes: prevent clipping and horizontal overflow. */
+/* Mobile responsive fixes: prevent dashboard clipping and horizontal overflow. */
 @media (max-width:767px) {
-  .dashboard-page {
-    width: 100%;
-    min-width: 0;
-    overflow-x: hidden;
-  }
-
-  .dashboard-balance {
-    width: 100%;
-    min-width: 0;
-  }
-
-  .dashboard-balance-accounts {
-    min-width: 0;
-    max-width: 100%;
-    overflow-x: auto;
-  }
-
-  .dashboard-shortcut {
-    width: auto !important;
-    min-width: 0 !important;
-    flex: 1 1 0;
-  }
-
-  .dashboard-shortcut p {
-    min-width: 0;
-  }
+  .dashboard-page { width:100%; min-width:0; overflow-x:hidden; }
+  .dashboard-page > main { width:100%; min-width:0; }
+  .dashboard-balance { width:100%; min-width:0; }
+  .dashboard-balance-accounts { min-width:0; max-width:100%; overflow-x:auto; }
+  .dashboard-shortcut { width:auto !important; min-width:0 !important; flex:1 1 0; }
+  .dashboard-shortcut p { min-width:0; }
 }
