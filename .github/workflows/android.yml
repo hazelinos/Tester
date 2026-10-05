@@ -28,8 +28,10 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Configure Android SDK path
+        run: |
+          mkdir -p "$HOME/.gradle"
+          echo "sdk.dir=/usr/local/lib/android/sdk" > local.properties
 
       - name: Install dependencies
         run: npm install
@@ -39,6 +41,9 @@ jobs:
 
       - name: Add Android platform
         run: npx cap add android
+
+      - name: Configure generated Android SDK
+        run: echo "sdk.dir=/usr/local/lib/android/sdk" > android/local.properties
 
       - name: Sync web assets into Android
         run: npx cap sync android
